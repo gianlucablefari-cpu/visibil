@@ -216,14 +216,6 @@
               </div>
             </a>
           </div>
-
-          <div id="rinnovo-card" style="display:none; margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 0.75rem; width: 100%; text-align: left;">
-            <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink);">Abbonamento attivo</div>
-            <div style="font-size:1.05rem; font-weight:600; margin-top:0.4rem;" id="rinnovo-piano"></div>
-            <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;" id="rinnovo-dettagli"></div>
-            <button class="btn-logout btn-small" style="color:#A32D2D; border-color:rgba(163,45,45,0.25); margin-top: 0.75rem;" onclick="richiediDisdetta()">Annulla abbonamento</button>
-            <div class="account-msg" id="disdetta-msg" style="margin-top:0.4rem;"></div>
-          </div>
         </div>
 
         <div style="border-top: 2px solid var(--black); margin-top: 3rem; padding-top: 1.5rem;">
@@ -244,6 +236,14 @@
             <div id="pagamenti-list"></div>
             <button class="btn-logout btn-small" id="pagamenti-toggle" style="display:none; margin-top:0.75rem;" onclick="toggleStoricoPagamenti()">Visualizza tutti</button>
           </div>
+        </div>
+
+        <div class="rinnovo-card" id="rinnovo-card" style="display:none; margin-top: 2.5rem; flex-direction: column; align-items: flex-start;">
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink);">Abbonamento attivo</div>
+          <div style="font-size:1.05rem; font-weight:600; margin-top:0.4rem;" id="rinnovo-piano"></div>
+          <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;" id="rinnovo-dettagli"></div>
+          <button class="btn-logout btn-small" style="color:#A32D2D; border-color:rgba(163,45,45,0.25); margin-top: 0.75rem;" onclick="richiediDisdetta()">Annulla abbonamento</button>
+          <div class="account-msg" id="disdetta-msg" style="margin-top:0.4rem;"></div>
         </div>
 
         <div class="account-card" style="margin-top: 2.5rem;">
@@ -310,7 +310,7 @@
       document.getElementById('avatar-iniziali').textContent = iniziali;
 
       if (cliente.rinnovo_piano) {
-        document.getElementById('rinnovo-card').style.display = 'block';
+        document.getElementById('rinnovo-card').style.display = 'flex';
         document.getElementById('rinnovo-piano').textContent = cliente.rinnovo_piano;
         const data = cliente.rinnovo_data ? new Date(cliente.rinnovo_data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '';
         document.getElementById('rinnovo-dettagli').textContent = data + (cliente.rinnovo_importo ? ` · CHF ${cliente.rinnovo_importo}.–` : '');
@@ -325,7 +325,7 @@
       document.getElementById('account-telefono').value = cliente.telefono || '';
       document.getElementById('account-referente').value = cliente.referente || '';
 
-      if (cliente.sito_url || cliente.instagram_url || cliente.onedrive_link || cliente.rinnovo_piano) {
+      if (cliente.sito_url || cliente.instagram_url || cliente.onedrive_link) {
         document.getElementById('links-card').style.display = 'block';
       }
 
