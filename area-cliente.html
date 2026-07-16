@@ -186,18 +186,27 @@
         <div class="links-card" id="links-card" style="display:none;">
           <h3 style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.75rem;">Pannello di controllo</h3>
 
-          <div class="link-row" id="link-sito" style="display:none;">
+          <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start;">
             <div>
-              <a href="#" id="link-sito-url" target="_blank">Sito web</a>
-              <span class="site-status" id="link-sito-stato"></span>
-              <div class="site-password" id="link-sito-password" style="display:none;"></div>
+              <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
+              <div id="report-list"></div>
+            </div>
+
+            <div>
+              <div class="link-row" id="link-sito" style="display:none;">
+                <div>
+                  <a href="#" id="link-sito-url" target="_blank">Sito web</a>
+                  <span class="site-status" id="link-sito-stato"></span>
+                  <div class="site-password" id="link-sito-password" style="display:none;"></div>
+                </div>
+              </div>
+              <div class="link-row" id="link-instagram" style="display:none;">
+                <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
+              </div>
             </div>
           </div>
-          <div class="link-row" id="link-instagram" style="display:none;">
-            <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
-          </div>
 
-          <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 0.75rem;">
+          <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.25rem;">
             <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:none; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
               <div class="folder-icon">📁</div>
               <div>
@@ -382,6 +391,20 @@
             <span class="badge ${badgeClass(p.stato)}">${p.stato || ''}</span>
           </div>`;
       });
+    }
+
+    const { data: report } = await client.from('report').select('*').eq('user_id', user.id).order('data', { ascending: false });
+    const reportList = document.getElementById('report-list');
+    if (!report || report.length === 0) {
+      reportList.innerHTML = '<p style="font-size:0.8rem; color:var(--grey);">Nessun report disponibile al momento.</p>';
+    } else {
+      reportList.innerHTML = report.slice(0, 3).map(r => {
+        const data = r.data ? new Date(r.data).toLocaleDateString('it-CH', {month:'long', year:'numeric'}) : '';
+        return `<div style="display:flex; align-items:center; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid rgba(0,0,0,0.06); font-size:0.85rem;">
+          <span>${r.titolo}${data ? ` <span style="color:var(--grey); font-size:0.75rem;">· ${data}</span>` : ''}</span>
+          ${r.documento_url ? `<a href="${r.documento_url}" target="_blank" style="color:var(--ink); font-size:0.78rem; text-decoration:none; margin-left:0.75rem; white-space:nowrap;">Scarica</a>` : ''}
+        </div>`;
+      }).join('');
     }
 
     const { data: pagamenti } = await client.from('pagamenti').select('*').eq('user_id', user.id).order('data', { ascending: false });

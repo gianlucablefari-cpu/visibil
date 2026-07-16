@@ -265,6 +265,27 @@
       <div class="msg" id="pagamento-msg"></div>
     </div>
 
+    <!-- REPORT -->
+    <div class="card">
+      <h2>Nuovo report</h2>
+      <p class="desc">Carica un report (es. analytics mensile) per un cliente.</p>
+
+      <label for="r-cliente">Cliente</label>
+      <select id="r-cliente"></select>
+
+      <label for="r-titolo">Titolo</label>
+      <input type="text" id="r-titolo" placeholder="es. Report analytics — Luglio 2026">
+
+      <label for="r-data">Data</label>
+      <input type="date" id="r-data">
+
+      <label for="r-documento">Link PDF</label>
+      <input type="text" id="r-documento">
+
+      <button onclick="salvaReport()">Aggiungi report</button>
+      <div class="msg" id="report-msg"></div>
+    </div>
+
     <!-- LISTA CLIENTI -->
   </div>
 
@@ -391,6 +412,7 @@
     const options = clientiCache.map(c => `<option value="${c.user_id}">${c.nome || c.user_id}</option>`).join('');
     document.getElementById('p-cliente').innerHTML = options;
     document.getElementById('pg-cliente').innerHTML = options;
+    document.getElementById('r-cliente').innerHTML = options;
   }
 
   function nuovoCliente() {
@@ -471,6 +493,24 @@
     document.getElementById('pg-descrizione').value = '';
     document.getElementById('pg-importo').value = '';
     document.getElementById('pg-documento').value = '';
+  }
+
+  async function salvaReport() {
+    const user_id = document.getElementById('r-cliente').value;
+    if (!user_id) { showMsg('report-msg', 'Nessun cliente selezionato.', false); return; }
+
+    const payload = {
+      user_id,
+      titolo: document.getElementById('r-titolo').value,
+      data: document.getElementById('r-data').value || new Date().toISOString().slice(0,10),
+      documento_url: document.getElementById('r-documento').value || null
+    };
+
+    const { error } = await client.from('report').insert(payload);
+    if (error) { showMsg('report-msg', 'Errore: ' + error.message, false); return; }
+    showMsg('report-msg', 'Report aggiunto.', true);
+    document.getElementById('r-titolo').value = '';
+    document.getElementById('r-documento').value = '';
   }
 
   client.auth.getSession().then(({ data }) => {
