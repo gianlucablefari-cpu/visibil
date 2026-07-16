@@ -156,6 +156,9 @@
           <label for="c-referente">Persona di riferimento</label>
           <input type="text" id="c-referente">
 
+          <label for="c-indirizzo">Indirizzo</label>
+          <input type="text" id="c-indirizzo" placeholder="Via, numero, CAP, città">
+
           <button onclick="salvaCliente()">Salva cliente</button>
           <div class="msg" id="cliente-msg"></div>
         </div>
@@ -403,6 +406,7 @@
       nome: document.getElementById('c-nome').value,
       telefono: document.getElementById('c-telefono').value,
       referente: document.getElementById('c-referente').value,
+      indirizzo: document.getElementById('c-indirizzo').value,
       onedrive_link: document.getElementById('c-onedrive').value,
       sito_url: document.getElementById('c-sito-url').value,
       sito_stato: document.getElementById('c-sito-stato').value,
@@ -452,6 +456,7 @@
     document.getElementById('c-nome').value = '';
     document.getElementById('c-telefono').value = '';
     document.getElementById('c-referente').value = '';
+    document.getElementById('c-indirizzo').value = '';
     document.getElementById('c-onedrive').value = '';
     document.getElementById('c-sito-url').value = '';
     document.getElementById('c-sito-stato').value = '';
@@ -474,6 +479,7 @@
     document.getElementById('c-nome').value = c.nome || '';
     document.getElementById('c-telefono').value = c.telefono || '';
     document.getElementById('c-referente').value = c.referente || '';
+    document.getElementById('c-indirizzo').value = c.indirizzo || '';
     document.getElementById('c-onedrive').value = c.onedrive_link || '';
     document.getElementById('c-sito-url').value = c.sito_url || '';
     document.getElementById('c-sito-stato').value = c.sito_stato || '';

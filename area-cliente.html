@@ -61,9 +61,9 @@
   .account-card form { width: 100%; }
   .account-card h3 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); }
   .account-field { width: 100%; }
-  .account-field label { margin-bottom: 0.3rem; text-align: center; }
-  .account-field input { text-align: center; margin-bottom: 0; padding: 0.6rem 0.75rem; font-size: 0.85rem; }
-  .account-field .readonly { font-size: 0.85rem; color: var(--black); padding: 0.6rem 0; text-align: center; }
+  .account-field label { margin-bottom: 0.25rem; text-align: center; font-size: 0.6rem; }
+  .account-field input { text-align: center; margin-bottom: 0; padding: 0.45rem 0.6rem; font-size: 0.78rem; }
+  .account-field .readonly { font-size: 0.78rem; color: var(--black); padding: 0.45rem 0; text-align: center; }
   .btn-small { font-size: 0.7rem; padding: 0.6rem 1rem; align-self: center; }
   .account-msg { font-size: 0.72rem; }
   .account-msg.ok { color: #1E6B3C; }
@@ -151,7 +151,7 @@
         </div>
 
         <div class="account-card">
-          <h3>Account</h3>
+          <h3>Dati personali</h3>
 
           <div class="account-field">
             <label>Email di accesso</label>
@@ -166,6 +166,11 @@
           <div class="account-field">
             <label for="account-referente">Persona di riferimento</label>
             <input type="text" id="account-referente" placeholder="Nome cognome">
+          </div>
+
+          <div class="account-field">
+            <label for="account-indirizzo">Indirizzo</label>
+            <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città">
           </div>
 
           <button class="btn-logout btn-small" onclick="salvaContatti()">Salva dati</button>
@@ -349,6 +354,7 @@
       }
 
       document.getElementById('account-telefono').value = cliente.telefono || '';
+      document.getElementById('account-indirizzo').value = cliente.indirizzo || '';
       document.getElementById('account-referente').value = cliente.referente || '';
 
       if (cliente.sito_url || cliente.instagram_url || cliente.onedrive_link || cliente.prossimo_passo) {
@@ -444,12 +450,13 @@
   async function salvaContatti() {
     const telefono = document.getElementById('account-telefono').value;
     const referente = document.getElementById('account-referente').value;
+    const indirizzo = document.getElementById('account-indirizzo').value;
     const msg = document.getElementById('account-msg');
     msg.textContent = "Salvataggio...";
     msg.className = "account-msg";
 
     const { error } = await client.from('clienti')
-      .update({ telefono, referente })
+      .update({ telefono, referente, indirizzo })
       .eq('user_id', window.currentUserId);
 
     if (error) {
