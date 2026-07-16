@@ -227,6 +227,11 @@
             </a>
           </div>
 
+          <div id="avanzamento-card" style="display:none; margin-top: 1.25rem; background: rgba(26,26,230,0.04); border: 1px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 1rem 1.25rem;">
+            <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); margin-bottom: 0.35rem;">Avanzamento progetto</div>
+            <div style="font-size:0.88rem; line-height:1.5;" id="avanzamento-testo"></div>
+          </div>
+
           <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
             <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
             <div id="documenti-list"></div>
@@ -338,10 +343,15 @@
         link.href = cliente.onedrive_link;
       }
 
+      if (cliente.prossimo_passo) {
+        document.getElementById('avanzamento-card').style.display = 'block';
+        document.getElementById('avanzamento-testo').textContent = cliente.prossimo_passo;
+      }
+
       document.getElementById('account-telefono').value = cliente.telefono || '';
       document.getElementById('account-referente').value = cliente.referente || '';
 
-      if (cliente.sito_url || cliente.instagram_url || cliente.onedrive_link) {
+      if (cliente.sito_url || cliente.instagram_url || cliente.onedrive_link || cliente.prossimo_passo) {
         document.getElementById('links-card').style.display = 'block';
       }
 
