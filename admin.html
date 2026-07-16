@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — VISIBIL</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --white: #FFFFFF; --black: #0F0F0F; --grey: #8A8A8A; --ink: #1A1AE6; --surface: #F7F7F7;
+    --sans: 'Inter', sans-serif;
+  }
+  body { font-family: var(--sans); background: var(--surface); color: var(--black); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 3rem; background: rgba(255,255,255,0.94); backdrop-filter: blur(10px); z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .nav-logo { font-weight: 900; font-size: 0.95rem; letter-spacing: 0.22em; color: var(--black); text-decoration: none; }
+  .nav-links { display: flex; gap: 2rem; align-items: center; list-style: none; }
+  .nav-links a { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); text-decoration: none; }
+  .nav-links .cta-link { color: var(--black); font-weight: 600; border-bottom: 2px solid var(--ink); padding-bottom: 1px; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 8rem 3rem 5rem; }
+  .dash-layout { display: grid; grid-template-columns: 280px 1fr; gap: 3rem; align-items: start; }
+  .side-col { display: flex; flex-direction: column; gap: 1.5rem; }
+  .avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--surface); border: 1px solid rgba(0,0,0,0.08); color: var(--black); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; margin: 0 auto; }
+  .profile-name { font-size: 1rem; font-weight: 700; text-align: center; margin-top: 0.75rem; }
+  .profile-tag { font-size: 0.65rem; color: var(--grey); text-transform: uppercase; letter-spacing: 0.08em; text-align: center; margin-top: 0.15rem; }
+  .account-field { margin-top: 0.9rem; }
+  .account-field .readonly { font-size: 0.85rem; text-align: center; padding: 0.4rem 0; }
+  .btn-small { font-size: 0.65rem; padding: 0.6rem 1rem; }
+  footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 3rem; border-top: 1px solid rgba(0,0,0,0.06); max-width: 1100px; margin: 0 auto; }
+  .footer-brand { font-weight: 900; font-size: 0.85rem; letter-spacing: 0.22em; text-transform: uppercase; }
+  .footer-note { font-size: 0.65rem; color: var(--grey); letter-spacing: 0.1em; }
+  @media (max-width: 640px) { footer { padding: 2rem 1.5rem; justify-content: center; text-align: center; } }
+  .content-col { min-width: 0; }
+  .page-eyebrow { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink); display: block; margin-bottom: 0.75rem; }
+  .page-title { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 2.5rem; }
+
+  label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); display: block; margin-bottom: 0.3rem; margin-top: 0.9rem; }
+  label:first-child { margin-top: 0; }
+  input, select, textarea { width: 100%; font-family: var(--sans); font-size: 0.9rem; padding: 0.7rem 0.9rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 5px; outline: none; }
+  input:focus, select:focus, textarea:focus { border-color: var(--ink); }
+  textarea { resize: vertical; min-height: 60px; }
+
+  button { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); background: var(--black); border: none; border-radius: 5px; padding: 0.8rem 1.5rem; cursor: pointer; margin-top: 1.25rem; }
+  button:hover { background: var(--ink); }
+  button.secondary { background: none; color: var(--black); border: 1px solid rgba(0,0,0,0.15); margin-top: 0; }
+
+  .section-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.2rem; }
+  .card { background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.75rem; margin-bottom: 2rem; }
+  .card h2 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.3rem; }
+  .card .desc { font-size: 0.78rem; color: var(--grey); margin-bottom: 1rem; }
+
+  .msg { font-size: 0.8rem; margin-top: 0.75rem; }
+  .msg.ok { color: #1E6B3C; }
+  .msg.err { color: #A32D2D; }
+
+  .client-row { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.85rem; }
+  .client-row:last-child { border-bottom: none; }
+  .client-row button { margin: 0; padding: 0.4rem 0.9rem; font-size: 0.65rem; }
+
+  #login-box { max-width: 360px; }
+  #denied, #app { display: none; }
+
+  @media (max-width: 640px) {
+    nav { padding: 1.25rem 1.5rem; }
+    main { padding: 7rem 1.5rem 3rem; }
+    .dash-layout { grid-template-columns: 1fr; }
+    .side-col { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">VISIBIL</a>
+  <ul class="nav-links">
+    <li><a href="area-cliente.html">Area Clienti</a></li>
+    <li><a href="admin.html" class="cta-link">Admin</a></li>
+  </ul>
+</nav>
+
+<main>
+
+  <div id="login-box">
+    <span class="page-eyebrow">Accesso riservato</span>
+    <h1 class="page-title">Admin</h1>
+    <label for="email">Email</label>
+    <input type="email" id="email">
+    <label for="password">Password</label>
+    <input type="password" id="password">
+    <button onclick="login()">Accedi</button>
+    <div class="msg err" id="login-msg"></div>
+  </div>
+
+  <div id="denied">
+    <span class="page-eyebrow">Accesso negato</span>
+    <p>Questo account non ha accesso al pannello admin.</p>
+    <button class="secondary" onclick="logout()" style="margin-top:1rem;">Esci</button>
+  </div>
+
+  <div id="app">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+      <div>
+        <span class="page-eyebrow">Admin</span>
+        <h1 class="page-title">Pannello di gestione</h1>
+      </div>
+      <button class="secondary" onclick="logout()">Esci</button>
+    </div>
+
+    <div class="dash-layout">
+
+      <div class="side-col">
+        <div>
+          <div class="avatar">AD</div>
+          <div class="profile-name">Gianluca</div>
+          <div class="profile-tag">Amministratore</div>
+        </div>
+
+        <div class="card">
+          <h2>Account</h2>
+          <div class="account-field">
+            <label>Email di accesso</label>
+            <div class="readonly" id="admin-email"></div>
+          </div>
+          <div class="account-field">
+            <label for="admin-password">Nuova password</label>
+            <input type="password" id="admin-password" placeholder="••••••••">
+          </div>
+          <button class="secondary btn-small" onclick="cambiaPasswordAdmin()" style="margin-top:0.75rem;">Cambia password</button>
+          <div class="msg" id="admin-password-msg"></div>
+        </div>
+
+        <div class="card">
+          <h2>Clienti esistenti</h2>
+          <p class="desc">Clicca "Carica" per richiamare un cliente nel form e modificarlo.</p>
+          <div id="clienti-lista"></div>
+          <button class="secondary" onclick="nuovoCliente()" style="width:100%; margin-top:1rem;">+ Nuovo cliente</button>
+        </div>
+
+        <!-- CLIENTE (identità/contatto) -->
+        <div class="card">
+          <h2>Cliente</h2>
+          <p class="desc">Incolla lo User ID (da Supabase → Authentication → Users) per creare o aggiornare un cliente.</p>
+
+          <label for="c-userid">User ID</label>
+          <input type="text" id="c-userid" placeholder="es. 45d74677-8f95-4d75-86a0-c7d9c586d68a">
+
+          <label for="c-nome">Nome</label>
+          <input type="text" id="c-nome" placeholder="es. B3 Architetti sagl">
+
+          <label for="c-telefono">Telefono</label>
+          <input type="text" id="c-telefono">
+
+          <label for="c-referente">Persona di riferimento</label>
+          <input type="text" id="c-referente">
+
+          <button onclick="salvaCliente()">Salva cliente</button>
+          <div class="msg" id="cliente-msg"></div>
+        </div>
+      </div>
+
+      <div class="content-col">
+
+    <!-- PANNELLO DI CONTROLLO CLIENTE (link, rinnovo) -->
+    <div class="card">
+      <h2>Pannello di controllo cliente</h2>
+      <p class="desc">Link operativi e abbonamento — riferiti allo stesso cliente selezionato a sinistra.</p>
+
+      <label for="c-onedrive">Link cartella materiali (OneDrive)</label>
+      <input type="text" id="c-onedrive">
+
+      <label for="c-sito-url">Link sito</label>
+      <input type="text" id="c-sito-url">
+
+      <label for="c-sito-stato">Stato sito</label>
+      <select id="c-sito-stato">
+        <option value="">—</option>
+        <option value="In lavorazione">In lavorazione</option>
+        <option value="Online">Online</option>
+      </select>
+
+      <label for="c-sito-password">Password sito (se protetto)</label>
+      <input type="text" id="c-sito-password">
+
+      <label for="c-instagram">Link Instagram</label>
+      <input type="text" id="c-instagram">
+
+      <label for="c-upload">Link "Richiedi file" per upload (Dropbox)</label>
+      <input type="text" id="c-upload">
+
+      <label for="c-rinnovo-piano">Piano abbonamento</label>
+      <input type="text" id="c-rinnovo-piano" placeholder="es. Gestione Mensile Completo">
+
+      <label for="c-rinnovo-data">Data prossimo rinnovo</label>
+      <input type="date" id="c-rinnovo-data">
+
+      <label for="c-rinnovo-importo">Importo rinnovo (CHF)</label>
+      <input type="number" id="c-rinnovo-importo">
+
+      <button onclick="salvaCliente()">Salva cliente</button>
+      <div class="msg" id="cliente-msg-2"></div>
+    </div>
+
+    <!-- PREVENTIVO -->
+    <div class="card">
+      <h2>Nuovo preventivo</h2>
+      <p class="desc">Seleziona il cliente e compila i dati del preventivo.</p>
+
+      <label for="p-cliente">Cliente</label>
+      <select id="p-cliente"></select>
+
+      <label for="p-titolo">Titolo</label>
+      <input type="text" id="p-titolo" placeholder="es. Sito web — Gestione mensile Completo">
+
+      <label for="p-importo">Importo (CHF)</label>
+      <input type="number" id="p-importo">
+
+      <label for="p-stato">Stato</label>
+      <select id="p-stato">
+        <option>In attesa</option>
+        <option>Accettato</option>
+        <option>Scaduto</option>
+      </select>
+
+      <label for="p-data">Data</label>
+      <input type="date" id="p-data">
+
+      <label for="p-documento">Link PDF (opzionale)</label>
+      <input type="text" id="p-documento">
+
+      <button onclick="salvaPreventivo()">Aggiungi preventivo</button>
+      <div class="msg" id="preventivo-msg"></div>
+    </div>
+
+    <!-- PAGAMENTO -->
+    <div class="card">
+      <h2>Nuovo pagamento</h2>
+      <p class="desc">Registra un pagamento (fatto o dovuto) per un cliente.</p>
+
+      <label for="pg-cliente">Cliente</label>
+      <select id="pg-cliente"></select>
+
+      <label for="pg-descrizione">Descrizione</label>
+      <input type="text" id="pg-descrizione" placeholder="es. Servizio fotografico progetti">
+
+      <label for="pg-importo">Importo (CHF)</label>
+      <input type="number" id="pg-importo">
+
+      <label for="pg-stato">Stato</label>
+      <select id="pg-stato">
+        <option>Pagato</option>
+        <option>In attesa</option>
+        <option>Scaduto</option>
+      </select>
+
+      <label for="pg-data">Data</label>
+      <input type="date" id="pg-data">
+
+      <label for="pg-documento">Link PDF (opzionale)</label>
+      <input type="text" id="pg-documento">
+
+      <button onclick="salvaPagamento()">Aggiungi pagamento</button>
+      <div class="msg" id="pagamento-msg"></div>
+    </div>
+
+    <!-- LISTA CLIENTI -->
+  </div>
+
+  </div>
+  </div>
+
+</main>
+
+<footer>
+  <span class="footer-brand">VISIBIL</span>
+  <span class="footer-note">© 2026 VISIBIL · Ticino, Svizzera</span>
+</footer>
+
+<script>
+  const OWNER_ID = "45d74677-8f95-4d75-86a0-c7d9c586d68a";
+  const client = supabase.createClient(
+    "https://zmdnuplqgpznryxfooez.supabase.co",
+    "sb_publishable_WcYUr4o4yMN5nGBmPxW59A__100gU9L"
+  );
+
+  let clientiCache = [];
+
+  async function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const msg = document.getElementById('login-msg');
+    msg.textContent = "";
+
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if (error) { msg.textContent = "Errore: " + error.message; return; }
+    checkAccess(data.user);
+  }
+
+  function checkAccess(user) {
+    document.getElementById('login-box').style.display = 'none';
+    if (user.id !== OWNER_ID) {
+      document.getElementById('denied').style.display = 'block';
+      return;
+    }
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('admin-email').textContent = user.email;
+    caricaClienti();
+  }
+
+  async function logout() {
+    await client.auth.signOut();
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('denied').style.display = 'none';
+    document.getElementById('login-box').style.display = 'block';
+  }
+
+  function showMsg(id, text, ok) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'msg ' + (ok ? 'ok' : 'err');
+  }
+
+  async function cambiaPasswordAdmin() {
+    const nuova = document.getElementById('admin-password').value;
+    const msg = document.getElementById('admin-password-msg');
+
+    if (nuova.length < 6) {
+      msg.textContent = "Minimo 6 caratteri.";
+      msg.className = "msg err";
+      return;
+    }
+
+    const { error } = await client.auth.updateUser({ password: nuova });
+    if (error) {
+      msg.textContent = "Errore: " + error.message;
+      msg.className = "msg err";
+    } else {
+      msg.textContent = "Password aggiornata.";
+      msg.className = "msg ok";
+      document.getElementById('admin-password').value = '';
+    }
+  }
+
+  async function salvaCliente() {
+    const user_id = document.getElementById('c-userid').value.trim();
+    if (!user_id) { showMsg('cliente-msg', 'Serve lo User ID.', false); return; }
+
+    const payload = {
+      user_id,
+      nome: document.getElementById('c-nome').value,
+      telefono: document.getElementById('c-telefono').value,
+      referente: document.getElementById('c-referente').value,
+      onedrive_link: document.getElementById('c-onedrive').value,
+      sito_url: document.getElementById('c-sito-url').value,
+      sito_stato: document.getElementById('c-sito-stato').value,
+      sito_password: document.getElementById('c-sito-password').value,
+      instagram_url: document.getElementById('c-instagram').value,
+      upload_link: document.getElementById('c-upload').value,
+      rinnovo_piano: document.getElementById('c-rinnovo-piano').value,
+      rinnovo_data: document.getElementById('c-rinnovo-data').value || null,
+      rinnovo_importo: document.getElementById('c-rinnovo-importo').value || null
+    };
+
+    const { error } = await client.from('clienti').upsert(payload, { onConflict: 'user_id' });
+    if (error) {
+      showMsg('cliente-msg', 'Errore: ' + error.message, false);
+      showMsg('cliente-msg-2', 'Errore: ' + error.message, false);
+      return;
+    }
+    showMsg('cliente-msg', 'Cliente salvato.', true);
+    showMsg('cliente-msg-2', 'Cliente salvato.', true);
+    caricaClienti();
+  }
+
+  async function caricaClienti() {
+    const { data, error } = await client.from('clienti').select('*').order('nome');
+    if (error) { console.error(error); return; }
+    clientiCache = data || [];
+
+    const lista = document.getElementById('clienti-lista');
+    lista.innerHTML = clientiCache.length === 0
+      ? '<p style="font-size:0.85rem; color:var(--grey);">Nessun cliente ancora.</p>'
+      : clientiCache.map(c => `
+          <div class="client-row">
+            <span>${c.nome || '(senza nome)'}</span>
+            <button class="secondary" onclick="caricaNelForm('${c.user_id}')">Carica</button>
+          </div>`).join('');
+
+    const options = clientiCache.map(c => `<option value="${c.user_id}">${c.nome || c.user_id}</option>`).join('');
+    document.getElementById('p-cliente').innerHTML = options;
+    document.getElementById('pg-cliente').innerHTML = options;
+  }
+
+  function nuovoCliente() {
+    document.getElementById('c-userid').value = '';
+    document.getElementById('c-nome').value = '';
+    document.getElementById('c-telefono').value = '';
+    document.getElementById('c-referente').value = '';
+    document.getElementById('c-onedrive').value = '';
+    document.getElementById('c-sito-url').value = '';
+    document.getElementById('c-sito-stato').value = '';
+    document.getElementById('c-sito-password').value = '';
+    document.getElementById('c-instagram').value = '';
+    document.getElementById('c-upload').value = '';
+    document.getElementById('c-rinnovo-piano').value = '';
+    document.getElementById('c-rinnovo-data').value = '';
+    document.getElementById('c-rinnovo-importo').value = '';
+    document.getElementById('cliente-msg').textContent = '';
+    document.getElementById('cliente-msg-2').textContent = '';
+    document.getElementById('c-userid').focus();
+  }
+
+  function caricaNelForm(user_id) {
+    const c = clientiCache.find(x => x.user_id === user_id);
+    if (!c) return;
+    document.getElementById('c-userid').value = c.user_id;
+    document.getElementById('c-nome').value = c.nome || '';
+    document.getElementById('c-telefono').value = c.telefono || '';
+    document.getElementById('c-referente').value = c.referente || '';
+    document.getElementById('c-onedrive').value = c.onedrive_link || '';
+    document.getElementById('c-sito-url').value = c.sito_url || '';
+    document.getElementById('c-sito-stato').value = c.sito_stato || '';
+    document.getElementById('c-sito-password').value = c.sito_password || '';
+    document.getElementById('c-instagram').value = c.instagram_url || '';
+    document.getElementById('c-upload').value = c.upload_link || '';
+    document.getElementById('c-rinnovo-piano').value = c.rinnovo_piano || '';
+    document.getElementById('c-rinnovo-data').value = c.rinnovo_data || '';
+    document.getElementById('c-rinnovo-importo').value = c.rinnovo_importo || '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function salvaPreventivo() {
+    const user_id = document.getElementById('p-cliente').value;
+    if (!user_id) { showMsg('preventivo-msg', 'Nessun cliente selezionato.', false); return; }
+
+    const payload = {
+      user_id,
+      titolo: document.getElementById('p-titolo').value,
+      importo: document.getElementById('p-importo').value || null,
+      stato: document.getElementById('p-stato').value,
+      data: document.getElementById('p-data').value || new Date().toISOString().slice(0,10),
+      documento_url: document.getElementById('p-documento').value || null
+    };
+
+    const { error } = await client.from('preventivi').insert(payload);
+    if (error) { showMsg('preventivo-msg', 'Errore: ' + error.message, false); return; }
+    showMsg('preventivo-msg', 'Preventivo aggiunto.', true);
+    document.getElementById('p-titolo').value = '';
+    document.getElementById('p-importo').value = '';
+    document.getElementById('p-documento').value = '';
+  }
+
+  async function salvaPagamento() {
+    const user_id = document.getElementById('pg-cliente').value;
+    if (!user_id) { showMsg('pagamento-msg', 'Nessun cliente selezionato.', false); return; }
+
+    const payload = {
+      user_id,
+      descrizione: document.getElementById('pg-descrizione').value,
+      importo: document.getElementById('pg-importo').value || null,
+      stato: document.getElementById('pg-stato').value,
+      data: document.getElementById('pg-data').value || new Date().toISOString().slice(0,10),
+      documento_url: document.getElementById('pg-documento').value || null
+    };
+
+    const { error } = await client.from('pagamenti').insert(payload);
+    if (error) { showMsg('pagamento-msg', 'Errore: ' + error.message, false); return; }
+    showMsg('pagamento-msg', 'Pagamento aggiunto.', true);
+    document.getElementById('pg-descrizione').value = '';
+    document.getElementById('pg-importo').value = '';
+    document.getElementById('pg-documento').value = '';
+  }
+
+  client.auth.getSession().then(({ data }) => {
+    if (data.session) checkAccess(data.session.user);
+  });
+</script>
+
+</body>
+</html>
