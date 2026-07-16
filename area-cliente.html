@@ -54,7 +54,7 @@
   .profile-tag { font-size: 0.7rem; color: var(--grey); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.15rem; }
   .folder-card { text-decoration:none; color: var(--black); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; transition: border-color 0.2s; width: 100%; text-align: center; }
   .folder-card:hover { border-color: var(--ink); }
-  .folder-icon { width: 44px; height: 44px; border-radius: 8px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+  .folder-icon { width: 56px; height: 56px; border-radius: 10px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
   .folder-card-title { font-size: 0.85rem; font-weight: 600; }
   .folder-card-desc { font-size: 0.72rem; color: var(--grey); }
   .account-card { width: 100%; text-align: center; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
@@ -93,6 +93,7 @@
     .dash-layout { grid-template-columns: 1fr; }
     .profile-col { position: static; flex-direction: row; align-items: center; flex-wrap: wrap; }
     .folder-card { width: 100%; }
+    .links-top-grid { grid-template-columns: 1fr !important; }
     main { padding: 7rem 1.5rem 3rem; }
   }
   .rinnovo-card { display:flex; align-items:center; justify-content:space-between; background: rgba(26,26,230,0.04); border: 1.5px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; }
@@ -184,25 +185,31 @@
       <div class="content-col">
         <div class="links-card" id="links-card" style="display:none;">
           <h3 style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.75rem;">Pannello di controllo</h3>
-          <div class="link-row" id="link-sito" style="display:none;">
-            <div>
-              <a href="#" id="link-sito-url" target="_blank">Sito web</a>
-              <span class="site-status" id="link-sito-stato"></span>
-              <div class="site-password" id="link-sito-password" style="display:none;"></div>
-            </div>
-          </div>
-          <div class="link-row" id="link-instagram" style="display:none;">
-            <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
-          </div>
-          <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:none; flex-direction: row; align-items: center; gap: 1rem; margin-top: 0.75rem; border: none; border-top: 1px solid rgba(0,0,0,0.06); border-radius: 0; padding: 0.6rem 0 0; text-align: left;">
-            <div class="folder-icon">📁</div>
-            <div>
-              <div class="folder-card-title">Cartella materiali</div>
-              <div class="folder-card-desc">Foto, video e progetti grafici</div>
-            </div>
-          </a>
 
-          <div id="rinnovo-card" style="display:none; margin-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 0.75rem; width: 100%; text-align: left;">
+          <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+            <div>
+              <div class="link-row" id="link-sito" style="display:none;">
+                <div>
+                  <a href="#" id="link-sito-url" target="_blank">Sito web</a>
+                  <span class="site-status" id="link-sito-stato"></span>
+                  <div class="site-password" id="link-sito-password" style="display:none;"></div>
+                </div>
+              </div>
+              <div class="link-row" id="link-instagram" style="display:none;">
+                <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
+              </div>
+            </div>
+
+            <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:none; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
+              <div class="folder-icon">📁</div>
+              <div>
+                <div class="folder-card-title">Cartella materiali</div>
+                <div class="folder-card-desc">Foto, video e progetti grafici</div>
+              </div>
+            </a>
+          </div>
+
+          <div id="rinnovo-card" style="display:none; margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 0.75rem; width: 100%; text-align: left;">
             <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink);">Abbonamento attivo</div>
             <div style="font-size:1.05rem; font-weight:600; margin-top:0.4rem;" id="rinnovo-piano"></div>
             <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;" id="rinnovo-dettagli"></div>
