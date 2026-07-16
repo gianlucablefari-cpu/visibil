@@ -207,6 +207,16 @@
                 <div class="folder-card-desc">Foto, video e progetti grafici</div>
               </div>
             </a>
+
+            <a class="folder-card" id="link-upload" href="#" target="_blank" style="display:none; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left; margin-top: 0.75rem;">
+              <div class="folder-icon" style="color: var(--ink);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+              </div>
+              <div>
+                <div class="folder-card-title">Invia qui</div>
+                <div class="folder-card-desc">Carica i tuoi file per questo progetto</div>
+              </div>
+            </a>
           </div>
 
           <div id="rinnovo-card" style="display:none; margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 0.75rem; width: 100%; text-align: left;">
@@ -239,13 +249,6 @@
 
         <div class="account-card" style="margin-top: 2.5rem;">
           <h3>Contattami</h3>
-
-          <div class="link-row" id="link-upload" style="display:none; border-bottom: 1px solid rgba(0,0,0,0.06); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
-            <a href="#" id="link-upload-url" target="_blank" style="display:flex; align-items:center; gap:0.5rem;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              Carica i tuoi documenti
-            </a>
-          </div>
 
           <p style="font-size: 0.8rem; color: var(--grey);">Domande sul tuo progetto? Scrivimi direttamente, ti rispondo appena posso.</p>
 
@@ -345,8 +348,9 @@
       }
 
       if (cliente.upload_link) {
-        document.getElementById('link-upload').style.display = 'flex';
-        document.getElementById('link-upload-url').href = cliente.upload_link;
+        const uploadEl = document.getElementById('link-upload');
+        uploadEl.style.display = 'flex';
+        uploadEl.href = cliente.upload_link;
       }
     }
 
