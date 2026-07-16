@@ -226,6 +226,12 @@
               </div>
             </a>
           </div>
+
+          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
+            <div id="documenti-list"></div>
+            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
+          </div>
         </div>
 
         <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 3rem; padding-top: 1.5rem;">
@@ -394,6 +400,10 @@
       });
     }
 
+    const { data: documenti } = await client.from('documenti').select('*').eq('user_id', user.id).order('data', { ascending: false });
+    window.documentiCache = documenti || [];
+    renderDocumenti(false);
+
     const { data: report } = await client.from('report').select('*').eq('user_id', user.id).order('data', { ascending: false });
     const reportList = document.getElementById('report-list');
     if (!report || report.length === 0) {
@@ -498,6 +508,55 @@
       msg.textContent = "Errore di connessione.";
       msg.className = "account-msg err";
     }
+  }
+
+  function renderDocumenti(mostraTutti) {
+    const documenti = window.documentiCache || [];
+    const list = document.getElementById('documenti-list');
+    const toggleBtn = document.getElementById('documenti-toggle');
+    list.innerHTML = '';
+
+    if (documenti.length === 0) {
+      list.innerHTML = '<p style="font-size:0.8rem; color:var(--grey);">Nessun documento al momento.</p>';
+      toggleBtn.style.display = 'none';
+      return;
+    }
+
+    const daMostrare = mostraTutti ? documenti : documenti.slice(0, 2);
+
+    daMostrare.forEach(d => {
+      const daFirmare = d.stato === 'Da firmare';
+      const badge = daFirmare
+        ? `<span style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; background:#FFF4DE; color:#7A4E00; padding:0.3rem 0.6rem; border-radius:100px;">
+             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px; height:11px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+             Da firmare
+           </span>`
+        : `<span style="font-size:0.65rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; background:#E3F3E8; color:#1E6B3C; padding:0.3rem 0.6rem; border-radius:100px;">Firmato</span>`;
+
+      list.innerHTML += `
+        <div class="row-card">
+          <div>
+            <div style="font-size:0.9rem; font-weight:600;">${d.titolo}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            ${badge}
+            ${d.documento_url ? `<a href="${d.documento_url}" target="_blank" style="color:var(--ink); font-size:0.78rem; text-decoration:none; white-space:nowrap;">Scarica</a>` : ''}
+          </div>
+        </div>`;
+    });
+
+    if (documenti.length > 2) {
+      toggleBtn.style.display = 'inline-block';
+      toggleBtn.textContent = mostraTutti ? 'Mostra meno' : 'Visualizza tutti';
+    } else {
+      toggleBtn.style.display = 'none';
+    }
+  }
+
+  function toggleDocumenti() {
+    const toggleBtn = document.getElementById('documenti-toggle');
+    const mostraTutti = toggleBtn.textContent === 'Visualizza tutti';
+    renderDocumenti(mostraTutti);
   }
 
   function renderPagamenti(mostraTutti) {

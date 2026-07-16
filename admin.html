@@ -286,6 +286,33 @@
       <div class="msg" id="report-msg"></div>
     </div>
 
+    <!-- DOCUMENTO -->
+    <div class="card">
+      <h2>Nuovo documento</h2>
+      <p class="desc">Documenti da scaricare/firmare (es. contratti, moduli).</p>
+
+      <label for="doc-cliente">Cliente</label>
+      <select id="doc-cliente"></select>
+
+      <label for="doc-titolo">Titolo</label>
+      <input type="text" id="doc-titolo" placeholder="es. Contratto gestione mensile">
+
+      <label for="doc-stato">Stato</label>
+      <select id="doc-stato">
+        <option>Da firmare</option>
+        <option>Firmato</option>
+      </select>
+
+      <label for="doc-data">Data</label>
+      <input type="date" id="doc-data">
+
+      <label for="doc-documento">Link PDF</label>
+      <input type="text" id="doc-documento">
+
+      <button onclick="salvaDocumento()">Aggiungi documento</button>
+      <div class="msg" id="documento-msg"></div>
+    </div>
+
     <!-- LISTA CLIENTI -->
   </div>
 
@@ -413,6 +440,7 @@
     document.getElementById('p-cliente').innerHTML = options;
     document.getElementById('pg-cliente').innerHTML = options;
     document.getElementById('r-cliente').innerHTML = options;
+    document.getElementById('doc-cliente').innerHTML = options;
   }
 
   function nuovoCliente() {
@@ -511,6 +539,25 @@
     showMsg('report-msg', 'Report aggiunto.', true);
     document.getElementById('r-titolo').value = '';
     document.getElementById('r-documento').value = '';
+  }
+
+  async function salvaDocumento() {
+    const user_id = document.getElementById('doc-cliente').value;
+    if (!user_id) { showMsg('documento-msg', 'Nessun cliente selezionato.', false); return; }
+
+    const payload = {
+      user_id,
+      titolo: document.getElementById('doc-titolo').value,
+      stato: document.getElementById('doc-stato').value,
+      data: document.getElementById('doc-data').value || new Date().toISOString().slice(0,10),
+      documento_url: document.getElementById('doc-documento').value || null
+    };
+
+    const { error } = await client.from('documenti').insert(payload);
+    if (error) { showMsg('documento-msg', 'Errore: ' + error.message, false); return; }
+    showMsg('documento-msg', 'Documento aggiunto.', true);
+    document.getElementById('doc-titolo').value = '';
+    document.getElementById('doc-documento').value = '';
   }
 
   client.auth.getSession().then(({ data }) => {
