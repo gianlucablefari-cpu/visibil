@@ -242,13 +242,14 @@
           <div style="margin-top: 2.5rem;">
             <div class="section-label">Storico pagamenti</div>
             <div id="pagamenti-list"></div>
+            <button class="btn-logout btn-small" id="pagamenti-toggle" style="display:none; margin-top:0.75rem;" onclick="toggleStoricoPagamenti()">Visualizza tutti</button>
           </div>
         </div>
 
         <div class="account-card" style="margin-top: 2.5rem;">
           <h3>Contattami</h3>
 
-          <p style="font-size: 0.8rem; color: var(--grey);">Domande sul tuo progetto? Scrivimi direttamente, ti rispondo entro 24h.</p>
+          <p style="font-size: 0.8rem; color: var(--grey);">Domande sul tuo progetto? Ti rispondo entro 24h.</p>
 
           <div style="display:flex; flex-direction:column; align-items:center; gap:0.4rem; font-size:0.85rem; margin-bottom: 0.5rem;">
             <a href="tel:+41796445683" style="color:var(--black); text-decoration:none;">📞 +41 79 644 56 83</a>
@@ -384,28 +385,8 @@
     }
 
     const { data: pagamenti } = await client.from('pagamenti').select('*').eq('user_id', user.id).order('data', { ascending: false });
-    const payList = document.getElementById('pagamenti-list');
-    payList.innerHTML = '';
-
-    if (!pagamenti || pagamenti.length === 0) {
-      payList.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun pagamento registrato.</p>';
-    } else {
-      pagamenti.forEach(p => {
-        const data = p.data ? new Date(p.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '';
-        const download = p.documento_url ? `<a href="${p.documento_url}" target="_blank" style="margin-left:1rem; color:var(--ink); font-size:0.8rem; text-decoration:none;">Scarica PDF</a>` : '';
-        payList.innerHTML += `
-          <div class="row-card">
-            <div>
-              <div style="font-size:0.9rem; font-weight:600;">${p.descrizione}</div>
-              <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;">${data}${p.importo ? ` · CHF ${p.importo}.–` : ''}</div>
-            </div>
-            <div style="display:flex; align-items:center;">
-              <span class="badge ${badgeClass(p.stato)}">${p.stato || ''}</span>
-              ${download}
-            </div>
-          </div>`;
-      });
-    }
+    window.pagamentiCache = pagamenti || [];
+    renderPagamenti(false);
 
     const dovuti = (pagamenti || []).filter(p => p.stato === 'In attesa' || p.stato === 'Scaduto');
     if (dovuti.length > 0) {
@@ -493,6 +474,50 @@
       msg.textContent = "Errore di connessione.";
       msg.className = "account-msg err";
     }
+  }
+
+  function renderPagamenti(mostraTutti) {
+    const pagamenti = window.pagamentiCache || [];
+    const payList = document.getElementById('pagamenti-list');
+    const toggleBtn = document.getElementById('pagamenti-toggle');
+    payList.innerHTML = '';
+
+    if (pagamenti.length === 0) {
+      payList.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun pagamento registrato.</p>';
+      toggleBtn.style.display = 'none';
+      return;
+    }
+
+    const daMostrare = mostraTutti ? pagamenti : pagamenti.slice(0, 2);
+
+    daMostrare.forEach(p => {
+      const data = p.data ? new Date(p.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '';
+      const download = p.documento_url ? `<a href="${p.documento_url}" target="_blank" style="margin-left:1rem; color:var(--ink); font-size:0.8rem; text-decoration:none;">Scarica PDF</a>` : '';
+      payList.innerHTML += `
+        <div class="row-card">
+          <div>
+            <div style="font-size:0.9rem; font-weight:600;">${p.descrizione}</div>
+            <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;">${data}${p.importo ? ` · CHF ${p.importo}.–` : ''}</div>
+          </div>
+          <div style="display:flex; align-items:center;">
+            <span class="badge ${badgeClass(p.stato)}">${p.stato || ''}</span>
+            ${download}
+          </div>
+        </div>`;
+    });
+
+    if (pagamenti.length > 2) {
+      toggleBtn.style.display = 'inline-block';
+      toggleBtn.textContent = mostraTutti ? 'Mostra meno' : 'Visualizza tutti';
+    } else {
+      toggleBtn.style.display = 'none';
+    }
+  }
+
+  function toggleStoricoPagamenti() {
+    const toggleBtn = document.getElementById('pagamenti-toggle');
+    const mostraTutti = toggleBtn.textContent === 'Visualizza tutti';
+    renderPagamenti(mostraTutti);
   }
 
   async function login() {
