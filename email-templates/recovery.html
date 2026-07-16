@@ -1,0 +1,24 @@
+<div style="font-family: Arial, Helvetica, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; color: #0F0F0F;">
+  <div style="font-weight: 900; font-size: 15px; letter-spacing: 0.22em; margin-bottom: 32px;">VISIBIL</div>
+
+  <h2 style="font-size: 20px; margin: 0 0 16px;">Reimposta la tua password</h2>
+
+  <p style="font-size: 14px; line-height: 1.6; color: #333;">
+    Ciao,<br><br>
+    Hai richiesto di reimpostare la password per il tuo account su {{ .SiteURL }}.
+    Clicca il bottone qui sotto per impostarne una nuova.
+  </p>
+
+  <p style="margin: 32px 0;">
+    <a href="{{ .SiteURL }}/area-cliente.html?recovery_token={{ .Token }}"
+       style="background: #0F0F0F; color: #FFFFFF; text-decoration: none; padding: 14px 28px; border-radius: 4px; font-size: 14px; display: inline-block;">
+      Reimposta password
+    </a>
+  </p>
+
+  <p style="font-size: 12px; color: #8A8A8A; line-height: 1.6;">
+    Se non hai richiesto tu questo cambio, ignora pure questa email.<br><br>
+    Se il bottone non funziona, copia e incolla questo indirizzo nel browser:<br>
+    {{ .SiteURL }}/area-cliente.html?recovery_token={{ .Token }}
+  </p>
+</div>
