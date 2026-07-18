@@ -512,7 +512,7 @@
           <div>
             <span class="cfg-label">Pacchetto</span>
             <div class="cfg-tiers">
-              <div class="cfg-tier sel" data-price="290" data-monthly="29" data-lbl="Pagina Vetrina" onclick="selTier(event,this)">
+              <div class="cfg-tier sel" data-price="290" data-monthly="19" data-lbl="Pagina Vetrina" onclick="selTier(event,this)">
                 <span class="cfg-tier-name">Pagina Vetrina</span>
                 <div class="cfg-tier-price-group"><span class="cfg-tier-from">a partire da</span><span class="cfg-tier-price">CHF 290</span></div>
                 <ul class="cfg-tier-feats">
@@ -598,7 +598,7 @@
             <div class="cfg-tiers">
               <div class="gd-card">
                 <span class="gd-card-name">Pagina Vetrina</span>
-                <div class="cfg-gest-item"><span>Canone mensile</span><span>CHF 29/mese</span></div>
+                <div class="cfg-gest-item"><span>Canone mensile</span><span>CHF 19/mese</span></div>
                 <div class="cfg-gest-item" style="font-size:0.65rem;color:var(--grey)"><span>Hosting · dominio · supporto · tutto incluso</span></div>
               </div>
               <div class="gd-card">
@@ -1012,7 +1012,7 @@ function selGdCard(e, card, tierKey) {
   // Select matching tier above
   const tierMap = { landing: 'Pagina Vetrina', completo: 'Sito Completo', avanzato: 'Sito Avanzato' };
   const prices  = { landing: 290, completo: 790, avanzato: 1290 };
-  const monthly = { landing: 29,  completo: 49,  avanzato: 79 };
+  const monthly = { landing: 19,  completo: 49,  avanzato: 79 };
   const forms   = { landing: 60,  completo: 100, avanzato: 120 };
 
   sitoCard.querySelectorAll('.cfg-tier').forEach(t => {
@@ -1054,7 +1054,7 @@ function selGest(e, type) {
   document.getElementById('gd-visibil').classList.remove('on');
   const tier = card.querySelector('.cfg-tier.sel');
   const base = tier ? +tier.dataset.price : 290;
-  const mo = tier ? +tier.dataset.monthly : 29;
+  const mo = tier ? +tier.dataset.monthly : 19;
   const lbl = tier ? tier.dataset.lbl : 'Pagina Vetrina';
   if (type === 'self') {
     document.getElementById('gd-self').classList.add('on');
