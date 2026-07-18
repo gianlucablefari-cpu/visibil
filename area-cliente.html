@@ -389,11 +389,27 @@
     return 'attesa';
   }
 
+  const OWNER_ID = "45d74677-8f95-4d75-86a0-c7d9c586d68a";
+
   async function loadDashboard(user) {
     document.getElementById('login-box').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
 
-    const { data: clienti, error: errClienti } = await client.from('clienti').select('*').eq('user_id', user.id);
+    const params = new URLSearchParams(window.location.search);
+    const previewId = params.get('preview');
+    const isPreview = !!(previewId && user.id === OWNER_ID);
+    const targetUserId = isPreview ? previewId : user.id;
+    window.isPreviewMode = isPreview;
+
+    if (isPreview) {
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:#0F0F0F; color:#fff; text-align:center; padding:0.6rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; position:fixed; top:0; left:0; right:0; z-index:200;';
+      banner.textContent = '🔍 Anteprima (sola lettura) — stai vedendo la vista di un cliente';
+      document.body.prepend(banner);
+      document.querySelector('main').style.marginTop = '2.5rem';
+    }
+
+    const { data: clienti, error: errClienti } = await client.from('clienti').select('*').eq('user_id', targetUserId);
     if (errClienti) console.error('Errore clienti:', errClienti);
     const cliente = clienti && clienti[0];
 
@@ -468,12 +484,12 @@
       }
     }
 
-    document.getElementById('account-email').textContent = user.email;
+    document.getElementById('account-email').textContent = isPreview ? '(email non visibile in anteprima)' : user.email;
     document.getElementById('contact-from-email').value = user.email;
     document.getElementById('contact-from-name').value = cliente ? cliente.nome : user.email;
-    window.currentUserId = user.id;
+    window.currentUserId = targetUserId;
 
-    const { data: preventivi, error: errPrev } = await client.from('preventivi').select('*').eq('user_id', user.id).order('data', { ascending: false });
+    const { data: preventivi, error: errPrev } = await client.from('preventivi').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     const list = document.getElementById('preventivi-list');
     list.innerHTML = '';
 
@@ -495,11 +511,11 @@
       });
     }
 
-    const { data: documenti } = await client.from('documenti').select('*').eq('user_id', user.id).order('data', { ascending: false });
+    const { data: documenti } = await client.from('documenti').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     window.documentiCache = documenti || [];
     renderDocumenti(false);
 
-    const { data: report } = await client.from('report').select('*').eq('user_id', user.id).order('data', { ascending: false });
+    const { data: report } = await client.from('report').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     const reportList = document.getElementById('report-list');
     if (!report || report.length === 0) {
       reportList.innerHTML = '<p style="font-size:0.8rem; color:var(--grey);">Nessun report disponibile al momento.</p>';
@@ -513,7 +529,7 @@
       }).join('');
     }
 
-    const { data: pagamenti } = await client.from('pagamenti').select('*').eq('user_id', user.id).order('data', { ascending: false });
+    const { data: pagamenti } = await client.from('pagamenti').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     window.pagamentiCache = pagamenti || [];
     renderPagamenti(false);
 
@@ -523,6 +539,18 @@
       const elenco = dovuti.map(p => p.descrizione).join(', ');
       document.getElementById('pagamenti-dovuti-card').style.display = 'flex';
       document.getElementById('pagamenti-dovuti-testo').textContent = `${elenco} — totale CHF ${totale}.–`;
+    }
+
+    if (isPreview) {
+      document.querySelectorAll('button.btn-logout, #contact-form button[type="submit"]').forEach(btn => {
+        if (btn.textContent.trim() === 'Esci') return;
+        btn.disabled = true;
+        btn.style.opacity = '0.4';
+        btn.style.cursor = 'not-allowed';
+      });
+      document.querySelectorAll('#account-telefono, #account-referente, #account-indirizzo, #nuova-password, #contact-form textarea').forEach(el => {
+        el.disabled = true;
+      });
     }
   }
 

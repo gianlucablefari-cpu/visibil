@@ -79,7 +79,7 @@
   .msg.ok { color: #1E6B3C; }
   .msg.err { color: #A32D2D; }
 
-  .client-row { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.85rem; }
+  .client-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; padding: 0.8rem 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.85rem; }
   .client-row:last-child { border-bottom: none; }
   .client-row button { margin: 0; padding: 0.4rem 0.9rem; font-size: 0.65rem; }
 
@@ -511,6 +511,7 @@
       : clientiCache.map(c => `
           <div class="client-row">
             <span>${c.nome || '(senza nome)'}</span>
+            <a href="area-cliente.html?preview=${c.user_id}" target="_blank" class="secondary" style="text-decoration:none; display:inline-flex; align-items:center; padding:0.4rem 0.9rem; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.08em; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:var(--black);">Anteprima</a>
             <button class="secondary" onclick="caricaNelForm('${c.user_id}')">Carica</button>
             <button class="secondary" style="color:#c0392b;" onclick="eliminaCliente('${c.user_id}', '${(c.nome || '').replace(/'/g, "\\'")}')">Elimina</button>
           </div>`).join('');
