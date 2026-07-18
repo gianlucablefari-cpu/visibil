@@ -162,6 +162,24 @@
           <button onclick="salvaCliente()">Salva cliente</button>
           <div class="msg" id="cliente-msg"></div>
         </div>
+
+        <!-- NUOVO CLIENTE (creazione automatica account) -->
+        <div class="card">
+          <h2>Nuovo cliente</h2>
+          <p class="desc">Crea in automatico l'accesso al portale per un cliente o potenziale cliente (utente + record base).</p>
+
+          <label for="nc-nome">Nome cliente/progetto</label>
+          <input type="text" id="nc-nome" placeholder="es. Boutique Lainé">
+
+          <label for="nc-email">Email cliente</label>
+          <input type="email" id="nc-email">
+
+          <label for="nc-password">Password provvisoria</label>
+          <input type="text" id="nc-password" placeholder="minimo 6 caratteri">
+
+          <button onclick="creaClienteRapido()">Crea cliente</button>
+          <div class="msg" id="nc-msg"></div>
+        </div>
       </div>
 
       <div class="content-col">
@@ -580,6 +598,46 @@
     showMsg('documento-msg', 'Documento aggiunto.', true);
     document.getElementById('doc-titolo').value = '';
     document.getElementById('doc-documento').value = '';
+  }
+
+  async function creaClienteRapido() {
+    const nome = document.getElementById('nc-nome').value.trim();
+    const email = document.getElementById('nc-email').value.trim();
+    const password = document.getElementById('nc-password').value;
+
+    if (!nome || !email || !password) {
+      showMsg('nc-msg', 'Compila nome, email e password.', false);
+      return;
+    }
+    if (password.length < 6) {
+      showMsg('nc-msg', 'Password minimo 6 caratteri.', false);
+      return;
+    }
+
+    showMsg('nc-msg', 'Creazione in corso...', true);
+
+    const { data: sessionData } = await client.auth.getSession();
+    const token = sessionData.session ? sessionData.session.access_token : null;
+
+    try {
+      const res = await fetch('/api/crea-cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ nome, email, password })
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        showMsg('nc-msg', 'Errore: ' + (result.error || 'sconosciuto'), false);
+        return;
+      }
+      showMsg('nc-msg', 'Cliente creato con successo.', true);
+      document.getElementById('nc-nome').value = '';
+      document.getElementById('nc-email').value = '';
+      document.getElementById('nc-password').value = '';
+      caricaClienti();
+    } catch (err) {
+      showMsg('nc-msg', 'Errore di connessione.', false);
+    }
   }
 
   client.auth.getSession().then(({ data }) => {
