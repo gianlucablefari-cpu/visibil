@@ -5,45 +5,45 @@ const SUPABASE_URL = "https://zmdnuplqgpznryxfooez.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_WcYUr4o4yMN5nGBmPxW59A__100gU9L";
 const OWNER_ID = "45d74677-8f95-4d75-86a0-c7d9c586d68a";
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: JSON.stringify({ error: "Metodo non consentito" }) };
+export default async (req) => {
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Metodo non consentito" }), { status: 405 });
   }
 
   // 1. Verifica che chi chiama sia davvero il titolare (token della sessione admin.html)
-  const authHeader = event.headers.authorization || event.headers.Authorization || "";
+  const authHeader = req.headers.get("authorization") || "";
   const token = authHeader.replace("Bearer ", "").trim();
   if (!token) {
-    return { statusCode: 401, body: JSON.stringify({ error: "Token mancante" }) };
+    return new Response(JSON.stringify({ error: "Token mancante" }), { status: 401 });
   }
 
   const verifyRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` }
   });
   if (!verifyRes.ok) {
-    return { statusCode: 401, body: JSON.stringify({ error: "Token non valido" }) };
+    return new Response(JSON.stringify({ error: "Token non valido" }), { status: 401 });
   }
   const verifyData = await verifyRes.json();
   if (verifyData.id !== OWNER_ID) {
-    return { statusCode: 403, body: JSON.stringify({ error: "Non autorizzato" }) };
+    return new Response(JSON.stringify({ error: "Non autorizzato" }), { status: 403 });
   }
 
   // 2. Legge i dati inviati dal form
   let payload;
   try {
-    payload = JSON.parse(event.body);
+    payload = await req.json();
   } catch (e) {
-    return { statusCode: 400, body: JSON.stringify({ error: "Corpo richiesta non valido." }) };
+    return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
   const { nome, email, password } = payload;
   if (!nome || !email || !password) {
-    return { statusCode: 400, body: JSON.stringify({ error: "Nome, email e password sono obbligatori." }) };
+    return new Response(JSON.stringify({ error: "Nome, email e password sono obbligatori." }), { status: 400 });
   }
 
-  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const SERVICE_KEY = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!SERVICE_KEY) {
-    return { statusCode: 500, body: JSON.stringify({ error: "Configurazione server incompleta (service key mancante)." }) };
+    return new Response(JSON.stringify({ error: "Configurazione server incompleta (service key mancante)." }), { status: 500 });
   }
 
   // 3. Crea l'utente Auth
@@ -59,7 +59,7 @@ exports.handler = async (event) => {
 
   const userData = await createUserRes.json();
   if (!createUserRes.ok) {
-    return { statusCode: 400, body: JSON.stringify({ error: userData.msg || userData.message || "Errore nella creazione utente." }) };
+    return new Response(JSON.stringify({ error: userData.msg || userData.message || "Errore nella creazione utente." }), { status: 400 });
   }
 
   const newUserId = userData.id;
@@ -82,14 +82,14 @@ exports.handler = async (event) => {
 
   if (!insertRes.ok) {
     const errData = await insertRes.json().catch(() => ({}));
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Utente creato ma errore nel salvataggio cliente: " + JSON.stringify(errData) })
-    };
+    return new Response(
+      JSON.stringify({ error: "Utente creato ma errore nel salvataggio cliente: " + JSON.stringify(errData) }),
+      { status: 500 }
+    );
   }
 
   // 5. Invia email di benvenuto personalizzata (Resend)
-  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  const RESEND_API_KEY = Netlify.env.get("RESEND_API_KEY");
   let emailInviata = false;
   if (RESEND_API_KEY) {
     try {
@@ -124,10 +124,12 @@ exports.handler = async (event) => {
     }
   }
 
-  return {
-    statusCode: 200,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ success: true, user_id: newUserId, email_inviata: emailInviata })
-  };
+  return new Response(
+    JSON.stringify({ success: true, user_id: newUserId, email_inviata: emailInviata }),
+    { status: 200, headers: { "Content-Type": "application/json" } }
+  );
 };
-// redeploy: attiva variabili d'ambiente SUPABASE_SERVICE_ROLE_KEY / RESEND_API_KEY
+
+export const config = {
+  path: "/api/crea-cliente"
+};

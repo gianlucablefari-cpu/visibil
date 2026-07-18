@@ -1,8 +1,3 @@
 [build]
   publish = "."
   functions = "netlify/functions"
-
-[[redirects]]
-  from = "/api/crea-cliente"
-  to = "/.netlify/functions/crea-cliente"
-  status = 200
