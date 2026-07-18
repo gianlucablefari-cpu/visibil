@@ -118,17 +118,17 @@
   .step-card .step-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.3rem; }
 
   @media (max-width: 640px) {
-    .dash-layout { display: flex; flex-direction: column; }
-    .profile-col { display: contents; }
-    .content-col { display: contents; }
-    .profile-header { display: flex; align-items: center; gap: 1rem; order: 1; margin-bottom: 2rem; text-align: left; }
+    .dash-layout { grid-template-columns: 1fr; }
+    .profile-col { flex-direction: column; align-items: stretch; }
+    .profile-header { display: flex; align-items: center; gap: 1rem; text-align: left; margin-bottom: 1.5rem; }
     .profile-header .avatar { width: 72px; height: 72px; font-size: 1.4rem; flex-shrink: 0; }
-    .content-col > * { order: 2; }
-    .account-card.align-left { order: 3; margin-top: 2.5rem; }
-    .profile-col > button.btn-logout { order: 4; margin-top: 1.5rem; }
+    .account-card.align-left { margin-top: 1.5rem; }
     .folder-card { width: 100%; }
     .links-top-grid { grid-template-columns: 1fr !important; }
-    main { padding: 7rem 1.5rem 3rem; }
+    main { padding: 6rem 1.5rem 3rem; }
+    .page-eyebrow { margin-bottom: 1.5rem !important; }
+    #avanzamento-card { margin-bottom: 1.5rem !important; }
+    .content-col > h2:first-of-type { margin-top: 0; }
   }
   .rinnovo-card { display:flex; align-items:center; justify-content:space-between; background: rgba(26,26,230,0.04); border: 1.5px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; }
   .row-card { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.1rem 1.5rem; margin-bottom: 0.75rem; display:flex; align-items:center; justify-content:space-between; }
@@ -186,7 +186,7 @@
 
       <div class="quick-nav">
         <button class="quick-nav-toggle" onclick="toggleQuickNav()" aria-label="Menu rapido">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px; height:18px; display:block;"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
         </button>
         <div class="quick-nav-menu" id="quick-nav-menu">
           <a href="#pannello-controllo" onclick="closeQuickNav()">Pannello di controllo</a>
@@ -698,6 +698,29 @@
     const mostraTutti = toggleBtn.textContent === 'Visualizza tutti';
     renderPagamenti(mostraTutti);
   }
+
+  function layoutForViewport() {
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    const datiPersonali = document.getElementById('dati-personali');
+    const profileCol = document.querySelector('.profile-col');
+    const dashLayout = document.querySelector('.dash-layout');
+    if (!datiPersonali || !profileCol || !dashLayout) return;
+    const esciBtn = profileCol.querySelector('button.btn-logout');
+
+    if (isMobile) {
+      if (datiPersonali.parentNode !== dashLayout) {
+        dashLayout.appendChild(datiPersonali);
+        if (esciBtn) dashLayout.appendChild(esciBtn);
+      }
+    } else {
+      if (datiPersonali.parentNode !== profileCol) {
+        profileCol.appendChild(datiPersonali);
+        if (esciBtn) profileCol.appendChild(esciBtn);
+      }
+    }
+  }
+  window.addEventListener('resize', layoutForViewport);
+  layoutForViewport();
 
   function toggleQuickNav() {
     document.getElementById('quick-nav-menu').classList.toggle('open');
