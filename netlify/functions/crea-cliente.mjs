@@ -105,7 +105,7 @@ export default async (req) => {
           subject: `Benvenuto/a nella tua Area Clienti VISIBIL`,
           html: `
             <div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">
-              <p>Ciao ${nome},</p>
+              <p>Ciao ${nome}!</p>
               <p>Il tuo accesso all'Area Clienti VISIBIL è pronto.</p>
               <p>
                 🔗 <a href="https://vsbl.ch/area-cliente.html">vsbl.ch/area-cliente.html</a><br>
@@ -113,7 +113,8 @@ export default async (req) => {
                 🔑 Password provvisoria: ${password}
               </p>
               <p>Ti consigliamo di cambiarla al primo accesso, dalla sezione "Dati personali".</p>
-              <p>A presto,<br>VISIBIL</p>
+              <p>A presto,<br>Gianluca di VISIBIL</p>
+              <p style="color:#8A8A8A; font-size:0.9em;">Per qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83</p>
             </div>
           `
         })
@@ -133,4 +134,3 @@ export default async (req) => {
 export const config = {
   path: "/api/crea-cliente"
 };
-// redeploy: scope env var corretto (senza post_processing)
