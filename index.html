@@ -561,7 +561,7 @@
             <div class="cfg-tiers">
               <div class="gd-card" onclick="selGdCard(event,this,'landing')" style="cursor:pointer">
                 <span class="gd-card-name">Pagina Vetrina</span>
-                <div class="cfg-gest-item"><span>Formazione</span><span>CHF 60</span></div>
+                <div class="cfg-gest-item"><span>Formazione</span><span>CHF 120</span></div>
                 <div class="gd-divider"></div>
                 <span class="gd-card-sub">A carico del cliente</span>
                 <div class="cfg-gest-item"><span>Hosting</span><span>Gratis</span></div>
@@ -570,7 +570,7 @@
               </div>
               <div class="gd-card" onclick="selGdCard(event,this,'completo')" style="cursor:pointer">
                 <span class="gd-card-name">Sito Completo</span>
-                <div class="cfg-gest-item"><span>Formazione</span><span>CHF 100</span></div>
+                <div class="cfg-gest-item"><span>Formazione</span><span>CHF 160</span></div>
                 <div class="gd-divider"></div>
                 <span class="gd-card-sub">A carico del cliente</span>
                 <div class="cfg-gest-item"><span>Hosting</span><span>~CHF 19/mese</span></div>
@@ -581,7 +581,7 @@
               </div>
               <div class="gd-card" onclick="selGdCard(event,this,'avanzato')" style="cursor:pointer">
                 <span class="gd-card-name">Sito Avanzato</span>
-                <div class="cfg-gest-item"><span>Formazione</span><span>CHF 130</span></div>
+                <div class="cfg-gest-item"><span>Formazione</span><span>CHF 200</span></div>
                 <div class="gd-divider"></div>
                 <span class="gd-card-sub">A carico del cliente</span>
                 <div class="cfg-gest-item"><span>Hosting</span><span>~CHF 19/mese</span></div>
@@ -1013,7 +1013,7 @@ function selGdCard(e, card, tierKey) {
   const tierMap = { landing: 'Pagina Vetrina', completo: 'Sito Completo', avanzato: 'Sito Avanzato' };
   const prices  = { landing: 290, completo: 790, avanzato: 1290 };
   const monthly = { landing: 19,  completo: 49,  avanzato: 79 };
-  const forms   = { landing: 60,  completo: 100, avanzato: 120 };
+  const forms   = { landing: 120, completo: 160, avanzato: 200 };
 
   sitoCard.querySelectorAll('.cfg-tier').forEach(t => {
     if (t.dataset.lbl === tierMap[tierKey]) t.classList.add('sel');
