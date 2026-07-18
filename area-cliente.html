@@ -312,11 +312,17 @@
           </div>
 
           <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
+            <div id="documenti-list"></div>
+            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
+          </div>
+
+          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
             <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
             <div id="report-list"></div>
           </div>
 
-          <div class="account-card" style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); border-left:none; border-right:none; border-bottom:none; border-radius:0; padding: 1.25rem 0 0;">
+          <div class="account-card" style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); border-left:none; border-right:none; border-bottom:none; border-radius:0; padding: 1.25rem 0 0; align-items: flex-start; text-align: left;">
             <div class="section-label" style="margin-bottom: 0.75rem;">Contattami <span style="font-weight:400; text-transform:none; letter-spacing:normal;">(rispondo entro 24h)</span></div>
 
             <form id="contact-form" method="POST" action="https://api.web3forms.com/submit">
@@ -339,12 +345,6 @@
                 WhatsApp
               </a>
             </div>
-          </div>
-
-          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
-            <div id="documenti-list"></div>
-            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
           </div>
         </div>
 
