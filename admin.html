@@ -470,6 +470,7 @@
           <div class="client-row">
             <span>${c.nome || '(senza nome)'}</span>
             <button class="secondary" onclick="caricaNelForm('${c.user_id}')">Carica</button>
+            <button class="secondary" style="color:#c0392b;" onclick="eliminaCliente('${c.user_id}', '${(c.nome || '').replace(/'/g, "\\'")}')">Elimina</button>
           </div>`).join('');
 
     const options = clientiCache.map(c => `<option value="${c.user_id}">${c.nome || c.user_id}</option>`).join('');
@@ -598,6 +599,31 @@
     showMsg('documento-msg', 'Documento aggiunto.', true);
     document.getElementById('doc-titolo').value = '';
     document.getElementById('doc-documento').value = '';
+  }
+
+  async function eliminaCliente(userId, nome) {
+    const conferma = confirm(`Eliminare definitivamente "${nome}"?\n\nQuesto cancella l'account di accesso, i preventivi, i pagamenti e i documenti collegati. L'azione non è reversibile.`);
+    if (!conferma) return;
+
+    const { data: sessionData } = await client.auth.getSession();
+    const token = sessionData.session ? sessionData.session.access_token : null;
+
+    try {
+      const res = await fetch('/api/elimina-cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ user_id: userId })
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        alert('Errore: ' + (result.error || 'sconosciuto'));
+        return;
+      }
+      caricaClienti();
+      nuovoCliente();
+    } catch (err) {
+      alert('Errore di connessione.');
+    }
   }
 
   async function creaClienteRapido() {
