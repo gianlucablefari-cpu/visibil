@@ -133,3 +133,4 @@ export default async (req) => {
 export const config = {
   path: "/api/crea-cliente"
 };
+// redeploy: scope env var corretto (senza post_processing)
