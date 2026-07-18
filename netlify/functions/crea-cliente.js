@@ -88,9 +88,45 @@ exports.handler = async (event) => {
     };
   }
 
+  // 5. Invia email di benvenuto personalizzata (Resend)
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  let emailInviata = false;
+  if (RESEND_API_KEY) {
+    try {
+      const emailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: "VISIBIL <onboarding@resend.dev>",
+          to: [email],
+          subject: `Benvenuto/a nella tua Area Clienti VISIBIL`,
+          html: `
+            <div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">
+              <p>Ciao ${nome},</p>
+              <p>Il tuo accesso all'Area Clienti VISIBIL è pronto.</p>
+              <p>
+                🔗 <a href="https://vsbl.ch/area-cliente.html">vsbl.ch/area-cliente.html</a><br>
+                📧 Email: ${email}<br>
+                🔑 Password provvisoria: ${password}
+              </p>
+              <p>Ti consigliamo di cambiarla al primo accesso, dalla sezione "Dati personali".</p>
+              <p>A presto,<br>VISIBIL</p>
+            </div>
+          `
+        })
+      });
+      emailInviata = emailRes.ok;
+    } catch (e) {
+      emailInviata = false;
+    }
+  }
+
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ success: true, user_id: newUserId })
+    body: JSON.stringify({ success: true, user_id: newUserId, email_inviata: emailInviata })
   };
 };

@@ -630,7 +630,7 @@
         showMsg('nc-msg', 'Errore: ' + (result.error || 'sconosciuto'), false);
         return;
       }
-      showMsg('nc-msg', 'Cliente creato con successo.', true);
+      showMsg('nc-msg', result.email_inviata ? 'Cliente creato e email di benvenuto inviata.' : 'Cliente creato (email non inviata).', true);
       document.getElementById('nc-nome').value = '';
       document.getElementById('nc-email').value = '';
       document.getElementById('nc-password').value = '';
