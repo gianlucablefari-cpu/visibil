@@ -30,6 +30,28 @@
   .nav-admin { color: var(--grey); display: flex; align-items: center; transition: color 0.2s; }
   .nav-admin:hover { color: var(--black); }
   .nav-admin svg { width: 15px; height: 15px; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+  .hamburger span { display: block; width: 22px; height: 2px; background: var(--black); border-radius: 2px; transition: all 0.25s; }
+  .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .hamburger.active span:nth-child(2) { opacity: 0; }
+  .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 60px; left: 0; right: 0;
+    background: var(--white);
+    padding: 1.5rem;
+    gap: 1.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    z-index: 99;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  @media (max-width: 640px) {
+    nav { padding: 1.25rem 1.5rem; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+  }
 
   /* PAGE */
   main { max-width: 1100px; margin: 0 auto; padding: 9rem 3rem 5rem; }
@@ -141,6 +163,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
     </a></li>
   </ul>
+  <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
 
 <main>
@@ -682,6 +705,24 @@
   function closeQuickNav() {
     document.getElementById('quick-nav-menu').classList.remove('open');
   }
+
+  const hamburger = document.querySelector('.hamburger');
+  const navLinksMenu = document.querySelector('.nav-links');
+  hamburger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    navLinksMenu.classList.toggle('open');
+    hamburger.classList.toggle('active');
+  });
+  document.addEventListener('click', function() {
+    navLinksMenu.classList.remove('open');
+    hamburger.classList.remove('active');
+  });
+  navLinksMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navLinksMenu.classList.remove('open');
+      hamburger.classList.remove('active');
+    });
+  });
 
   async function login() {
     const email = document.getElementById('email').value;
