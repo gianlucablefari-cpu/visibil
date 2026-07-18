@@ -193,6 +193,11 @@
       </div>
 
       <div class="content-col">
+        <div id="avanzamento-card" style="display:none; margin-bottom: 2.5rem; background: rgba(26,26,230,0.04); border: 1px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 1rem 1.25rem;">
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); margin-bottom: 0.35rem;">Avanzamento progetto</div>
+          <div style="font-size:0.88rem; line-height:1.5;" id="avanzamento-testo"></div>
+        </div>
+
         <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A;">
           <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
           Pannello di controllo
@@ -211,6 +216,10 @@
               </div>
               <div class="link-row" id="link-instagram" style="display:none;">
                 <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
+              </div>
+              <div id="canali-empty" style="display:none;">
+                <p style="font-size:0.85rem; color:var(--grey); margin-bottom:0.6rem;">Nessun progetto aperto.</p>
+                <a href="index.html#servizi" style="color:var(--ink); text-decoration:underline; text-underline-offset:2px; font-size:0.85rem; font-weight:600;">Scopri di più →</a>
               </div>
             </div>
 
@@ -240,15 +249,37 @@
             </a>
           </div>
 
-          <div id="avanzamento-card" style="display:none; margin-top: 1.25rem; background: rgba(26,26,230,0.04); border: 1px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 1rem 1.25rem;">
-            <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); margin-bottom: 0.35rem;">Avanzamento progetto</div>
-            <div style="font-size:0.88rem; line-height:1.5;" id="avanzamento-testo"></div>
-          </div>
-
           <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
             <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
             <div id="documenti-list"></div>
             <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
+          </div>
+
+          <div class="account-card" style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); border-left:none; border-right:none; border-bottom:none; border-radius:0; padding: 1.25rem 0 0;">
+            <h3>Contattami</h3>
+
+            <p style="font-size: 0.8rem; color: var(--grey);">Domande sul tuo progetto? Ti rispondo entro 24h.</p>
+
+            <div style="display:flex; flex-direction:column; align-items:center; gap:0.4rem; font-size:0.85rem; margin-bottom: 0.5rem;">
+              <a href="tel:+41796445683" style="color:var(--black); text-decoration:none;">📞 +41 79 644 56 83</a>
+              <a href="mailto:gianluca.blefari@outlook.com" style="color:var(--black); text-decoration:none;">✉️ gianluca.blefari@outlook.com</a>
+              <a href="https://wa.me/41796445683" target="_blank" style="color:var(--black); text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
+                <svg viewBox="0 0 24 24" fill="#25D366" style="width:16px; height:16px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
+                Messaggio WhatsApp
+              </a>
+            </div>
+
+            <form id="contact-form" method="POST" action="https://api.web3forms.com/submit">
+              <input type="hidden" name="access_key" value="b60eacf2-4a27-416a-8999-2fe3238adfb6">
+              <input type="hidden" name="subject" value="Messaggio dall'Area Clienti">
+              <input type="hidden" name="from_name" id="contact-from-name" value="">
+              <input type="hidden" name="replyto" id="contact-from-email" value="">
+              <div class="account-field" style="margin-bottom: 0.75rem;">
+                <textarea name="messaggio" placeholder="Scrivi il tuo messaggio..." required style="width:100%; min-height:80px; padding:0.6rem 0.75rem; font-family:var(--sans); font-size:0.85rem; border:1px solid rgba(0,0,0,0.1); border-radius:3px; resize:vertical;"></textarea>
+              </div>
+              <button type="submit" class="btn-logout btn-small">Invia messaggio</button>
+              <div class="account-msg" id="contact-msg" style="margin-top:0.5rem;"></div>
+            </form>
           </div>
         </div>
 
@@ -281,33 +312,6 @@
           <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;" id="rinnovo-dettagli"></div>
           <button class="btn-logout btn-small" style="color:#A32D2D; border-color:rgba(163,45,45,0.25); margin-top: 0.75rem;" onclick="richiediDisdetta()">Annulla abbonamento</button>
           <div class="account-msg" id="disdetta-msg" style="margin-top:0.4rem;"></div>
-        </div>
-
-        <div class="account-card" style="margin-top: 2.5rem;">
-          <h3>Contattami</h3>
-
-          <p style="font-size: 0.8rem; color: var(--grey);">Domande sul tuo progetto? Ti rispondo entro 24h.</p>
-
-          <div style="display:flex; flex-direction:column; align-items:center; gap:0.4rem; font-size:0.85rem; margin-bottom: 0.5rem;">
-            <a href="tel:+41796445683" style="color:var(--black); text-decoration:none;">📞 +41 79 644 56 83</a>
-            <a href="mailto:gianluca.blefari@outlook.com" style="color:var(--black); text-decoration:none;">✉️ gianluca.blefari@outlook.com</a>
-            <a href="https://wa.me/41796445683" target="_blank" style="color:var(--black); text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
-              <svg viewBox="0 0 24 24" fill="#25D366" style="width:16px; height:16px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
-              Messaggio WhatsApp
-            </a>
-          </div>
-
-          <form id="contact-form" method="POST" action="https://api.web3forms.com/submit">
-            <input type="hidden" name="access_key" value="b60eacf2-4a27-416a-8999-2fe3238adfb6">
-            <input type="hidden" name="subject" value="Messaggio dall'Area Clienti">
-            <input type="hidden" name="from_name" id="contact-from-name" value="">
-            <input type="hidden" name="replyto" id="contact-from-email" value="">
-            <div class="account-field" style="margin-bottom: 0.75rem;">
-              <textarea name="messaggio" placeholder="Scrivi il tuo messaggio..." required style="width:100%; min-height:80px; padding:0.6rem 0.75rem; font-family:var(--sans); font-size:0.85rem; border:1px solid rgba(0,0,0,0.1); border-radius:3px; resize:vertical;"></textarea>
-            </div>
-            <button type="submit" class="btn-logout btn-small">Invia messaggio</button>
-            <div class="account-msg" id="contact-msg" style="margin-top:0.5rem;"></div>
-          </form>
         </div>
       </div>
 
@@ -394,6 +398,10 @@
       if (cliente.instagram_url) {
         document.getElementById('link-instagram').style.display = 'flex';
         document.getElementById('link-instagram-url').href = cliente.instagram_url;
+      }
+
+      if (!cliente.sito_url && !cliente.instagram_url) {
+        document.getElementById('canali-empty').style.display = 'block';
       }
 
       const uploadEl = document.getElementById('link-upload');
