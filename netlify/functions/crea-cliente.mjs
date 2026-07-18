@@ -100,7 +100,7 @@ export default async (req) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          from: "VISIBIL <onboarding@resend.dev>",
+          from: "VISIBIL <benvenuto@vsbl.ch>",
           to: [email],
           subject: `Benvenuto/a nella tua Area Clienti VISIBIL`,
           html: `
