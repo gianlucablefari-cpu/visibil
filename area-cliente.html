@@ -159,17 +159,17 @@
 
           <div class="account-field">
             <label for="account-referente">Nome e cognome</label>
-            <input type="text" id="account-referente" placeholder="Nome cognome">
+            <input type="text" id="account-referente" placeholder="Nome cognome" autocomplete="name">
           </div>
 
           <div class="account-field">
             <label for="account-indirizzo">Indirizzo</label>
-            <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città">
+            <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città" autocomplete="street-address">
           </div>
 
           <div class="account-field">
             <label for="account-telefono">Telefono</label>
-            <input type="text" id="account-telefono" placeholder="+41 79 000 00 00">
+            <input type="text" id="account-telefono" placeholder="+41 79 000 00 00" autocomplete="tel">
           </div>
 
           <div class="account-field">
@@ -182,7 +182,7 @@
 
           <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem; margin-top: 0.25rem;">
             <label for="nuova-password">Nuova password</label>
-            <input type="password" id="nuova-password" placeholder="••••••••" style="margin-bottom: 0.75rem;">
+            <input type="password" id="nuova-password" placeholder="••••••••" autocomplete="new-password" style="margin-bottom: 0.75rem;">
             <button class="btn-logout btn-small" onclick="cambiaPassword()">Cambia password</button>
             <div class="account-msg" id="password-msg" style="margin-top: 0.5rem;"></div>
           </div>
