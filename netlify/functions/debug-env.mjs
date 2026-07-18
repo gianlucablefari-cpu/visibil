@@ -14,3 +14,4 @@ export const config = {
   path: "/api/debug-env"
 };
 // redeploy dopo attivazione auto-approve
+// redeploy: test contesto production per i secrets
