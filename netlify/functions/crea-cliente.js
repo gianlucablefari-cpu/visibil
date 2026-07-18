@@ -130,3 +130,4 @@ exports.handler = async (event) => {
     body: JSON.stringify({ success: true, user_id: newUserId, email_inviata: emailInviata })
   };
 };
+// redeploy: attiva variabili d'ambiente SUPABASE_SERVICE_ROLE_KEY / RESEND_API_KEY
