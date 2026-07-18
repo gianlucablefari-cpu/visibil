@@ -13,3 +13,4 @@ export default async () => {
 export const config = {
   path: "/api/debug-env"
 };
+// redeploy dopo attivazione auto-approve
