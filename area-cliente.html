@@ -54,6 +54,7 @@
   .profile-tag { font-size: 0.7rem; color: var(--grey); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.15rem; }
   .folder-card { text-decoration:none; color: var(--black); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; transition: border-color 0.2s; width: 100%; text-align: center; }
   .folder-card:hover { border-color: var(--ink); }
+  .folder-card-disabled { opacity: 0.5; pointer-events: none; cursor: default; }
   .folder-icon { width: 44px; height: 44px; border-radius: 9px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
   .folder-card-title { font-size: 0.85rem; font-weight: 600; }
   .folder-card-desc { font-size: 0.72rem; color: var(--grey); }
@@ -220,21 +221,21 @@
           </div>
 
           <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.25rem;">
-            <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:none; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
+            <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
               <div class="folder-icon">📁</div>
               <div>
                 <div class="folder-card-title">Cartella materiali</div>
-                <div class="folder-card-desc">Foto, video e progetti grafici</div>
+                <div class="folder-card-desc" id="onedrive-desc">Foto, video e progetti grafici</div>
               </div>
             </a>
 
-            <a class="folder-card" id="link-upload" href="#" target="_blank" style="display:none; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
+            <a class="folder-card" id="link-upload" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
               <div class="folder-icon" style="color: var(--ink);">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
               </div>
               <div>
                 <div class="folder-card-title">Invia qui</div>
-                <div class="folder-card-desc">Carica i tuoi file per questo progetto</div>
+                <div class="folder-card-desc" id="upload-desc">Carica i tuoi file per questo progetto</div>
               </div>
             </a>
           </div>
@@ -352,10 +353,15 @@
         document.getElementById('rinnovo-dettagli').textContent = data + (cliente.rinnovo_importo ? ` · CHF ${cliente.rinnovo_importo}.–` : '');
       }
 
+      const onedriveLink = document.getElementById('onedrive-link');
       if (cliente.onedrive_link) {
-        const link = document.getElementById('onedrive-link');
-        link.style.display = 'flex';
-        link.href = cliente.onedrive_link;
+        onedriveLink.href = cliente.onedrive_link;
+        onedriveLink.classList.remove('folder-card-disabled');
+        document.getElementById('onedrive-desc').textContent = 'Foto, video e progetti grafici';
+      } else {
+        onedriveLink.removeAttribute('href');
+        onedriveLink.classList.add('folder-card-disabled');
+        document.getElementById('onedrive-desc').textContent = 'Disponibile a breve';
       }
 
       if (cliente.prossimo_passo) {
@@ -367,9 +373,7 @@
       document.getElementById('account-indirizzo').value = cliente.indirizzo || '';
       document.getElementById('account-referente').value = cliente.referente || '';
 
-      if (cliente.sito_url || cliente.instagram_url || cliente.onedrive_link || cliente.prossimo_passo) {
-        document.getElementById('links-card').style.display = 'block';
-      }
+      document.getElementById('links-card').style.display = 'block';
 
       if (cliente.sito_url) {
         document.getElementById('link-sito').style.display = 'block';
@@ -392,10 +396,15 @@
         document.getElementById('link-instagram-url').href = cliente.instagram_url;
       }
 
+      const uploadEl = document.getElementById('link-upload');
       if (cliente.upload_link) {
-        const uploadEl = document.getElementById('link-upload');
-        uploadEl.style.display = 'flex';
         uploadEl.href = cliente.upload_link;
+        uploadEl.classList.remove('folder-card-disabled');
+        document.getElementById('upload-desc').textContent = 'Carica i tuoi file per questo progetto';
+      } else {
+        uploadEl.removeAttribute('href');
+        uploadEl.classList.add('folder-card-disabled');
+        document.getElementById('upload-desc').textContent = 'Disponibile a breve';
       }
     }
 
