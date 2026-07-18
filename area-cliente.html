@@ -485,12 +485,12 @@
       preventivi.forEach(p => {
         const data = p.data ? new Date(p.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '';
         list.innerHTML += `
-          <div class="row-card">
-            <div>
-              <div style="font-size:0.9rem; font-weight:600;">${p.titolo}</div>
-              <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;">${data}${p.importo ? ` · CHF ${p.importo}.–` : ''}</div>
+          <div class="row-card" style="flex-direction:column; align-items:stretch; gap:0.5rem;">
+            <div style="font-size:0.85rem; font-weight:600;">${p.titolo}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:0.8rem; color:var(--grey);">${data}${p.importo ? ` · CHF ${p.importo}.–` : ''}</span>
+              <span class="badge ${badgeClass(p.stato)}">${p.stato || ''}</span>
             </div>
-            <span class="badge ${badgeClass(p.stato)}">${p.stato || ''}</span>
           </div>`;
       });
     }
@@ -669,16 +669,16 @@
 
     daMostrare.forEach(p => {
       const data = p.data ? new Date(p.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '';
-      const download = p.documento_url ? `<a href="${p.documento_url}" target="_blank" style="margin-left:1rem; color:var(--ink); font-size:0.8rem; text-decoration:none;">Scarica PDF</a>` : '';
+      const download = p.documento_url ? `<a href="${p.documento_url}" target="_blank" style="color:var(--ink); font-size:0.78rem; text-decoration:none;">Scarica PDF</a>` : '';
       payList.innerHTML += `
-        <div class="row-card">
-          <div>
-            <div style="font-size:0.9rem; font-weight:600;">${p.descrizione}</div>
-            <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;">${data}${p.importo ? ` · CHF ${p.importo}.–` : ''}</div>
-          </div>
-          <div style="display:flex; align-items:center;">
-            <span class="badge ${badgeClass(p.stato)}">${p.stato || ''}</span>
-            ${download}
+        <div class="row-card" style="flex-direction:column; align-items:stretch; gap:0.5rem;">
+          <div style="font-size:0.85rem; font-weight:600;">${p.descrizione}</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+            <span style="font-size:0.8rem; color:var(--grey);">${data}${p.importo ? ` · CHF ${p.importo}.–` : ''}</span>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span class="badge ${badgeClass(p.stato)}">${p.stato || ''}</span>
+              ${download}
+            </div>
           </div>
         </div>`;
     });
