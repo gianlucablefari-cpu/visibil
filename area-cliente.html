@@ -315,25 +315,10 @@
             </a>
           </div>
 
-          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
-            <div id="documenti-list"></div>
-            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
-          </div>
-
           <div class="account-card" style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); border-left:none; border-right:none; border-bottom:none; border-radius:0; padding: 1.25rem 0 0;">
             <h3>Contattami</h3>
 
             <p style="font-size: 0.8rem; color: var(--grey);">Domande sul tuo progetto? Ti rispondo entro 24h.</p>
-
-            <div style="display:flex; flex-direction:column; align-items:center; gap:0.4rem; font-size:0.85rem; margin-bottom: 0.5rem;">
-              <a href="tel:+41796445683" style="color:var(--black); text-decoration:none;">📞 +41 79 644 56 83</a>
-              <a href="mailto:gianluca.blefari@outlook.com" style="color:var(--black); text-decoration:none;">✉️ gianluca.blefari@outlook.com</a>
-              <a href="https://wa.me/41796445683" target="_blank" style="color:var(--black); text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
-                <svg viewBox="0 0 24 24" fill="#25D366" style="width:16px; height:16px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
-                Messaggio WhatsApp
-              </a>
-            </div>
 
             <form id="contact-form" method="POST" action="https://api.web3forms.com/submit">
               <input type="hidden" name="access_key" value="b60eacf2-4a27-416a-8999-2fe3238adfb6">
@@ -346,6 +331,21 @@
               <button type="submit" class="btn-logout btn-small">Invia messaggio</button>
               <div class="account-msg" id="contact-msg" style="margin-top:0.5rem;"></div>
             </form>
+
+            <div style="display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0.9rem; font-size:0.72rem; color:var(--grey); margin-top: 1rem;">
+              <a href="tel:+41796445683" style="color:var(--grey); text-decoration:none;">📞 +41 79 644 56 83</a>
+              <a href="mailto:gianluca.blefari@outlook.com" style="color:var(--grey); text-decoration:none;">✉️ gianluca.blefari@outlook.com</a>
+              <a href="https://wa.me/41796445683" target="_blank" style="color:var(--grey); text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem;">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:12px; height:12px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
+                WhatsApp
+              </a>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
+            <div id="documenti-list"></div>
+            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
           </div>
         </div>
 
