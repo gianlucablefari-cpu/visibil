@@ -270,28 +270,24 @@
             <div style="font-size:0.88rem; line-height:1.5;" id="avanzamento-testo"></div>
           </div>
 
-          <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; align-items: start;">
-            <div>
-              <div class="section-label" style="margin-bottom: 0.5rem;">Canali</div>
-              <div class="link-row" id="link-sito" style="display:none;">
-                <div>
-                  <a href="#" id="link-sito-url" target="_blank">Sito web</a>
-                  <span class="site-status" id="link-sito-stato"></span>
-                  <div class="site-password" id="link-sito-password" style="display:none;"></div>
-                </div>
-              </div>
-              <div class="link-row" id="link-instagram" style="display:none;">
-                <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
-              </div>
-              <div id="canali-empty" style="display:none;">
-                <p style="font-size:0.85rem; color:var(--grey); margin-bottom:0.6rem;">Nessun progetto aperto.</p>
-                <a href="index.html#servizi" style="color:var(--ink); text-decoration:underline; text-underline-offset:2px; font-size:0.85rem; font-weight:600;">Scopri di più →</a>
+          <div>
+            <div class="section-label" style="margin-bottom: 0.5rem;">Progetti</div>
+            <div class="link-row" id="link-sito" style="display:none;">
+              <div>
+                <a href="#" id="link-sito-url" target="_blank">Sito web</a>
+                <span class="site-status" id="link-sito-stato"></span>
+                <div class="site-password" id="link-sito-password" style="display:none;"></div>
               </div>
             </div>
-
-            <div>
-              <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
-              <div id="report-list"></div>
+            <div class="link-row" id="link-instagram" style="display:none;">
+              <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
+            </div>
+            <div id="canali-empty" style="display:none;">
+              <p style="font-size:0.85rem; color:var(--grey); margin-bottom:0.6rem;">Nessun progetto aperto.</p>
+              <a href="index.html#servizi" style="display:inline-flex; align-items:center; gap:0.4rem; color:var(--ink); text-decoration:none; font-size:0.85rem; font-weight:600;">
+                <span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border:1.5px solid var(--ink); border-radius:50%; font-size:0.85rem; line-height:1;">+</span>
+                Aggiungi
+              </a>
             </div>
           </div>
 
@@ -313,6 +309,11 @@
                 <div class="folder-card-desc" id="upload-desc">Carica i tuoi file per questo progetto</div>
               </div>
             </a>
+          </div>
+
+          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
+            <div id="report-list"></div>
           </div>
 
           <div class="account-card" style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); border-left:none; border-right:none; border-bottom:none; border-radius:0; padding: 1.25rem 0 0;">
