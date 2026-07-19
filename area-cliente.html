@@ -62,7 +62,7 @@
     z-index: 99;
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   }
-  @media (max-width: 900px) {
+  @media (max-width: 640px) {
     html { font-size: 118%; }
     nav { padding: 1.25rem 1.5rem; }
     .nav-links { display: none; }
@@ -118,7 +118,7 @@
   .footer-note { font-size: 0.65rem; color: var(--grey); letter-spacing: 0.1em; }
   .footer-admin { color: rgba(0,0,0,0.15); text-decoration: none; margin-left: 0.6rem; transition: color 0.2s; }
   .footer-admin:hover { color: var(--grey); }
-  @media (max-width: 900px) { footer { padding: 2rem 1.5rem; justify-content: center; text-align: center; } }
+  @media (max-width: 640px) { footer { padding: 2rem 1.5rem; justify-content: center; text-align: center; } }
   .links-card { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
   .link-row { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0; }
   .link-row + .link-row { border-top: 1px solid rgba(0,0,0,0.06); }
@@ -132,7 +132,7 @@
   .step-card { background: rgba(26,26,230,0.04); border: 1.5px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 2.5rem; display: flex; align-items: center; gap: 0.75rem; }
   .step-card .step-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.3rem; }
 
-  @media (max-width: 900px) {
+  @media (max-width: 640px) {
     .dash-layout { grid-template-columns: 1fr; }
     .profile-col { flex-direction: column; align-items: stretch; }
     .profile-header { display: flex; align-items: center; gap: 1rem; text-align: left; margin-bottom: 1.5rem; }
@@ -162,7 +162,7 @@
   .quick-nav-menu.open { display: flex; flex-direction: column; }
   .quick-nav-menu a { padding: 0.6rem 0.75rem; font-size: 0.85rem; color: var(--black); text-decoration: none; border-radius: 5px; }
   .quick-nav-menu a:hover { background: var(--surface); }
-  @media (max-width: 900px) { .quick-nav { display: block; } }
+  @media (max-width: 640px) { .quick-nav { display: block; } }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -802,7 +802,7 @@
   }
 
   function layoutForViewport() {
-    const isMobile = window.matchMedia('(max-width: 900px)').matches;
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
     const datiPersonali = document.getElementById('dati-personali');
     const profileCol = document.querySelector('.profile-col');
     const dashLayout = document.querySelector('.dash-layout');
