@@ -454,11 +454,24 @@
     container.innerHTML = '';
     let hasItems = false;
 
-    (dovuti || []).forEach(p => {
+    // 1. Da VISIBIL (nota libera)
+    if (window.progettoTesto) {
       hasItems = true;
-      const importo = p.importo ? ` — CHF ${p.importo}.–` : '';
       container.innerHTML += `
-        <div style="background: rgba(163,45,45,0.05); border: 1px solid rgba(163,45,45,0.2); border-radius: 8px; padding: 1rem; text-align:center;">
+        <div style="background: rgba(26,26,230,0.04); border: 1px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 0.85rem 1rem; text-align:left;">
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink); margin-bottom:0.3rem;">Da VISIBIL</div>
+          <div style="font-size:0.88rem; line-height:1.5;">${window.progettoTesto}</div>
+        </div>`;
+    }
+
+    // 2. DA [nome cliente]: fatture in sospeso + preventivi da approvare + nota libera cliente
+    const nomeCliente = (window.clienteNome || 'CLIENTE').toUpperCase();
+    let clienteItemsHtml = '';
+
+    (dovuti || []).forEach(p => {
+      const importo = p.importo ? ` — CHF ${p.importo}.–` : '';
+      clienteItemsHtml += `
+        <div style="background: rgba(163,45,45,0.05); border: 1px solid rgba(163,45,45,0.2); border-radius: 8px; padding: 1rem; text-align:center; margin-top:0.6rem;">
           <div style="font-size:0.88rem; margin-bottom:0.75rem;"><strong style="color:#A32D2D;">Fattura in sospeso:</strong> ${p.descrizione || ''}${importo}</div>
           ${p.payment_link
             ? `<a href="${p.payment_link}" target="_blank" style="display:inline-block; background:#A32D2D; color:#fff; font-size:0.78rem; font-weight:600; padding:0.5rem 1.25rem; border-radius:4px; text-decoration:none;">Paga ora</a>`
@@ -467,30 +480,27 @@
     });
 
     (preventiviPendenti || []).forEach(p => {
-      hasItems = true;
       const importo = p.importo ? ` — CHF ${p.importo}.–` : '';
-      container.innerHTML += `
-        <div style="background: #FFF4DE; border: 1px solid rgba(122,78,0,0.2); border-radius: 8px; padding: 1rem; text-align:center;">
+      clienteItemsHtml += `
+        <div style="background: #FFF4DE; border: 1px solid rgba(122,78,0,0.2); border-radius: 8px; padding: 1rem; text-align:center; margin-top:0.6rem;">
           <div style="font-size:0.88rem; margin-bottom:0.75rem;"><strong style="color:#7A4E00;">Preventivo da approvare:</strong> ${p.titolo || ''}${importo}</div>
           <a href="#pagamenti" style="display:inline-block; background:#7A4E00; color:#fff; font-size:0.78rem; font-weight:600; padding:0.5rem 1.25rem; border-radius:4px; text-decoration:none;">Visualizza</a>
         </div>`;
     });
 
     if (window.daFareClienteTesto) {
-      hasItems = true;
-      container.innerHTML += `
-        <div style="background: #FFF4DE; border: 1px solid rgba(122,78,0,0.2); border-radius: 8px; padding: 0.85rem 1rem; text-align:left;">
-          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#7A4E00; margin-bottom:0.3rem;">Dal cliente</div>
+      clienteItemsHtml += `
+        <div style="background: #FFF4DE; border: 1px solid rgba(122,78,0,0.2); border-radius: 8px; padding: 0.85rem 1rem; text-align:left; margin-top:0.6rem;">
           <div style="font-size:0.88rem; line-height:1.5;">${window.daFareClienteTesto}</div>
         </div>`;
     }
 
-    if (window.progettoTesto) {
+    if (clienteItemsHtml) {
       hasItems = true;
       container.innerHTML += `
-        <div style="background: rgba(26,26,230,0.04); border: 1px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 0.85rem 1rem; text-align:left;">
-          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink); margin-bottom:0.3rem;">Da VISIBIL</div>
-          <div style="font-size:0.88rem; line-height:1.5;">${window.progettoTesto}</div>
+        <div>
+          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#7A4E00;">Da ${nomeCliente}</div>
+          ${clienteItemsHtml}
         </div>`;
     }
 
@@ -545,6 +555,7 @@
       }
 
       window.progettoTesto = cliente.prossimo_passo || null;
+      window.clienteNome = cliente.nome || null;
       window.daFareClienteTesto = cliente.da_fare_cliente || null;
 
       document.getElementById('account-telefono').value = cliente.telefono || '';
