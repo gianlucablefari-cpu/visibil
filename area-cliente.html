@@ -278,6 +278,7 @@
               <div>
                 <a href="#" id="link-sito-url" target="_blank">Sito web</a>
                 <span class="site-status" id="link-sito-stato"></span>
+                <div style="font-size:0.75rem; color:var(--grey); margin-top:0.15rem; word-break:break-all;" id="link-sito-display"></div>
                 <div class="site-password" id="link-sito-password" style="display:none;"></div>
               </div>
             </div>
@@ -521,6 +522,7 @@
       if (cliente.sito_url) {
         document.getElementById('link-sito').style.display = 'block';
         document.getElementById('link-sito-url').href = cliente.sito_url;
+        document.getElementById('link-sito-display').textContent = cliente.sito_url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
         const stato = cliente.sito_stato || '';
         const statoEl = document.getElementById('link-sito-stato');
