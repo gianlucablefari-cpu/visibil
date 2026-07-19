@@ -76,7 +76,8 @@ export default async (req) => {
     body: JSON.stringify({
       user_id: newUserId,
       nome,
-      prossimo_passo: "Benvenuto! Stiamo preparando la proposta per il tuo progetto."
+      prossimo_passo: "Stiamo preparando la proposta per il tuo progetto.",
+      da_fare_cliente: `Benvenuto ${nome}! Dai un'occhiata all'Area Clienti, e se non l'hai ancora fatto, riempi i Dati personali e salva.`
     })
   });
 
