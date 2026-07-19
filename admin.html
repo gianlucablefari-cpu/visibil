@@ -171,17 +171,32 @@
           <label for="c-userid">User ID</label>
           <input type="text" id="c-userid" placeholder="es. 45d74677-8f95-4d75-86a0-c7d9c586d68a">
 
-          <label for="c-nome">Nome</label>
-          <input type="text" id="c-nome" placeholder="es. B3 Architetti sagl">
+          <div class="section-label" style="margin-top:1.25rem;">Persona di contatto</div>
 
-          <label for="c-referente">Persona di riferimento</label>
+          <label for="c-referente">Nome e cognome</label>
           <input type="text" id="c-referente">
-
-          <label for="c-indirizzo">Indirizzo</label>
-          <input type="text" id="c-indirizzo" placeholder="Via, numero, CAP, città">
 
           <label for="c-telefono">Telefono</label>
           <input type="text" id="c-telefono">
+
+          <div class="section-label" style="margin-top:1.25rem;">Preferenza di contatto</div>
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
+            <input type="checkbox" id="c-pref-email" style="width:auto;"> Email
+          </label>
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
+            <input type="checkbox" id="c-pref-whatsapp" style="width:auto;"> WhatsApp
+          </label>
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
+            <input type="checkbox" id="c-pref-telefono" style="width:auto;"> Telefonata
+          </label>
+
+          <div class="section-label" style="margin-top:1.25rem;">Fatturazione</div>
+
+          <label for="c-nome">Nome / Ragione sociale</label>
+          <input type="text" id="c-nome" placeholder="es. B3 Architetti sagl">
+
+          <label for="c-indirizzo">Indirizzo</label>
+          <input type="text" id="c-indirizzo" placeholder="Via, numero, CAP, città">
 
           <button onclick="salvaCliente()">Salva cliente</button>
           <div class="msg" id="cliente-msg"></div>
@@ -218,6 +233,12 @@
       <h2>Pannello di controllo cliente</h2>
       <p class="desc">Link operativi e abbonamento — riferiti allo stesso cliente selezionato a sinistra.</p>
 
+      <label for="c-da-fare-cliente">Da fare — Cliente (testo libero)</label>
+      <textarea id="c-da-fare-cliente" placeholder="es. Mandare foto prodotti e testo pagina Chi siamo"></textarea>
+
+      <label for="c-avanzamento">Da fare — VISIBIL (testo libero)</label>
+      <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese"></textarea>
+
       <label for="c-sito-url">Link sito</label>
       <input type="text" id="c-sito-url">
 
@@ -233,12 +254,6 @@
 
       <label for="c-instagram">Link Instagram</label>
       <input type="text" id="c-instagram">
-
-      <label for="c-da-fare-cliente">Da fare — Cliente (testo libero)</label>
-      <textarea id="c-da-fare-cliente" placeholder="es. Mandare foto prodotti e testo pagina Chi siamo"></textarea>
-
-      <label for="c-avanzamento">Da fare — VISIBIL (testo libero)</label>
-      <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese"></textarea>
 
       <label for="c-onedrive">Link cartella materiali (Dropbox)</label>
       <input type="text" id="c-onedrive">
@@ -483,6 +498,9 @@
       telefono: document.getElementById('c-telefono').value,
       referente: document.getElementById('c-referente').value,
       indirizzo: document.getElementById('c-indirizzo').value,
+      pref_email: document.getElementById('c-pref-email').checked,
+      pref_whatsapp: document.getElementById('c-pref-whatsapp').checked,
+      pref_telefono: document.getElementById('c-pref-telefono').checked,
       onedrive_link: document.getElementById('c-onedrive').value,
       sito_url: document.getElementById('c-sito-url').value,
       sito_stato: document.getElementById('c-sito-stato').value,
@@ -544,6 +562,9 @@
     document.getElementById('c-telefono').value = '';
     document.getElementById('c-referente').value = '';
     document.getElementById('c-indirizzo').value = '';
+    document.getElementById('c-pref-email').checked = false;
+    document.getElementById('c-pref-whatsapp').checked = false;
+    document.getElementById('c-pref-telefono').checked = false;
     document.getElementById('c-onedrive').value = '';
     document.getElementById('c-sito-url').value = '';
     document.getElementById('c-sito-stato').value = '';
@@ -568,6 +589,9 @@
     document.getElementById('c-telefono').value = c.telefono || '';
     document.getElementById('c-referente').value = c.referente || '';
     document.getElementById('c-indirizzo').value = c.indirizzo || '';
+    document.getElementById('c-pref-email').checked = !!c.pref_email;
+    document.getElementById('c-pref-whatsapp').checked = !!c.pref_whatsapp;
+    document.getElementById('c-pref-telefono').checked = !!c.pref_telefono;
     document.getElementById('c-onedrive').value = c.onedrive_link || '';
     document.getElementById('c-sito-url').value = c.sito_url || '';
     document.getElementById('c-sito-stato').value = c.sito_stato || '';

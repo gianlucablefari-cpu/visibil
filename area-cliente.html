@@ -226,14 +226,11 @@
         <div class="account-card align-left" id="dati-personali" style="scroll-margin-top: 6rem;">
           <h3>Dati personali</h3>
 
+          <div class="section-label" style="text-align:left; margin-top:0.5rem;">Persona di contatto</div>
+
           <div class="account-field">
             <label for="account-referente">Nome e cognome</label>
             <input type="text" id="account-referente" placeholder="Nome cognome" autocomplete="name">
-          </div>
-
-          <div class="account-field">
-            <label for="account-indirizzo">Indirizzo</label>
-            <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città" autocomplete="street-address">
           </div>
 
           <div class="account-field">
@@ -244,6 +241,27 @@
           <div class="account-field">
             <label>Email di accesso</label>
             <div class="readonly" id="account-email"></div>
+          </div>
+
+          <div class="section-label" style="text-align:left; margin-top:1.25rem;">Preferenza di contatto</div>
+
+          <div class="account-field" style="display:flex; flex-direction:column; gap:0.5rem;">
+            <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
+              <input type="checkbox" id="account-pref-email" style="width:auto;"> Email
+            </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
+              <input type="checkbox" id="account-pref-whatsapp" style="width:auto;"> Messaggio WhatsApp
+            </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
+              <input type="checkbox" id="account-pref-telefono" style="width:auto;"> Telefonata
+            </label>
+          </div>
+
+          <div class="section-label" style="text-align:left; margin-top:1.25rem;">Fatturazione</div>
+
+          <div class="account-field">
+            <label for="account-indirizzo">Indirizzo</label>
+            <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città" autocomplete="street-address">
           </div>
 
           <button class="btn-logout btn-small" onclick="salvaContatti()">Salva dati</button>
@@ -527,6 +545,9 @@
       document.getElementById('account-telefono').value = cliente.telefono || '';
       document.getElementById('account-indirizzo').value = cliente.indirizzo || '';
       document.getElementById('account-referente').value = cliente.referente || '';
+      document.getElementById('account-pref-email').checked = !!cliente.pref_email;
+      document.getElementById('account-pref-whatsapp').checked = !!cliente.pref_whatsapp;
+      document.getElementById('account-pref-telefono').checked = !!cliente.pref_telefono;
 
       document.getElementById('links-card').style.display = 'block';
 
@@ -635,7 +656,7 @@
         btn.style.opacity = '0.4';
         btn.style.cursor = 'not-allowed';
       });
-      document.querySelectorAll('#account-telefono, #account-referente, #account-indirizzo, #nuova-password, #contact-form textarea').forEach(el => {
+      document.querySelectorAll('#account-telefono, #account-referente, #account-indirizzo, #account-pref-email, #account-pref-whatsapp, #account-pref-telefono, #nuova-password, #contact-form textarea').forEach(el => {
         el.disabled = true;
       });
     }
@@ -645,12 +666,15 @@
     const telefono = document.getElementById('account-telefono').value;
     const referente = document.getElementById('account-referente').value;
     const indirizzo = document.getElementById('account-indirizzo').value;
+    const pref_email = document.getElementById('account-pref-email').checked;
+    const pref_whatsapp = document.getElementById('account-pref-whatsapp').checked;
+    const pref_telefono = document.getElementById('account-pref-telefono').checked;
     const msg = document.getElementById('account-msg');
     msg.textContent = "Salvataggio...";
     msg.className = "account-msg";
 
     const { error } = await client.from('clienti')
-      .update({ telefono, referente, indirizzo })
+      .update({ telefono, referente, indirizzo, pref_email, pref_whatsapp, pref_telefono })
       .eq('user_id', window.currentUserId);
 
     if (error) {
