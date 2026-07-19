@@ -260,6 +260,11 @@
           <div class="section-label" style="text-align:left; margin-top:1.25rem;">Fatturazione</div>
 
           <div class="account-field">
+            <label for="account-nome-fatturazione">Nome e cognome</label>
+            <input type="text" id="account-nome-fatturazione" placeholder="Nome cognome" autocomplete="name">
+          </div>
+
+          <div class="account-field">
             <label for="account-indirizzo">Indirizzo</label>
             <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città" autocomplete="street-address">
           </div>
@@ -545,6 +550,7 @@
       document.getElementById('account-telefono').value = cliente.telefono || '';
       document.getElementById('account-indirizzo').value = cliente.indirizzo || '';
       document.getElementById('account-referente').value = cliente.referente || '';
+      document.getElementById('account-nome-fatturazione').value = cliente.nome_fatturazione || '';
       document.getElementById('account-pref-email').checked = !!cliente.pref_email;
       document.getElementById('account-pref-whatsapp').checked = !!cliente.pref_whatsapp;
       document.getElementById('account-pref-telefono').checked = !!cliente.pref_telefono;
@@ -656,7 +662,7 @@
         btn.style.opacity = '0.4';
         btn.style.cursor = 'not-allowed';
       });
-      document.querySelectorAll('#account-telefono, #account-referente, #account-indirizzo, #account-pref-email, #account-pref-whatsapp, #account-pref-telefono, #nuova-password, #contact-form textarea').forEach(el => {
+      document.querySelectorAll('#account-telefono, #account-referente, #account-indirizzo, #account-nome-fatturazione, #account-pref-email, #account-pref-whatsapp, #account-pref-telefono, #nuova-password, #contact-form textarea').forEach(el => {
         el.disabled = true;
       });
     }
@@ -666,6 +672,7 @@
     const telefono = document.getElementById('account-telefono').value;
     const referente = document.getElementById('account-referente').value;
     const indirizzo = document.getElementById('account-indirizzo').value;
+    const nome_fatturazione = document.getElementById('account-nome-fatturazione').value;
     const pref_email = document.getElementById('account-pref-email').checked;
     const pref_whatsapp = document.getElementById('account-pref-whatsapp').checked;
     const pref_telefono = document.getElementById('account-pref-telefono').checked;
@@ -674,7 +681,7 @@
     msg.className = "account-msg";
 
     const { error } = await client.from('clienti')
-      .update({ telefono, referente, indirizzo, pref_email, pref_whatsapp, pref_telefono })
+      .update({ telefono, referente, indirizzo, nome_fatturazione, pref_email, pref_whatsapp, pref_telefono })
       .eq('user_id', window.currentUserId);
 
     if (error) {

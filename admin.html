@@ -192,6 +192,9 @@
 
           <div class="section-label" style="margin-top:1.25rem;">Fatturazione</div>
 
+          <label for="c-nome-fatturazione">Nome e cognome</label>
+          <input type="text" id="c-nome-fatturazione" placeholder="Nome cognome">
+
           <label for="c-nome">Nome / Ragione sociale</label>
           <input type="text" id="c-nome" placeholder="es. B3 Architetti sagl">
 
@@ -498,6 +501,7 @@
       telefono: document.getElementById('c-telefono').value,
       referente: document.getElementById('c-referente').value,
       indirizzo: document.getElementById('c-indirizzo').value,
+      nome_fatturazione: document.getElementById('c-nome-fatturazione').value,
       pref_email: document.getElementById('c-pref-email').checked,
       pref_whatsapp: document.getElementById('c-pref-whatsapp').checked,
       pref_telefono: document.getElementById('c-pref-telefono').checked,
@@ -562,6 +566,7 @@
     document.getElementById('c-telefono').value = '';
     document.getElementById('c-referente').value = '';
     document.getElementById('c-indirizzo').value = '';
+    document.getElementById('c-nome-fatturazione').value = '';
     document.getElementById('c-pref-email').checked = false;
     document.getElementById('c-pref-whatsapp').checked = false;
     document.getElementById('c-pref-telefono').checked = false;
@@ -589,6 +594,7 @@
     document.getElementById('c-telefono').value = c.telefono || '';
     document.getElementById('c-referente').value = c.referente || '';
     document.getElementById('c-indirizzo').value = c.indirizzo || '';
+    document.getElementById('c-nome-fatturazione').value = c.nome_fatturazione || '';
     document.getElementById('c-pref-email').checked = !!c.pref_email;
     document.getElementById('c-pref-whatsapp').checked = !!c.pref_whatsapp;
     document.getElementById('c-pref-telefono').checked = !!c.pref_telefono;
