@@ -265,9 +265,9 @@
         </h2>
 
         <div class="links-card" id="links-card" style="display:none;">
-          <div id="avanzamento-card" style="display:none; margin-bottom: 1.5rem; background: rgba(26,26,230,0.04); border: 1px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 1rem 1.25rem;">
-            <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); margin-bottom: 0.35rem;">Da fare</div>
-            <div style="font-size:0.88rem; line-height:1.5;" id="avanzamento-testo"></div>
+          <div id="avanzamento-card" style="display:none; margin-bottom: 1.5rem;">
+            <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink); margin-bottom: 0.5rem;">Da fare</div>
+            <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
           </div>
 
           <div>
@@ -402,6 +402,45 @@
     return 'attesa';
   }
 
+  function renderDaFare(dovuti, preventiviPendenti) {
+    const container = document.getElementById('da-fare-items');
+    const card = document.getElementById('avanzamento-card');
+    container.innerHTML = '';
+    let hasItems = false;
+
+    (dovuti || []).forEach(p => {
+      hasItems = true;
+      const importo = p.importo ? ` — CHF ${p.importo}.–` : '';
+      container.innerHTML += `
+        <div style="background: rgba(163,45,45,0.05); border: 1px solid rgba(163,45,45,0.2); border-radius: 8px; padding: 0.85rem 1rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+          <div style="font-size:0.88rem;"><strong style="color:#A32D2D;">Fattura in sospeso:</strong> ${p.descrizione || ''}${importo}</div>
+          ${p.payment_link
+            ? `<a href="${p.payment_link}" target="_blank" style="background:#A32D2D; color:#fff; font-size:0.78rem; font-weight:600; padding:0.5rem 1rem; border-radius:4px; text-decoration:none; white-space:nowrap;">Paga ora</a>`
+            : `<span style="font-size:0.75rem; color:var(--grey);">Contattami per pagare</span>`}
+        </div>`;
+    });
+
+    (preventiviPendenti || []).forEach(p => {
+      hasItems = true;
+      const importo = p.importo ? ` — CHF ${p.importo}.–` : '';
+      container.innerHTML += `
+        <div style="background: #FFF4DE; border: 1px solid rgba(122,78,0,0.2); border-radius: 8px; padding: 0.85rem 1rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+          <div style="font-size:0.88rem;"><strong style="color:#7A4E00;">Preventivo da approvare:</strong> ${p.titolo || ''}${importo}</div>
+          <a href="#pagamenti" style="background:#7A4E00; color:#fff; font-size:0.78rem; font-weight:600; padding:0.5rem 1rem; border-radius:4px; text-decoration:none; white-space:nowrap;">Visualizza</a>
+        </div>`;
+    });
+
+    if (window.progettoTesto) {
+      hasItems = true;
+      container.innerHTML += `
+        <div style="background: rgba(26,26,230,0.04); border: 1px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 0.85rem 1rem;">
+          <div style="font-size:0.88rem; line-height:1.5;">${window.progettoTesto}</div>
+        </div>`;
+    }
+
+    card.style.display = hasItems ? 'block' : 'none';
+  }
+
   const OWNER_ID = "45d74677-8f95-4d75-86a0-c7d9c586d68a";
 
   async function loadDashboard(user) {
@@ -449,10 +488,7 @@
         document.getElementById('onedrive-desc').textContent = 'Disponibile a breve';
       }
 
-      if (cliente.prossimo_passo) {
-        document.getElementById('avanzamento-card').style.display = 'block';
-        document.getElementById('avanzamento-testo').textContent = cliente.prossimo_passo;
-      }
+      window.progettoTesto = cliente.prossimo_passo || null;
 
       document.getElementById('account-telefono').value = cliente.telefono || '';
       document.getElementById('account-indirizzo').value = cliente.indirizzo || '';
@@ -503,6 +539,7 @@
     window.currentUserId = targetUserId;
 
     const { data: preventivi, error: errPrev } = await client.from('preventivi').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
+    window.preventiviPendenti = (preventivi || []).filter(p => p.stato === 'In attesa');
     const list = document.getElementById('preventivi-list');
     list.innerHTML = '';
 
@@ -553,6 +590,8 @@
       document.getElementById('pagamenti-dovuti-card').style.display = 'flex';
       document.getElementById('pagamenti-dovuti-testo').textContent = `${elenco} — totale CHF ${totale}.–`;
     }
+
+    renderDaFare(dovuti, window.preventiviPendenti || []);
 
     if (isPreview) {
       document.querySelectorAll('button.btn-logout, #contact-form button[type="submit"]').forEach(btn => {

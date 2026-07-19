@@ -367,6 +367,9 @@
       <label for="pg-documento">Link PDF (opzionale)</label>
       <input type="text" id="pg-documento">
 
+      <label for="pg-payment-link">Link di pagamento Stripe (opzionale)</label>
+      <input type="text" id="pg-payment-link" placeholder="https://buy.stripe.com/...">
+
       <button onclick="salvaPagamento()">Aggiungi pagamento</button>
       <div class="msg" id="pagamento-msg"></div>
     </div>
@@ -604,7 +607,8 @@
       importo: document.getElementById('pg-importo').value || null,
       stato: document.getElementById('pg-stato').value,
       data: document.getElementById('pg-data').value || new Date().toISOString().slice(0,10),
-      documento_url: document.getElementById('pg-documento').value || null
+      documento_url: document.getElementById('pg-documento').value || null,
+      payment_link: document.getElementById('pg-payment-link').value || null
     };
 
     const { error } = await client.from('pagamenti').insert(payload);
@@ -613,6 +617,7 @@
     document.getElementById('pg-descrizione').value = '';
     document.getElementById('pg-importo').value = '';
     document.getElementById('pg-documento').value = '';
+    document.getElementById('pg-payment-link').value = '';
   }
 
   async function salvaReport() {
