@@ -1,0 +1,301 @@
+  <div class="cfg-layout">
+    <div class="cfg-services">
+
+      <!-- Strategia -->
+      <div class="cfg-card" data-id="strategia" onclick="toggleCard(this)">
+        <div class="cfg-card-head">
+          <div class="cfg-card-meta">
+            <span class="cfg-card-name">Strategia di Marketing</span>
+            <span class="cfg-card-hint">Consulenza e piano di comunicazione</span>
+          </div>
+          <div class="cfg-check"><svg class="cfg-check-inner" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="cfg-body">
+          <div class="strategia-rates">
+            <div class="video-rates-grid">
+              <div class="video-rate-item rate-selectable sel" data-once="0" data-lbl="Prima mezz'ora gratuita" onclick="selStrategiaRate(event,this)">
+                <span class="video-rate-type">Prima mezz'ora</span>
+                <span class="video-rate-price">Gratuita</span>
+                <span class="video-rate-note">Senza impegno</span>
+              </div>
+              <div class="video-rate-item rate-selectable" data-once="120" data-lbl="Consulenza (1 ora)" onclick="selStrategiaRate(event,this)">
+                <span class="video-rate-type">Consulenza</span>
+                <span class="video-rate-price">CHF 120<span>/ora</span></span>
+                <span class="video-rate-note">Analisi, idee, priorità</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sito -->
+      <div class="cfg-card" data-id="sito" onclick="toggleCard(this)">
+        <div class="cfg-card-head">
+          <div class="cfg-card-meta">
+            <span class="cfg-card-name">Sito Web</span>
+            <span class="cfg-card-hint">Design, sviluppo, mobile ready</span>
+          </div>
+          <div class="cfg-check"><svg class="cfg-check-inner" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="cfg-body">
+          <div>
+            <span class="cfg-label">Pacchetto</span>
+            <div class="cfg-tiers">
+              <div class="cfg-tier sel" data-price="290" data-monthly="19" data-lbl="Sito Base" onclick="selTier(event,this)">
+                <span class="cfg-tier-name">Sito Base</span>
+                <div class="cfg-tier-price-group"><span class="cfg-tier-from">a partire da</span><span class="cfg-tier-price">CHF 290</span></div>
+                <ul class="cfg-tier-feats">
+                  <li>1 pagina — chi sei, cosa fai, come contattarti</li>
+                  <li>Contatto via email o WhatsApp</li>
+                  <li>Mobile ready e veloce</li>
+                  <li>SEO base — ti trovano su Google</li>
+                </ul>
+                <span class="cfg-tier-ideal">Ideale per: professionisti, boutique, eventi</span>
+              </div>
+              <div class="cfg-tier" data-price="790" data-monthly="39" data-lbl="Sito Completo" onclick="selTier(event,this)">
+                <span class="cfg-tier-name">Sito Completo</span>
+                <div class="cfg-tier-price-group"><span class="cfg-tier-from">a partire da</span><span class="cfg-tier-price">CHF 790</span></div>
+                <ul class="cfg-tier-feats">
+                  <li>Fino a 6 pagine — servizi, storia, team, contatti</li>
+                  <li>Form di contatto integrato</li>
+                  <li>Blog o sezione notizie</li>
+                  <li>CMS incluso — modifichi i contenuti da solo, in autonomia</li>
+                </ul>
+                <span class="cfg-tier-ideal">Ideale per: studi, associazioni, ristoranti, PMI</span>
+              </div>
+              <div class="cfg-tier" data-price="1290" data-monthly="79" data-lbl="Sito Avanzato" onclick="selTier(event,this)">
+                <span class="cfg-tier-name">Sito Avanzato</span>
+                <div class="cfg-tier-price-group"><span class="cfg-tier-from">a partire da</span><span class="cfg-tier-price">CHF 1'290</span></div>
+                <ul class="cfg-tier-feats">
+                  <li>Pagine illimitate</li>
+                  <li>Vendita online o sistema di prenotazione</li>
+                  <li>Funzionalità personalizzate</li>
+                  <li>SEO avanzato + analytics completo</li>
+                </ul>
+                <span class="cfg-tier-ideal">Ideale per: e-commerce, studi con booking, portali</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="cfg-gestione">
+            <span class="cfg-label" style="margin:0">Chi gestisce il sito?</span>
+            <div class="cfg-gestione-opts">
+              <button class="cfg-gest-btn" data-gest="self" onclick="selGest(event,'self')">Lo gestisce il cliente</button>
+              <button class="cfg-gest-btn" data-gest="visibil" onclick="selGest(event,'visibil')">Ci pensa Visibil</button>
+            </div>
+          </div>
+
+          <!-- Gest detail cards - aligned to tiers above -->
+          <div class="cfg-gest-detail" id="gd-self" onclick="event.stopPropagation()">
+            <div class="cfg-tiers">
+              <div class="gd-card" onclick="selGdCard(event,this,'landing')" style="cursor:pointer">
+                <span class="gd-card-name">Sito Base</span>
+                <div class="cfg-gest-item"><span>Formazione</span><span>CHF 120</span></div>
+                <div class="gd-divider"></div>
+                <span class="gd-card-sub">A carico del cliente</span>
+                <div class="cfg-gest-item"><span>Hosting</span><span>Gratis</span></div>
+                <div class="cfg-gest-item"><span>Dominio</span><span>~CHF 1/mese</span></div>
+                <div class="cfg-gest-item gd-total"><span>Totale</span><span>~CHF 1/mese</span></div>
+              </div>
+              <div class="gd-card" onclick="selGdCard(event,this,'completo')" style="cursor:pointer">
+                <span class="gd-card-name">Sito Completo</span>
+                <div class="cfg-gest-item"><span>Formazione</span><span>CHF 160</span></div>
+                <div class="gd-divider"></div>
+                <span class="gd-card-sub">A carico del cliente</span>
+                <div class="cfg-gest-item"><span>Hosting</span><span>~CHF 19/mese</span></div>
+                <div class="cfg-gest-item"><span>Dominio</span><span>~CHF 1/mese</span></div>
+                <div class="cfg-gest-item"><span>Form</span><span>~CHF 0–11/mese</span></div>
+                <div class="cfg-gest-item"><span>Analytics</span><span>~CHF 9/mese</span></div>
+                <div class="cfg-gest-item gd-total"><span>Totale</span><span>~CHF 29–40/mese</span></div>
+              </div>
+              <div class="gd-card" onclick="selGdCard(event,this,'avanzato')" style="cursor:pointer">
+                <span class="gd-card-name">Sito Avanzato</span>
+                <div class="cfg-gest-item"><span>Formazione</span><span>CHF 200</span></div>
+                <div class="gd-divider"></div>
+                <span class="gd-card-sub">A carico del cliente</span>
+                <div class="cfg-gest-item"><span>Hosting</span><span>~CHF 19/mese</span></div>
+                <div class="cfg-gest-item"><span>Dominio</span><span>~CHF 1/mese</span></div>
+                <div class="cfg-gest-item"><span>Form</span><span>~CHF 11/mese</span></div>
+                <div class="cfg-gest-item"><span>Analytics</span><span>~CHF 9/mese</span></div>
+                <div class="cfg-gest-item"><span>E-commerce</span><span>1.5% + 0.10/tr.</span></div>
+                <div class="cfg-gest-item"><span>Booking</span><span>~CHF 8/mese</span></div>
+                <div class="cfg-gest-item gd-total"><span>Totale</span><span>~CHF 48–60/mese</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="cfg-gest-detail" id="gd-visibil" onclick="event.stopPropagation()">
+            <div class="cfg-tiers">
+              <div class="gd-card">
+                <span class="gd-card-name">Sito Base</span>
+                <div class="cfg-gest-item"><span>Canone mensile</span><span>CHF 19/mese</span></div>
+                <div class="cfg-gest-item" style="font-size:0.65rem;color:var(--grey)"><span>Hosting · dominio · supporto · tutto incluso</span></div>
+              </div>
+              <div class="gd-card">
+                <span class="gd-card-name">Sito Completo</span>
+                <div class="cfg-gest-item"><span>Canone mensile</span><span>CHF 39/mese</span></div>
+                <div class="cfg-gest-item" style="font-size:0.65rem;color:var(--grey)"><span>Hosting · dominio · form · CMS · supporto · tutto incluso</span></div>
+              </div>
+              <div class="gd-card">
+                <span class="gd-card-name">Sito Avanzato</span>
+                <div class="cfg-gest-item"><span>Canone mensile</span><span>CHF 79/mese</span></div>
+                <div class="cfg-gest-item" style="font-size:0.65rem;color:var(--grey)"><span>Hosting · dominio · form · analytics · e-commerce · tutto incluso</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instagram -->
+      <div class="cfg-card" data-id="instagram" onclick="toggleCard(this)">
+        <div class="cfg-card-head">
+          <div class="cfg-card-meta">
+            <span class="cfg-card-name">Gestione Instagram</span>
+            <span class="cfg-card-hint">Strategia, pubblicazione e crescita del profilo</span>
+          </div>
+          <div class="cfg-check"><svg class="cfg-check-inner" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="cfg-body">
+          <div class="cfg-tiers" style="grid-template-columns:1fr 1fr;margin-top:1rem">
+
+            <div class="cfg-tier sel" data-price="190" data-type="monthly" data-lbl="Base" onclick="selIgTier(event,this)">
+              <span class="cfg-tier-name">Base</span>
+              <div class="cfg-tier-price-group">
+                <span class="cfg-tier-from">mensile</span>
+                <span class="cfg-tier-price">CHF 190</span>
+              </div>
+              <ul class="cfg-tier-feats">
+                <li>Pianificazione editoriale</li>
+                <li>Caption e hashtag</li>
+                <li>Pubblicazione (12 post/mese)</li>
+                <li>Statistiche mensili</li>
+              </ul>
+            </div>
+
+            <div class="cfg-tier" data-price="490" data-type="monthly" data-lbl="Full" onclick="selIgTier(event,this)">
+              <span class="cfg-tier-name">Full</span>
+              <div class="cfg-tier-price-group">
+                <span class="cfg-tier-from">mensile</span>
+                <span class="cfg-tier-price">CHF 490</span>
+              </div>
+              <ul class="cfg-tier-feats">
+                <li>Tutto il Base</li>
+                <li>Gestione DM e commenti</li>
+                <li>Stories</li>
+                <li>Report e consigli mensili</li>
+              </ul>
+            </div>
+
+          </div>
+          <div class="ig-content-note">
+            <span>⚠</span> La gestione non include la produzione di foto e video.
+          </div>
+        </div>
+      </div>
+
+      <!-- Foto e Video -->
+      <div class="cfg-card" data-id="video" onclick="toggleCard(this)">
+        <div class="cfg-card-head">
+          <div class="cfg-card-meta">
+            <span class="cfg-card-name">Foto & Video</span>
+            <span class="cfg-card-hint">Riprese, fotografia, montaggio e post-produzione</span>
+          </div>
+          <div class="cfg-check"><svg class="cfg-check-inner" viewBox="0 0 11 9" fill="none"><path d="M1 4L4 7.5L10 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+        <div class="cfg-body">
+          <!-- Tariffe orarie -->
+          <div class="video-rates">
+            <span class="cfg-label" style="margin-top:0">Tariffe orarie</span>
+            <div class="video-rates-grid">
+              <div class="video-rate-item">
+                <span class="video-rate-type">Riprese in loco</span>
+                <span class="video-rate-price">CHF 130<span>/ora</span></span>
+                <span class="video-rate-note">Foto, video, eventi</span>
+              </div>
+              <div class="video-rate-item">
+                <span class="video-rate-type">Montaggio & post</span>
+                <span class="video-rate-price">CHF 90<span>/ora</span></span>
+                <span class="video-rate-note">Editing, color, audio</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pacchetti -->
+          <div>
+            <span class="cfg-label">Esempi</span>
+            <div class="cfg-tiers video-esempi-grid" style="grid-template-columns:repeat(3,1fr)">
+
+              <div class="cfg-tier sel" data-price="300" data-type="once" data-lbl="Servizio foto" onclick="selVideoTier(event,this)">
+                <span class="cfg-tier-name">Servizio Foto</span>
+                <div class="cfg-tier-price-group">
+                  <span class="cfg-tier-from">a partire da</span>
+                  <span class="cfg-tier-price">CHF 300</span>
+                </div>
+                <ul class="cfg-tier-feats">
+                  <li>2h riprese in loco</li>
+                  <li>Selezione e ritocco</li>
+                  <li>File ad alta risoluzione</li>
+                </ul>
+              </div>
+
+              <div class="cfg-tier" data-price="440" data-type="once" data-lbl="Reel / Short video" onclick="selVideoTier(event,this)">
+                <span class="cfg-tier-name">Reel / Short video</span>
+                <div class="cfg-tier-price-group">
+                  <span class="cfg-tier-from">a partire da</span>
+                  <span class="cfg-tier-price">CHF 440</span>
+                </div>
+                <ul class="cfg-tier-feats">
+                  <li>2h riprese in loco</li>
+                  <li>1h montaggio</li>
+                  <li>Musica e sottotitoli</li>
+                </ul>
+              </div>
+
+              <div class="cfg-tier" data-price="0" data-type="monthly" data-lbl="Pack mensile" onclick="selVideoTier(event,this)">
+                <span class="cfg-tier-name">Pack Mensile</span>
+                <div class="cfg-tier-price-group">
+                  <span class="cfg-tier-from">personalizzato</span>
+                  <span class="cfg-tier-price" style="font-size:0.8rem">su richiesta</span>
+                </div>
+                <ul class="cfg-tier-feats">
+                  <li>Foto + video ogni mese</li>
+                  <li>Prezzo fisso concordato</li>
+                  <li>Priorità di agenda</li>
+                </ul>
+                <span class="cfg-tier-discount">20% di sconto sul totale ore</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Summary -->
+    <div class="cfg-summary">
+      <span class="cfg-sum-title">Il tuo preventivo</span>
+      <div class="cfg-sum-block">
+        <span class="cfg-sum-block-label">Una tantum</span>
+        <div id="sum-once"><span class="cfg-sum-empty">Nessun costo iniziale</span></div>
+      </div>
+      <div class="cfg-divider"></div>
+      <div class="cfg-sum-block">
+        <span class="cfg-sum-block-label">Mensile ricorrente</span>
+        <div id="sum-monthly"><span class="cfg-sum-empty">Nessun costo mensile</span></div>
+      </div>
+      <div class="cfg-divider"></div>
+      <span class="cfg-sum-block-label" style="margin-top:0.25rem">Totale</span>
+      <div class="cfg-totals">
+        <div class="cfg-total-row">
+          <span class="cfg-total-label">Investimento iniziale</span>
+          <span class="cfg-total-val" id="tot-once">CHF 0</span>
+        </div>
+        <div class="cfg-total-row" style="margin-top:0.5rem">
+          <span class="cfg-total-label">Canone mensile</span>
+          <span class="cfg-total-val sm" id="tot-monthly">CHF 0<span style="font-size:0.7rem;font-weight:400;opacity:.5">/mese</span></span>
+        </div>
+      </div>
+      <a href="#contatti" class="cfg-cta" onclick="prefillForm()">Richiedi un preventivo →</a>
+      <p class="cfg-note">Prezzi indicativi · Senza impegno</p>
+    </div>
+  </div>
