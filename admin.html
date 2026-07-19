@@ -601,19 +601,27 @@
     const user_id = document.getElementById('pg-cliente').value;
     if (!user_id) { showMsg('pagamento-msg', 'Nessun cliente selezionato.', false); return; }
 
+    const newId = crypto.randomUUID();
+    let paymentLink = document.getElementById('pg-payment-link').value || null;
+    if (paymentLink) {
+      const sep = paymentLink.includes('?') ? '&' : '?';
+      paymentLink = `${paymentLink}${sep}client_reference_id=${newId}`;
+    }
+
     const payload = {
+      id: newId,
       user_id,
       descrizione: document.getElementById('pg-descrizione').value,
       importo: document.getElementById('pg-importo').value || null,
       stato: document.getElementById('pg-stato').value,
       data: document.getElementById('pg-data').value || new Date().toISOString().slice(0,10),
       documento_url: document.getElementById('pg-documento').value || null,
-      payment_link: document.getElementById('pg-payment-link').value || null
+      payment_link: paymentLink
     };
 
     const { error } = await client.from('pagamenti').insert(payload);
     if (error) { showMsg('pagamento-msg', 'Errore: ' + error.message, false); return; }
-    showMsg('pagamento-msg', 'Pagamento aggiunto.', true);
+    showMsg('pagamento-msg', 'Pagamento aggiunto. Il link salvato ora include un riferimento univoco per l\'aggiornamento automatico dello stato.', true);
     document.getElementById('pg-descrizione').value = '';
     document.getElementById('pg-importo').value = '';
     document.getElementById('pg-documento').value = '';
