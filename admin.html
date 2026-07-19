@@ -234,8 +234,11 @@
       <label for="c-instagram">Link Instagram</label>
       <input type="text" id="c-instagram">
 
-      <label for="c-avanzamento">Avanzamento progetto (testo libero)</label>
+      <label for="c-avanzamento">Da fare — VISIBIL (testo libero)</label>
       <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese"></textarea>
+
+      <label for="c-da-fare-cliente">Da fare — Cliente (testo libero)</label>
+      <textarea id="c-da-fare-cliente" placeholder="es. Mandare foto prodotti e testo pagina Chi siamo"></textarea>
 
       <label for="c-onedrive">Link cartella materiali (Dropbox)</label>
       <input type="text" id="c-onedrive">
@@ -486,6 +489,7 @@
       sito_password: document.getElementById('c-sito-password').value,
       instagram_url: document.getElementById('c-instagram').value,
       prossimo_passo: document.getElementById('c-avanzamento').value,
+      da_fare_cliente: document.getElementById('c-da-fare-cliente').value,
       upload_link: document.getElementById('c-upload').value,
       rinnovo_piano: document.getElementById('c-rinnovo-piano').value,
       rinnovo_data: document.getElementById('c-rinnovo-data').value || null,
@@ -546,6 +550,7 @@
     document.getElementById('c-sito-password').value = '';
     document.getElementById('c-instagram').value = '';
     document.getElementById('c-avanzamento').value = '';
+    document.getElementById('c-da-fare-cliente').value = '';
     document.getElementById('c-upload').value = '';
     document.getElementById('c-rinnovo-piano').value = '';
     document.getElementById('c-rinnovo-data').value = '';
@@ -569,6 +574,7 @@
     document.getElementById('c-sito-password').value = c.sito_password || '';
     document.getElementById('c-instagram').value = c.instagram_url || '';
     document.getElementById('c-avanzamento').value = c.prossimo_passo || '';
+    document.getElementById('c-da-fare-cliente').value = c.da_fare_cliente || '';
     document.getElementById('c-upload').value = c.upload_link || '';
     document.getElementById('c-rinnovo-piano').value = c.rinnovo_piano || '';
     document.getElementById('c-rinnovo-data').value = c.rinnovo_data || '';
