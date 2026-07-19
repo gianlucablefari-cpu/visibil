@@ -226,53 +226,56 @@
         <div class="account-card align-left" id="dati-personali" style="scroll-margin-top: 6rem;">
           <h3>Dati personali</h3>
 
-          <div class="section-label" style="text-align:left; margin-top:0.5rem;">Persona di contatto</div>
+          <div style="width:100%; border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:0.75rem;">
+            <div class="section-label" style="text-align:left; margin-top:0;">Persona di contatto</div>
 
-          <div class="account-field">
-            <label for="account-referente">Nome e cognome</label>
-            <input type="text" id="account-referente" placeholder="Nome cognome" autocomplete="name">
+            <div class="account-field">
+              <label for="account-referente">Nome e cognome</label>
+              <input type="text" id="account-referente" placeholder="Nome cognome" autocomplete="name">
+            </div>
+
+            <div class="account-field">
+              <label for="account-telefono">Telefono</label>
+              <input type="text" id="account-telefono" placeholder="+41 79 000 00 00" autocomplete="tel">
+            </div>
+
+            <div class="section-label" style="text-align:left; margin-top:1rem;">Preferenza di contatto</div>
+
+            <div class="account-field" style="display:flex; flex-direction:column; gap:0.5rem;">
+              <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
+                <input type="checkbox" id="account-pref-email" style="width:auto;"> Email
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
+                <input type="checkbox" id="account-pref-whatsapp" style="width:auto;"> Messaggio WhatsApp
+              </label>
+              <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
+                <input type="checkbox" id="account-pref-telefono" style="width:auto;"> Telefonata
+              </label>
+            </div>
           </div>
 
-          <div class="account-field">
-            <label for="account-telefono">Telefono</label>
-            <input type="text" id="account-telefono" placeholder="+41 79 000 00 00" autocomplete="tel">
+          <div style="width:100%; border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:1rem;">
+            <div class="section-label" style="text-align:left; margin-top:0;">Fatturazione</div>
+
+            <div class="account-field">
+              <label for="account-nome-fatturazione">Nome e cognome</label>
+              <input type="text" id="account-nome-fatturazione" placeholder="Nome cognome" autocomplete="name">
+            </div>
+
+            <div class="account-field">
+              <label for="account-indirizzo">Indirizzo</label>
+              <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città" autocomplete="street-address">
+            </div>
           </div>
 
-          <div class="account-field">
-            <label>Email di accesso</label>
-            <div class="readonly" id="account-email"></div>
-          </div>
-
-          <div class="section-label" style="text-align:left; margin-top:1.25rem;">Preferenza di contatto</div>
-
-          <div class="account-field" style="display:flex; flex-direction:column; gap:0.5rem;">
-            <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
-              <input type="checkbox" id="account-pref-email" style="width:auto;"> Email
-            </label>
-            <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
-              <input type="checkbox" id="account-pref-whatsapp" style="width:auto;"> Messaggio WhatsApp
-            </label>
-            <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
-              <input type="checkbox" id="account-pref-telefono" style="width:auto;"> Telefonata
-            </label>
-          </div>
-
-          <div class="section-label" style="text-align:left; margin-top:1.25rem;">Fatturazione</div>
-
-          <div class="account-field">
-            <label for="account-nome-fatturazione">Nome e cognome</label>
-            <input type="text" id="account-nome-fatturazione" placeholder="Nome cognome" autocomplete="name">
-          </div>
-
-          <div class="account-field">
-            <label for="account-indirizzo">Indirizzo</label>
-            <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città" autocomplete="street-address">
-          </div>
-
-          <button class="btn-logout btn-small" onclick="salvaContatti()">Salva dati</button>
+          <button class="btn-logout btn-small" onclick="salvaContatti()" style="margin-top:1rem;">Salva dati</button>
           <div class="account-msg" id="account-msg"></div>
 
-          <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem; margin-top: 0.25rem;">
+          <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem; margin-top: 0.25rem; width:100%;">
+            <div class="account-field">
+              <label>Email di accesso</label>
+              <div class="readonly" id="account-email"></div>
+            </div>
             <label for="nuova-password">Nuova password</label>
             <input type="password" id="nuova-password" placeholder="••••••••" autocomplete="new-password" style="margin-bottom: 0.75rem;">
             <button class="btn-logout btn-small" onclick="cambiaPassword()">Cambia password</button>
@@ -338,17 +341,6 @@
             </a>
           </div>
 
-          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
-            <div id="documenti-list"></div>
-            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
-          </div>
-
-          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
-            <div id="report-list"></div>
-          </div>
-
           <div class="account-card" id="contatti" style="scroll-margin-top: 6rem; margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); border-left:none; border-right:none; border-bottom:none; border-radius:0; padding: 1.25rem 0 0; align-items: flex-start; text-align: left;">
             <div class="section-label" style="margin-bottom: 0.75rem;">Contattami <span style="font-weight:400; text-transform:none; letter-spacing:normal;">(rispondo entro 24h)</span></div>
 
@@ -372,6 +364,17 @@
                 WhatsApp
               </a>
             </div>
+          </div>
+
+          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
+            <div id="documenti-list"></div>
+            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
+          </div>
+
+          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
+            <div id="report-list"></div>
           </div>
         </div>
 
