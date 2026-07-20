@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preventivo — VISIBIL</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --white: #FFFFFF; --black: #0F0F0F; --grey: #8A8A8A; --ink: #1A1AE6; --surface: #F7F7F7;
+    --sans: 'Inter', sans-serif;
+  }
+  body { font-family: var(--sans); background: var(--surface); color: var(--black); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .logo { font-weight: 900; font-size: 0.95rem; letter-spacing: 0.22em; text-align:center; padding: 2rem 0 0; }
+  .logo .cursor { display:inline-block; width:2px; height:12px; background:var(--ink); margin-left:4px; animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  main { max-width: 560px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .quote-card { background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 2rem; margin-top: 2rem; }
+  .quote-eyebrow { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.75rem; }
+  .quote-title { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 1.5rem; }
+  .quote-row { display:flex; justify-content:space-between; padding: 0.75rem 0; border-top: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+  .quote-row:first-of-type { border-top: none; }
+  .quote-row span:first-child { color: var(--grey); }
+  .badge { display:inline-block; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.3rem 0.7rem; border-radius: 100px; }
+  .badge.attesa { background: #FFF4DE; color: #7A4E00; }
+  .badge.accettato { background: #E3F3E8; color: #1E6B3C; }
+
+  .approve-box { background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 2rem; margin-top: 1.5rem; }
+  .approve-box h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; }
+  .approve-box p { font-size: 0.85rem; color: var(--grey); line-height: 1.6; margin-bottom: 1.5rem; }
+
+  label { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); display: block; margin-bottom: 0.35rem; margin-top: 1rem; }
+  label:first-of-type { margin-top: 0; }
+  input { width: 100%; font-family: var(--sans); font-size: 0.9rem; padding: 0.7rem 0.9rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 5px; outline: none; }
+  input:focus { border-color: var(--ink); }
+
+  .check-row { display:flex; align-items:flex-start; gap:0.6rem; margin-top: 1.5rem; }
+  .check-row input { width: auto; margin-top: 0.15rem; }
+  .check-row label { margin: 0; font-size: 0.82rem; text-transform: none; letter-spacing: normal; color: var(--black); }
+
+  button { width: 100%; font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--white); background: var(--black); border: none; border-radius: 5px; padding: 0.9rem; cursor: pointer; margin-top: 1.5rem; }
+  button:hover { background: var(--ink); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .msg { font-size: 0.82rem; margin-top: 0.75rem; text-align: center; }
+  .msg.ok { color: #1E6B3C; }
+  .msg.err { color: #A32D2D; }
+
+  #loading, #error { text-align: center; padding: 4rem 1.5rem; color: var(--grey); font-size: 0.9rem; }
+  #error { display: none; }
+  #content { display: none; }
+  #already-approved { display: none; text-align: center; padding: 2rem; }
+  #already-approved .badge { margin-bottom: 1rem; }
+
+  @media print {
+    button, .quick-actions { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">VISIBIL<span class="cursor"></span></div>
+
+<main>
+  <div id="loading">Caricamento preventivo...</div>
+  <div id="error">Preventivo non trovato. Controlla il link ricevuto.</div>
+
+  <div id="content">
+    <div class="quote-card">
+      <div class="quote-eyebrow">Preventivo</div>
+      <div class="quote-title" id="q-titolo"></div>
+      <div class="quote-row"><span>Cliente</span><span id="q-cliente"></span></div>
+      <div class="quote-row"><span>Data</span><span id="q-data"></span></div>
+      <div class="quote-row"><span>Importo</span><span id="q-importo"></span></div>
+      <div class="quote-row"><span>Stato</span><span id="q-stato"></span></div>
+    </div>
+
+    <div id="already-approved">
+      <span class="badge accettato">Già approvato</span>
+      <p style="color:var(--grey); font-size:0.85rem;">Questo preventivo è già stato approvato il <span id="q-data-approvazione"></span>. Grazie!</p>
+    </div>
+
+    <div class="approve-box" id="approve-box">
+      <h2>Approvazione</h2>
+      <p>Per approvare il preventivo puoi stamparlo, firmarlo, scansionarlo e inviarmelo, oppure semplicemente completare i campi sotto.</p>
+
+      <label for="a-nome">Nome e cognome</label>
+      <input type="text" id="a-nome" placeholder="Nome cognome">
+
+      <label for="a-indirizzo">Indirizzo</label>
+      <input type="text" id="a-indirizzo" placeholder="Via, numero, CAP, città">
+
+      <label for="a-email">Email</label>
+      <input type="email" id="a-email" placeholder="nome@email.com">
+
+      <div class="check-row">
+        <input type="checkbox" id="a-check">
+        <label for="a-check" id="a-check-label">Approvo il preventivo</label>
+      </div>
+
+      <button id="a-submit" onclick="approva()">Approva</button>
+      <div class="msg" id="a-msg"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const preventivoId = params.get('id');
+  let preventivoData = null;
+
+  async function caricaPreventivo() {
+    if (!preventivoId) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/get-preventivo?id=' + encodeURIComponent(preventivoId));
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        return;
+      }
+
+      preventivoData = data;
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+
+      document.getElementById('q-titolo').textContent = data.titolo || '';
+      document.getElementById('q-cliente').textContent = data.cliente_nome || '—';
+      document.getElementById('q-data').textContent = data.data ? new Date(data.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '—';
+      document.getElementById('q-importo').textContent = data.importo ? `CHF ${data.importo}.–` : '—';
+
+      const statoEl = document.getElementById('q-stato');
+      statoEl.innerHTML = data.stato === 'Accettato'
+        ? '<span class="badge accettato">Accettato</span>'
+        : `<span class="badge attesa">${data.stato || 'In attesa'}</span>`;
+
+      const dataLbl = data.data ? new Date(data.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '';
+      document.getElementById('a-check-label').textContent = `Approvo il preventivo "${data.titolo}" del ${dataLbl}`;
+
+      if (data.stato === 'Accettato') {
+        document.getElementById('approve-box').style.display = 'none';
+        document.getElementById('already-approved').style.display = 'block';
+        if (data.approvato_data) {
+          document.getElementById('q-data-approvazione').textContent = new Date(data.approvato_data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'});
+        }
+      }
+    } catch (e) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+    }
+  }
+
+  async function approva() {
+    const nome = document.getElementById('a-nome').value.trim();
+    const indirizzo = document.getElementById('a-indirizzo').value.trim();
+    const email = document.getElementById('a-email').value.trim();
+    const checked = document.getElementById('a-check').checked;
+    const msg = document.getElementById('a-msg');
+    const btn = document.getElementById('a-submit');
+
+    if (!nome || !email) {
+      msg.textContent = "Nome ed email sono obbligatori.";
+      msg.className = "msg err";
+      return;
+    }
+    if (!checked) {
+      msg.textContent = "Devi confermare l'approvazione con la spunta.";
+      msg.className = "msg err";
+      return;
+    }
+
+    btn.disabled = true;
+    msg.textContent = "Invio in corso...";
+    msg.className = "msg";
+
+    try {
+      const res = await fetch('/api/approva-preventivo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: preventivoId, nome, indirizzo, email })
+      });
+      const result = await res.json();
+
+      if (!res.ok) {
+        msg.textContent = result.error || "Errore nell'approvazione.";
+        msg.className = "msg err";
+        btn.disabled = false;
+        return;
+      }
+
+      msg.textContent = "Preventivo approvato. Grazie!";
+      msg.className = "msg ok";
+      document.getElementById('approve-box').style.display = 'none';
+      document.getElementById('already-approved').style.display = 'block';
+      document.getElementById('q-data-approvazione').textContent = new Date().toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'});
+      document.getElementById('q-stato').innerHTML = '<span class="badge accettato">Accettato</span>';
+    } catch (e) {
+      msg.textContent = "Errore di connessione.";
+      msg.className = "msg err";
+      btn.disabled = false;
+    }
+  }
+
+  caricaPreventivo();
+</script>
+
+</body>
+</html>

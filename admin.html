@@ -635,18 +635,23 @@
     const user_id = document.getElementById('p-cliente').value;
     if (!user_id) { showMsg('preventivo-msg', 'Nessun cliente selezionato.', false); return; }
 
+    const newId = crypto.randomUUID();
+    const linkApprovazione = `https://vsbl.ch/preventivo.html?id=${newId}`;
+
     const payload = {
+      id: newId,
       user_id,
       titolo: document.getElementById('p-titolo').value,
       importo: document.getElementById('p-importo').value || null,
       stato: document.getElementById('p-stato').value,
       data: document.getElementById('p-data').value || new Date().toISOString().slice(0,10),
-      documento_url: document.getElementById('p-documento').value || null
+      documento_url: document.getElementById('p-documento').value || null,
+      link_approvazione: linkApprovazione
     };
 
     const { error } = await client.from('preventivi').insert(payload);
     if (error) { showMsg('preventivo-msg', 'Errore: ' + error.message, false); return; }
-    showMsg('preventivo-msg', 'Preventivo aggiunto.', true);
+    showMsg('preventivo-msg', `Preventivo aggiunto. Link da mandare al cliente: ${linkApprovazione}`, true);
     document.getElementById('p-titolo').value = '';
     document.getElementById('p-importo').value = '';
     document.getElementById('p-documento').value = '';
