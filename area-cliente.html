@@ -350,11 +350,12 @@
             <div id="project-widget-mount" class="stacked-cfg" style="display:none; margin-top: 1.5rem;"></div>
           </div>
 
-          <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.25rem;">
+          <div class="section-label" style="margin-top: 1.25rem; margin-bottom: 0.5rem;">Materiali</div>
+          <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
             <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
               <div class="folder-icon">📁</div>
               <div>
-                <div class="folder-card-title">Cartella materiali</div>
+                <div class="folder-card-title">Cartella</div>
                 <div class="folder-card-desc" id="onedrive-desc">Foto, video e progetti grafici</div>
               </div>
             </a>
@@ -368,6 +369,17 @@
                 <div class="folder-card-desc" id="upload-desc">Carica i tuoi file per questo progetto</div>
               </div>
             </a>
+          </div>
+
+          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
+            <div id="documenti-list"></div>
+            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
+          </div>
+
+          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
+            <div id="report-list"></div>
           </div>
 
           <div class="account-card" id="contatti" style="scroll-margin-top: 6rem; margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); border-left:none; border-right:none; border-bottom:none; border-radius:0; padding: 1.25rem 0 0; align-items: flex-start; text-align: left;">
@@ -393,17 +405,6 @@
                 WhatsApp
               </a>
             </div>
-          </div>
-
-          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
-            <div id="documenti-list"></div>
-            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
-          </div>
-
-          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
-            <div id="report-list"></div>
           </div>
         </div>
 
