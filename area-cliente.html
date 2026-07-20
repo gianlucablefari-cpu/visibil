@@ -265,6 +265,11 @@
               </label>
             </div>
 
+            <div class="account-field">
+              <label for="account-orario">Orario preferito</label>
+              <input type="text" id="account-orario" placeholder="es. 9:00–12:00">
+            </div>
+
             <div style="border-top: 1px solid rgba(0,0,0,0.1); margin-top: 1.75rem; padding-top: 1.5rem;">
               <div class="section-label" style="text-align:left; margin-top:0; display:flex; align-items:center; gap:0.4rem;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; opacity:0.6; flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
@@ -595,6 +600,7 @@
       document.getElementById('account-pref-email').checked = !!cliente.pref_email;
       document.getElementById('account-pref-whatsapp').checked = !!cliente.pref_whatsapp;
       document.getElementById('account-pref-telefono').checked = !!cliente.pref_telefono;
+      document.getElementById('account-orario').value = cliente.orario_preferito || '';
 
       document.getElementById('links-card').style.display = 'block';
 
@@ -703,7 +709,7 @@
         btn.style.opacity = '0.4';
         btn.style.cursor = 'not-allowed';
       });
-      document.querySelectorAll('#account-telefono, #account-referente, #account-email-contatto, #account-indirizzo, #account-nome-fatturazione, #account-pref-email, #account-pref-whatsapp, #account-pref-telefono, #nuova-password, #contact-form textarea').forEach(el => {
+      document.querySelectorAll('#account-telefono, #account-referente, #account-email-contatto, #account-indirizzo, #account-nome-fatturazione, #account-pref-email, #account-pref-whatsapp, #account-pref-telefono, #account-orario, #nuova-password, #contact-form textarea').forEach(el => {
         el.disabled = true;
       });
     }
@@ -718,12 +724,13 @@
     const pref_email = document.getElementById('account-pref-email').checked;
     const pref_whatsapp = document.getElementById('account-pref-whatsapp').checked;
     const pref_telefono = document.getElementById('account-pref-telefono').checked;
+    const orario_preferito = document.getElementById('account-orario').value;
     const msg = document.getElementById('account-msg');
     msg.textContent = "Salvataggio...";
     msg.className = "account-msg";
 
     const { error } = await client.from('clienti')
-      .update({ telefono, referente, email_contatto, indirizzo, nome_fatturazione, pref_email, pref_whatsapp, pref_telefono })
+      .update({ telefono, referente, email_contatto, indirizzo, nome_fatturazione, pref_email, pref_whatsapp, pref_telefono, orario_preferito })
       .eq('user_id', window.currentUserId);
 
     if (error) {

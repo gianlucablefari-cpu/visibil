@@ -200,6 +200,9 @@
             Telefonata
           </label>
 
+          <label for="c-orario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Orario preferito</label>
+          <input type="text" id="c-orario" placeholder="es. 9:00–12:00">
+
           <div class="section-label" style="margin-top:1.25rem;">Fatturazione</div>
 
           <label for="c-nome-fatturazione"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Nome e cognome</label>
@@ -516,6 +519,7 @@
       pref_email: document.getElementById('c-pref-email').checked,
       pref_whatsapp: document.getElementById('c-pref-whatsapp').checked,
       pref_telefono: document.getElementById('c-pref-telefono').checked,
+      orario_preferito: document.getElementById('c-orario').value,
       onedrive_link: document.getElementById('c-onedrive').value,
       sito_url: document.getElementById('c-sito-url').value,
       sito_stato: document.getElementById('c-sito-stato').value,
@@ -582,6 +586,7 @@
     document.getElementById('c-pref-email').checked = false;
     document.getElementById('c-pref-whatsapp').checked = false;
     document.getElementById('c-pref-telefono').checked = false;
+    document.getElementById('c-orario').value = '';
     document.getElementById('c-onedrive').value = '';
     document.getElementById('c-sito-url').value = '';
     document.getElementById('c-sito-stato').value = '';
@@ -611,6 +616,7 @@
     document.getElementById('c-pref-email').checked = !!c.pref_email;
     document.getElementById('c-pref-whatsapp').checked = !!c.pref_whatsapp;
     document.getElementById('c-pref-telefono').checked = !!c.pref_telefono;
+    document.getElementById('c-orario').value = c.orario_preferito || '';
     document.getElementById('c-onedrive').value = c.onedrive_link || '';
     document.getElementById('c-sito-url').value = c.sito_url || '';
     document.getElementById('c-sito-stato').value = c.sito_stato || '';
