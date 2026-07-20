@@ -227,7 +227,10 @@
           <h3>Dati personali</h3>
 
           <div style="width:100%; border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:0.75rem;">
-            <div class="section-label" style="text-align:left; margin-top:0;">Dati di contatto</div>
+            <div class="section-label" style="text-align:left; margin-top:0; display:flex; align-items:center; gap:0.4rem;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; opacity:0.6; flex-shrink:0;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              Dati di contatto
+            </div>
 
             <div class="account-field">
               <label for="account-referente">Nome e cognome</label>
@@ -244,7 +247,10 @@
               <input type="email" id="account-email-contatto" placeholder="nome@email.com" autocomplete="email">
             </div>
 
-            <div class="section-label" style="text-align:left; margin-top:1rem;">Preferenza di contatto</div>
+            <div class="section-label" style="text-align:left; margin-top:1rem; display:flex; align-items:center; gap:0.4rem;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; opacity:0.6; flex-shrink:0;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              Preferenze di contatto
+            </div>
 
             <div class="account-field" style="display:flex; flex-direction:column; gap:0.5rem;">
               <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
@@ -260,7 +266,10 @@
           </div>
 
           <div style="width:100%; border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:1rem;">
-            <div class="section-label" style="text-align:left; margin-top:0;">Fatturazione</div>
+            <div class="section-label" style="text-align:left; margin-top:0; display:flex; align-items:center; gap:0.4rem;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; opacity:0.6; flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+              Dati di fatturazione
+            </div>
 
             <div class="account-field">
               <label for="account-nome-fatturazione">Nome e cognome</label>
@@ -273,18 +282,29 @@
             </div>
           </div>
 
-          <button class="btn-logout btn-small" onclick="salvaContatti()" style="margin-top:1rem;">Salva dati</button>
+          <button class="btn-logout btn-small" onclick="salvaContatti()" style="display:block; margin:1rem auto 0;">Salva dati</button>
           <div class="account-msg" id="account-msg"></div>
 
-          <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem; margin-top: 0.25rem; width:100%;">
+          <div style="width:100%; border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:1.25rem;">
+            <div class="section-label" style="text-align:left; margin-top:0; display:flex; align-items:center; gap:0.4rem;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; opacity:0.6; flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              Dati di accesso
+            </div>
+
             <div class="account-field">
               <label>Email di accesso</label>
               <div class="readonly" id="account-email"></div>
             </div>
+
             <label for="nuova-password">Nuova password</label>
             <input type="password" id="nuova-password" placeholder="••••••••" autocomplete="new-password" style="margin-bottom: 0.75rem;">
-            <button class="btn-logout btn-small" onclick="cambiaPassword()">Cambia password</button>
-            <div class="account-msg" id="password-msg" style="margin-top: 0.5rem;"></div>
+            <button class="btn-logout btn-small" onclick="cambiaPassword()" style="display:block; margin:0 auto;">Cambia password</button>
+            <div class="account-msg" id="password-msg" style="margin-top: 0.5rem; text-align:center;"></div>
+          </div>
+
+          <div style="width:100%; margin-top:1.25rem; text-align:center;">
+            <button class="btn-logout btn-small" onclick="richiediEliminazioneAccount()" style="color:#A32D2D; border-color:rgba(163,45,45,0.25);">Elimina account</button>
+            <div class="account-msg" id="elimina-msg" style="margin-top:0.5rem; text-align:center;"></div>
           </div>
         </div>
 
@@ -505,11 +525,7 @@
 
     if (clienteItemsHtml) {
       hasItems = true;
-      container.innerHTML += `
-        <div>
-          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#7A4E00;">Da ${nomeCliente}</div>
-          ${clienteItemsHtml}
-        </div>`;
+      container.innerHTML += `<div>${clienteItemsHtml}</div>`;
     }
 
     card.style.display = hasItems ? 'block' : 'none';
@@ -736,6 +752,40 @@
       msg.textContent = "Password aggiornata.";
       msg.className = "account-msg ok";
       document.getElementById('nuova-password').value = '';
+    }
+  }
+
+  async function richiediEliminazioneAccount() {
+    const confermato = confirm("Confermi di voler richiedere l'eliminazione del tuo account? Verrai contattato per finalizzare la richiesta. Questa azione non è immediata.");
+    if (!confermato) return;
+
+    const msg = document.getElementById('elimina-msg');
+    msg.textContent = "Invio richiesta...";
+    msg.className = "account-msg";
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          access_key: 'b60eacf2-4a27-416a-8999-2fe3238adfb6',
+          subject: 'Richiesta eliminazione account — Area Clienti',
+          from_name: document.getElementById('cliente-nome').textContent,
+          replyto: document.getElementById('account-email').textContent,
+          message: `Il cliente ${document.getElementById('cliente-nome').textContent} ha richiesto l'eliminazione del proprio account dall'Area Clienti.`
+        })
+      });
+      const result = await res.json();
+      if (result.success) {
+        msg.textContent = "Richiesta inviata. Ti contatteremo a breve.";
+        msg.className = "account-msg ok";
+      } else {
+        msg.textContent = "Errore nell'invio.";
+        msg.className = "account-msg err";
+      }
+    } catch (err) {
+      msg.textContent = "Errore di connessione.";
+      msg.className = "account-msg err";
     }
   }
 
