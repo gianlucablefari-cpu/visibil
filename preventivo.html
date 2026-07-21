@@ -55,8 +55,23 @@
   #already-approved { display: none; text-align: center; padding: 2rem; }
   #already-approved .badge { margin-bottom: 1rem; }
 
+  .download-bar { display:flex; justify-content:center; margin-top: 1.5rem; }
+  .download-bar button { width:auto; background:none; color:var(--black); border:1px solid rgba(0,0,0,0.15); padding:0.7rem 1.5rem; margin-top:0; }
+  .download-bar button:hover { background:var(--surface); color:var(--black); }
+
+  .letterhead { display: none; }
+
   @media print {
-    button, .quick-actions { display: none !important; }
+    @page { size: A4; margin: 2cm; }
+    body { background: #fff; }
+    .logo, .download-bar, .approve-box, #already-approved { display: none !important; }
+    main { max-width: none; padding: 0; margin: 0; }
+    .letterhead { display: flex; justify-content: space-between; margin-bottom: 2.5rem; font-size: 0.8rem; }
+    .letterhead div { line-height: 1.6; }
+    .letterhead .from { color: var(--black); }
+    .letterhead .to { color: var(--black); text-align: right; }
+    .quote-card { border: none; padding: 0; margin-top: 0; }
+    .quote-title { font-size: 1.6rem; }
   }
 </style>
 </head>
@@ -69,6 +84,20 @@
   <div id="error">Preventivo non trovato. Controlla il link ricevuto.</div>
 
   <div id="content">
+    <div class="letterhead">
+      <div class="from">
+        <strong>Gianluca Blefari — VISIBIL</strong><br>
+        Via Romerio 10, 6600 Locarno<br>
+        +41 79 644 56 83<br>
+        gianluca.blefari@outlook.com
+      </div>
+      <div class="to">
+        <strong>Preventivo per</strong><br>
+        <span id="lh-nome"></span><br>
+        <span id="lh-indirizzo"></span>
+      </div>
+    </div>
+
     <div class="quote-card">
       <div class="quote-eyebrow">Preventivo</div>
       <div class="quote-title" id="q-titolo"></div>
@@ -76,6 +105,10 @@
       <div class="quote-row"><span>Data</span><span id="q-data"></span></div>
       <div class="quote-row"><span>Importo</span><span id="q-importo"></span></div>
       <div class="quote-row"><span>Stato</span><span id="q-stato"></span></div>
+    </div>
+
+    <div class="download-bar">
+      <button onclick="window.print()">📄 Scarica PDF</button>
     </div>
 
     <div id="already-approved">
@@ -135,6 +168,8 @@
 
       document.getElementById('q-titolo').textContent = data.titolo || '';
       document.getElementById('q-cliente').textContent = data.cliente_nome || '—';
+      document.getElementById('lh-nome').textContent = data.cliente_nome_fatturazione || data.cliente_nome || '';
+      document.getElementById('lh-indirizzo').textContent = data.cliente_indirizzo || '';
       document.getElementById('q-data').textContent = data.data ? new Date(data.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '—';
       document.getElementById('q-importo').textContent = data.importo ? `CHF ${data.importo}.–` : '—';
 

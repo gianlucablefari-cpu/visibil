@@ -36,7 +36,7 @@ export default async (req) => {
 
   // Recupera anche il nome del cliente (dalla tabella clienti)
   const clienteRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/clienti?user_id=eq.${preventivo.user_id}&select=nome`,
+    `${SUPABASE_URL}/rest/v1/clienti?user_id=eq.${preventivo.user_id}&select=nome,indirizzo,nome_fatturazione,email_contatto`,
     {
       headers: {
         apikey: SERVICE_KEY,
@@ -45,7 +45,7 @@ export default async (req) => {
     }
   );
   const clienteRows = await clienteRes.json();
-  const clienteNome = (clienteRes.ok && clienteRows[0]) ? clienteRows[0].nome : "";
+  const clienteData = (clienteRes.ok && clienteRows[0]) ? clienteRows[0] : {};
 
   return new Response(
     JSON.stringify({
@@ -55,7 +55,10 @@ export default async (req) => {
       stato: preventivo.stato,
       data: preventivo.data,
       approvato_data: preventivo.approvato_data,
-      cliente_nome: clienteNome
+      cliente_nome: clienteData.nome || "",
+      cliente_indirizzo: clienteData.indirizzo || "",
+      cliente_nome_fatturazione: clienteData.nome_fatturazione || "",
+      cliente_email: clienteData.email_contatto || ""
     }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );
