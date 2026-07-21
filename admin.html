@@ -240,107 +240,8 @@
       <div class="content-col">
 
     <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-      Pannello di controllo
-    </h2>
-
-    <!-- PANNELLO DI CONTROLLO CLIENTE (link, rinnovo) -->
-    <div class="card">
-      <h2>Pannello di controllo cliente</h2>
-      <p class="desc">Link operativi e abbonamento — riferiti allo stesso cliente selezionato a sinistra.</p>
-
-      <label for="c-da-fare-cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Da fare — Cliente (testo libero)</label>
-      <textarea id="c-da-fare-cliente" placeholder="es. Mandare foto prodotti e testo pagina Chi siamo"></textarea>
-
-      <label for="c-avanzamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Da fare — VISIBIL (testo libero)</label>
-      <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese"></textarea>
-
-      <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
-      <input type="text" id="c-sito-url">
-
-      <label for="c-sito-stato"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Stato sito</label>
-      <select id="c-sito-stato">
-        <option value="">—</option>
-        <option value="In lavorazione">In lavorazione</option>
-        <option value="Online">Online</option>
-      </select>
-
-      <label for="c-sito-password"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Password sito (se protetto)</label>
-      <input type="text" id="c-sito-password">
-
-      <label for="c-instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg>Link Instagram</label>
-      <input type="text" id="c-instagram">
-
-      <label for="c-onedrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Link cartella materiali (Dropbox)</label>
-      <input type="text" id="c-onedrive">
-
-      <label for="c-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Link "Richiedi file" per upload (Dropbox)</label>
-      <input type="text" id="c-upload">
-
-      <label for="c-rinnovo-piano"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>Piano abbonamento</label>
-      <input type="text" id="c-rinnovo-piano" placeholder="es. Gestione Mensile Completo">
-
-      <label for="c-rinnovo-data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Data prossimo rinnovo</label>
-      <input type="date" id="c-rinnovo-data">
-
-      <label for="c-rinnovo-importo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>Importo rinnovo (CHF)</label>
-      <input type="number" id="c-rinnovo-importo">
-
-      <button onclick="salvaCliente()">Salva cliente</button>
-      <div class="msg" id="cliente-msg-2"></div>
-    </div>
-
-    <!-- REPORT -->
-    <div class="card">
-      <h2>Nuovo report</h2>
-      <p class="desc">Carica un report (es. analytics mensile) per un cliente.</p>
-
-      <label for="r-cliente">Cliente</label>
-      <select id="r-cliente"></select>
-
-      <label for="r-titolo">Titolo</label>
-      <input type="text" id="r-titolo" placeholder="es. Report analytics — Luglio 2026">
-
-      <label for="r-data">Data</label>
-      <input type="date" id="r-data">
-
-      <label for="r-documento">Link PDF</label>
-      <input type="text" id="r-documento">
-
-      <button onclick="salvaReport()">Aggiungi report</button>
-      <div class="msg" id="report-msg"></div>
-    </div>
-
-    <!-- DOCUMENTO -->
-    <div class="card">
-      <h2>Nuovo documento</h2>
-      <p class="desc">Documenti da scaricare/firmare (es. contratti, moduli).</p>
-
-      <label for="doc-cliente">Cliente</label>
-      <select id="doc-cliente"></select>
-
-      <label for="doc-titolo">Titolo</label>
-      <input type="text" id="doc-titolo" placeholder="es. Contratto gestione mensile">
-
-      <label for="doc-stato">Stato</label>
-      <select id="doc-stato">
-        <option>Da firmare</option>
-        <option>Firmato</option>
-      </select>
-
-      <label for="doc-data">Data</label>
-      <input type="date" id="doc-data">
-
-      <label for="doc-documento">Link PDF</label>
-      <input type="text" id="doc-documento">
-
-      <button onclick="salvaDocumento()">Aggiungi documento</button>
-      <div class="msg" id="documento-msg"></div>
-    </div>
-
-    <h2 style="font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-      Pagamenti
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+      Azioni rapide
     </h2>
 
     <!-- PREVENTIVO -->
@@ -406,6 +307,115 @@
 
       <button onclick="salvaPagamento()">Aggiungi pagamento</button>
       <div class="msg" id="pagamento-msg"></div>
+    </div>
+
+    <!-- DOCUMENTO -->
+    <div class="card">
+      <h2>Nuovo documento</h2>
+      <p class="desc">Documenti da scaricare/firmare (es. contratti, moduli).</p>
+
+      <label for="doc-cliente">Cliente</label>
+      <select id="doc-cliente"></select>
+
+      <label for="doc-titolo">Titolo</label>
+      <input type="text" id="doc-titolo" placeholder="es. Contratto gestione mensile">
+
+      <label for="doc-stato">Stato</label>
+      <select id="doc-stato">
+        <option>Da firmare</option>
+        <option>Firmato</option>
+      </select>
+
+      <label for="doc-data">Data</label>
+      <input type="date" id="doc-data">
+
+      <label for="doc-documento">Link PDF</label>
+      <input type="text" id="doc-documento">
+
+      <button onclick="salvaDocumento()">Aggiungi documento</button>
+      <div class="msg" id="documento-msg"></div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="card">
+      <h2>Nuovo report</h2>
+      <p class="desc">Carica un report (es. analytics mensile) per un cliente.</p>
+
+      <label for="r-cliente">Cliente</label>
+      <select id="r-cliente"></select>
+
+      <label for="r-titolo">Titolo</label>
+      <input type="text" id="r-titolo" placeholder="es. Report analytics — Luglio 2026">
+
+      <label for="r-data">Data</label>
+      <input type="date" id="r-data">
+
+      <label for="r-documento">Link PDF</label>
+      <input type="text" id="r-documento">
+
+      <button onclick="salvaReport()">Aggiungi report</button>
+      <div class="msg" id="report-msg"></div>
+    </div>
+
+    <h2 style="font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+      Da fare
+    </h2>
+
+    <div class="card">
+      <p class="desc">Note visibili al cliente e per te stesso — riferite al cliente selezionato a sinistra.</p>
+
+      <label for="c-da-fare-cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Da fare — Cliente (testo libero)</label>
+      <textarea id="c-da-fare-cliente" placeholder="es. Mandare foto prodotti e testo pagina Chi siamo"></textarea>
+
+      <label for="c-avanzamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Da fare — VISIBIL (testo libero)</label>
+      <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese"></textarea>
+
+      <button onclick="salvaCliente()">Salva</button>
+      <div class="msg" id="cliente-msg-3"></div>
+    </div>
+
+    <h2 style="font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      Impostazioni cliente
+    </h2>
+
+    <div class="card">
+      <p class="desc">Link operativi e abbonamento — cambi raramente, di solito solo alla creazione del cliente.</p>
+
+      <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
+      <input type="text" id="c-sito-url">
+
+      <label for="c-sito-stato"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Stato sito</label>
+      <select id="c-sito-stato">
+        <option value="">—</option>
+        <option value="In lavorazione">In lavorazione</option>
+        <option value="Online">Online</option>
+      </select>
+
+      <label for="c-sito-password"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Password sito (se protetto)</label>
+      <input type="text" id="c-sito-password">
+
+      <label for="c-instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg>Link Instagram</label>
+      <input type="text" id="c-instagram">
+
+      <label for="c-onedrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Link cartella materiali (Dropbox)</label>
+      <input type="text" id="c-onedrive">
+
+      <label for="c-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Link "Richiedi file" per upload (Dropbox)</label>
+      <input type="text" id="c-upload">
+
+      <label for="c-rinnovo-piano"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>Piano abbonamento</label>
+      <input type="text" id="c-rinnovo-piano" placeholder="es. Gestione Mensile Completo">
+
+      <label for="c-rinnovo-data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Data prossimo rinnovo</label>
+      <input type="date" id="c-rinnovo-data">
+
+      <label for="c-rinnovo-importo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>Importo rinnovo (CHF)</label>
+      <input type="number" id="c-rinnovo-importo">
+
+      <button onclick="salvaCliente()">Salva cliente</button>
+      <div class="msg" id="cliente-msg-2"></div>
     </div>
 
     <!-- LISTA CLIENTI -->
@@ -537,10 +547,12 @@
     if (error) {
       showMsg('cliente-msg', 'Errore: ' + error.message, false);
       showMsg('cliente-msg-2', 'Errore: ' + error.message, false);
+      showMsg('cliente-msg-3', 'Errore: ' + error.message, false);
       return;
     }
     showMsg('cliente-msg', 'Cliente salvato.', true);
     showMsg('cliente-msg-2', 'Cliente salvato.', true);
+    showMsg('cliente-msg-3', 'Cliente salvato.', true);
     caricaClienti();
   }
 
@@ -600,6 +612,7 @@
     document.getElementById('c-rinnovo-importo').value = '';
     document.getElementById('cliente-msg').textContent = '';
     document.getElementById('cliente-msg-2').textContent = '';
+    document.getElementById('cliente-msg-3').textContent = '';
     document.getElementById('c-userid').focus();
   }
 
