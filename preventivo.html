@@ -61,6 +61,8 @@
 
   .letterhead { display: none; }
 
+  .signatures { display: none; }
+
   @media print {
     @page { size: A4; margin: 2cm; }
     body { background: #fff; }
@@ -72,6 +74,11 @@
     .letterhead .to { color: var(--black); text-align: right; }
     .quote-card { border: none; padding: 0; margin-top: 0; }
     .quote-title { font-size: 1.6rem; }
+    .signatures { display: flex; justify-content: space-between; margin-top: 4rem; gap: 2rem; }
+    .signatures .sig-block { width: 45%; text-align: center; }
+    .signatures .sig-img { height: 55px; object-fit: contain; margin-bottom: 0.4rem; }
+    .signatures .sig-line { border-top: 1px solid var(--black); margin-top: 55px; padding-top: 0.4rem; }
+    .signatures .sig-label { font-size: 0.7rem; color: var(--grey); text-transform: uppercase; letter-spacing: 0.05em; }
   }
 </style>
 </head>
@@ -105,6 +112,18 @@
       <div class="quote-row"><span>Data</span><span id="q-data"></span></div>
       <div class="quote-row"><span>Importo</span><span id="q-importo"></span></div>
       <div class="quote-row"><span>Stato</span><span id="q-stato"></span></div>
+    </div>
+
+    <div class="signatures">
+      <div class="sig-block">
+        <img class="sig-img" src="/assets/firma-gianluca.jpg" alt="Firma Gianluca Blefari">
+        <div class="sig-line"></div>
+        <div class="sig-label">Gianluca Blefari — VISIBIL</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line" style="margin-top: 55px;"></div>
+        <div class="sig-label">Firma del cliente</div>
+      </div>
     </div>
 
     <div class="download-bar">
