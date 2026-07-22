@@ -254,14 +254,15 @@
     <div class="card">
       <p class="desc">Note visibili al cliente e per te stesso — riferite al cliente selezionato a sinistra.</p>
 
-      <label for="c-da-fare-cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Da fare — Cliente (testo libero)</label>
-      <textarea id="c-da-fare-cliente" placeholder="es. Mandare foto prodotti e testo pagina Chi siamo"></textarea>
+      <label for="c-da-fare-cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span id="label-da-fare-cliente">Da fare — Cliente</span></label>
+      <textarea id="c-da-fare-cliente" placeholder="es. Mandare foto prodotti e testo pagina Chi siamo" style="min-height:180px;"></textarea>
 
-      <label for="c-avanzamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Da fare — VISIBIL (testo libero)</label>
-      <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese"></textarea>
+      <label for="c-avanzamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Da fare — Gianluca</label>
+      <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese" style="min-height:180px;"></textarea>
 
-      <button onclick="salvaCliente()">Salva</button>
+      <button onclick="salvaDaFare()">Salva</button>
       <div class="msg" id="cliente-msg-3"></div>
+      <div class="msg" id="notifica-msg"></div>
     </div>
 
     <h2 style="font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
@@ -558,6 +559,54 @@
     caricaClienti();
   }
 
+  async function salvaDaFare() {
+    const nuovoTesto = document.getElementById('c-da-fare-cliente').value;
+    const testoCambiato = nuovoTesto.trim() !== (window.daFareClienteOriginale || '').trim();
+
+    await salvaCliente();
+    window.daFareClienteOriginale = nuovoTesto;
+
+    const notificaMsg = document.getElementById('notifica-msg');
+    notificaMsg.textContent = '';
+
+    if (!testoCambiato) return;
+    if (!window.clienteAttivoEmail) {
+      notificaMsg.textContent = 'Nota: nessuna email salvata per questo cliente, notifica non inviata.';
+      notificaMsg.className = 'msg';
+      return;
+    }
+
+    notificaMsg.textContent = 'Invio notifica email al cliente...';
+    notificaMsg.className = 'msg';
+
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      const token = sessionData.session.access_token;
+
+      const res = await fetch('/api/notifica-cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          email: window.clienteAttivoEmail,
+          nome: window.clienteAttivoNome,
+          messaggio: nuovoTesto
+        })
+      });
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        notificaMsg.textContent = 'Cliente notificato via email.';
+        notificaMsg.className = 'msg ok';
+      } else {
+        notificaMsg.textContent = 'Errore invio notifica: ' + (result.error || '');
+        notificaMsg.className = 'msg err';
+      }
+    } catch (e) {
+      notificaMsg.textContent = 'Errore di connessione nella notifica.';
+      notificaMsg.className = 'msg err';
+    }
+  }
+
   async function caricaClienti() {
     const { data, error } = await client.from('clienti').select('*').order('nome');
     if (error) { console.error(error); return; }
@@ -639,6 +688,10 @@
     document.getElementById('c-rinnovo-importo').value = c.rinnovo_importo || '';
 
     window.clienteAttivoNome = c.nome || c.user_id;
+    window.clienteAttivoEmail = c.email_contatto || '';
+    window.daFareClienteOriginale = c.da_fare_cliente || '';
+    const labelDaFare = document.getElementById('label-da-fare-cliente');
+    if (labelDaFare) labelDaFare.textContent = `Da fare — ${window.clienteAttivoNome}`;
     ['p', 'pg', 'doc', 'r'].forEach(prefix => {
       const el = document.getElementById(prefix + '-cliente-display');
       if (el) el.textContent = window.clienteAttivoNome;
