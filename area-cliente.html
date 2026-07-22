@@ -392,7 +392,7 @@
 
             <form id="contact-form">
               <div class="account-field" style="margin-bottom: 0.75rem;">
-                <textarea name="messaggio" placeholder="Scrivi il tuo messaggio..." required style="width:100%; min-height:80px; padding:0.6rem 0.75rem; font-family:var(--sans); font-size:0.85rem; border:1px solid rgba(0,0,0,0.1); border-radius:3px; resize:vertical;"></textarea>
+                <textarea name="messaggio" id="contact-messaggio" placeholder="Scrivi il tuo messaggio..." required style="width:100%; min-height:80px; padding:0.6rem 0.75rem; font-family:var(--sans); font-size:0.85rem; border:1px solid rgba(0,0,0,0.1); border-radius:3px; resize:vertical;"></textarea>
               </div>
               <button type="submit" class="btn-logout btn-small">Invia messaggio</button>
               <div class="account-msg" id="contact-msg" style="margin-top:0.5rem;"></div>
@@ -996,6 +996,16 @@
     document.getElementById('password').value = '';
   }
 
+  const contactTextarea = document.getElementById('contact-messaggio');
+  const draftKey = 'visibil_draft_contattami';
+  if (contactTextarea) {
+    const bozzaSalvata = localStorage.getItem(draftKey);
+    if (bozzaSalvata) contactTextarea.value = bozzaSalvata;
+    contactTextarea.addEventListener('input', () => {
+      localStorage.setItem(draftKey, contactTextarea.value);
+    });
+  }
+
   document.getElementById('contact-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const form = e.target;
@@ -1021,6 +1031,7 @@
         msg.textContent = "Messaggio inviato.";
         msg.className = "account-msg ok";
         form.reset();
+        localStorage.removeItem(draftKey);
       } else {
         msg.textContent = "Errore nell'invio.";
         msg.className = "account-msg err";

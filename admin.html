@@ -690,6 +690,7 @@ Gianluca — VISIBIL</textarea>
 
   async function salvaDaFare() {
     await salvaCliente();
+    clearAutosave(DA_FARE_FIELDS, document.getElementById('c-userid').value.trim());
   }
 
   async function inviaNotificaEmail() {
@@ -732,6 +733,7 @@ Gianluca — VISIBIL</textarea>
       if (res.ok && result.success) {
         notificaMsg.textContent = 'Email inviata.';
         notificaMsg.className = 'msg ok';
+        clearAutosave(EMAIL_FIELDS, document.getElementById('c-userid').value.trim());
       } else {
         notificaMsg.textContent = 'Errore invio: ' + (result.error || '');
         notificaMsg.className = 'msg err';
@@ -770,6 +772,37 @@ Gianluca — VISIBIL</textarea>
     quickSelect.innerHTML = '<option value="">Cambia cliente...</option>' +
       clientiCache.map(c => `<option value="${c.user_id}">${c.nome || c.user_id}</option>`).join('');
   }
+
+  const DA_FARE_FIELDS = ['c-da-fare-cliente', 'c-avanzamento'];
+  const EMAIL_FIELDS = ['email-oggetto', 'email-incipit', 'email-saluti'];
+
+  function setupAutosave(fieldIds) {
+    fieldIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        const uid = document.getElementById('c-userid').value.trim();
+        if (!uid) return;
+        localStorage.setItem(`visibil_admin_draft_${id}_${uid}`, el.value);
+      });
+    });
+  }
+
+  function restoreAutosave(fieldIds, uid) {
+    if (!uid) return;
+    fieldIds.forEach(id => {
+      const el = document.getElementById(id);
+      const saved = localStorage.getItem(`visibil_admin_draft_${id}_${uid}`);
+      if (el && saved !== null) el.value = saved;
+    });
+  }
+
+  function clearAutosave(fieldIds, uid) {
+    if (!uid) return;
+    fieldIds.forEach(id => localStorage.removeItem(`visibil_admin_draft_${id}_${uid}`));
+  }
+
+  setupAutosave(DA_FARE_FIELDS.concat(EMAIL_FIELDS));
 
   function toggleCard(headerEl) {
     let target = headerEl.closest('.card');
@@ -845,6 +878,8 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('cliente-attivo-bar').style.display = 'flex';
     document.getElementById('cliente-attivo-nome').textContent = window.clienteAttivoNome;
     document.getElementById('quick-select-cliente').value = c.user_id;
+
+    restoreAutosave(DA_FARE_FIELDS.concat(EMAIL_FIELDS), c.user_id);
     window.clienteAttivoEmail = c.email_contatto || '';
     window.daFareClienteOriginale = c.da_fare_cliente || '';
     const labelDaFare = document.getElementById('label-da-fare-cliente');
