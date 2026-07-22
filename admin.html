@@ -143,19 +143,7 @@
           <div class="profile-tag">Amministratore</div>
         </div>
 
-        <div class="card">
-          <h2>Account</h2>
-          <div class="account-field">
-            <label>Email di accesso</label>
-            <div class="readonly" id="admin-email"></div>
-          </div>
-          <div class="account-field">
-            <label for="admin-password">Nuova password</label>
-            <input type="password" id="admin-password" placeholder="••••••••">
-          </div>
-          <button class="secondary btn-small" onclick="cambiaPasswordAdmin()" style="margin-top:0.75rem;">Cambia password</button>
-          <div class="msg" id="admin-password-msg"></div>
-        </div>
+
 
         <div class="card">
           <h2>Clienti esistenti</h2>
@@ -218,22 +206,18 @@
           <div class="msg" id="cliente-msg"></div>
         </div>
 
-        <!-- NUOVO CLIENTE (creazione automatica account) -->
         <div class="card">
-          <h2>Nuovo cliente</h2>
-          <p class="desc">Crea in automatico l'accesso al portale per un cliente o potenziale cliente (utente + record base).</p>
-
-          <label for="nc-nome">Nome cliente/progetto</label>
-          <input type="text" id="nc-nome" placeholder="es. Boutique Lainé">
-
-          <label for="nc-email">Email cliente</label>
-          <input type="email" id="nc-email">
-
-          <label for="nc-password">Password provvisoria</label>
-          <input type="text" id="nc-password" placeholder="minimo 6 caratteri">
-
-          <button onclick="creaClienteRapido()">Crea cliente</button>
-          <div class="msg" id="nc-msg"></div>
+          <h2>Account</h2>
+          <div class="account-field">
+            <label>Email di accesso</label>
+            <div class="readonly" id="admin-email"></div>
+          </div>
+          <div class="account-field">
+            <label for="admin-password">Nuova password</label>
+            <input type="password" id="admin-password" placeholder="••••••••">
+          </div>
+          <button class="secondary btn-small" onclick="cambiaPasswordAdmin()" style="margin-top:0.75rem;">Cambia password</button>
+          <div class="msg" id="admin-password-msg"></div>
         </div>
       </div>
 
@@ -244,13 +228,30 @@
       Azioni rapide
     </h2>
 
+    <!-- NUOVO CLIENTE (creazione automatica account) -->
+    <div class="card">
+      <h2>Nuovo cliente</h2>
+      <p class="desc">Crea in automatico l'accesso al portale per un cliente o potenziale cliente (utente + record base + email di invito).</p>
+
+      <label for="nc-nome">Nome cliente/progetto</label>
+      <input type="text" id="nc-nome" placeholder="es. Boutique Lainé">
+
+      <label for="nc-email">Email cliente</label>
+      <input type="email" id="nc-email">
+
+      <label for="nc-password">Password provvisoria</label>
+      <input type="text" id="nc-password" placeholder="minimo 6 caratteri">
+
+      <button onclick="creaClienteRapido()">Crea cliente</button>
+      <div class="msg" id="nc-msg"></div>
+    </div>
+
     <!-- PREVENTIVO -->
     <div class="card">
       <h2>Nuovo preventivo</h2>
       <p class="desc">Seleziona il cliente e compila i dati del preventivo.</p>
 
-      <label for="p-cliente">Cliente</label>
-      <select id="p-cliente"></select>
+      <p class="desc" style="margin-top:0;">Cliente: <strong id="p-cliente-display">— nessuno caricato —</strong></p>
 
       <label for="p-titolo">Titolo</label>
       <input type="text" id="p-titolo" placeholder="es. Sito web — Gestione mensile Completo">
@@ -280,8 +281,7 @@
       <h2>Nuovo pagamento</h2>
       <p class="desc">Registra un pagamento (fatto o dovuto) per un cliente.</p>
 
-      <label for="pg-cliente">Cliente</label>
-      <select id="pg-cliente"></select>
+      <p class="desc" style="margin-top:0;">Cliente: <strong id="pg-cliente-display">— nessuno caricato —</strong></p>
 
       <label for="pg-descrizione">Descrizione</label>
       <input type="text" id="pg-descrizione" placeholder="es. Servizio fotografico progetti">
@@ -314,8 +314,7 @@
       <h2>Nuovo documento</h2>
       <p class="desc">Documenti da scaricare/firmare (es. contratti, moduli).</p>
 
-      <label for="doc-cliente">Cliente</label>
-      <select id="doc-cliente"></select>
+      <p class="desc" style="margin-top:0;">Cliente: <strong id="doc-cliente-display">— nessuno caricato —</strong></p>
 
       <label for="doc-titolo">Titolo</label>
       <input type="text" id="doc-titolo" placeholder="es. Contratto gestione mensile">
@@ -341,8 +340,7 @@
       <h2>Nuovo report</h2>
       <p class="desc">Carica un report (es. analytics mensile) per un cliente.</p>
 
-      <label for="r-cliente">Cliente</label>
-      <select id="r-cliente"></select>
+      <p class="desc" style="margin-top:0;">Cliente: <strong id="r-cliente-display">— nessuno caricato —</strong></p>
 
       <label for="r-titolo">Titolo</label>
       <input type="text" id="r-titolo" placeholder="es. Report analytics — Luglio 2026">
@@ -579,12 +577,6 @@
               </button>
             </div>
           </div>`).join('');
-
-    const options = clientiCache.map(c => `<option value="${c.user_id}">${c.nome || c.user_id}</option>`).join('');
-    document.getElementById('p-cliente').innerHTML = options;
-    document.getElementById('pg-cliente').innerHTML = options;
-    document.getElementById('r-cliente').innerHTML = options;
-    document.getElementById('doc-cliente').innerHTML = options;
   }
 
   function nuovoCliente() {
@@ -641,12 +633,19 @@
     document.getElementById('c-rinnovo-piano').value = c.rinnovo_piano || '';
     document.getElementById('c-rinnovo-data').value = c.rinnovo_data || '';
     document.getElementById('c-rinnovo-importo').value = c.rinnovo_importo || '';
+
+    window.clienteAttivoNome = c.nome || c.user_id;
+    ['p', 'pg', 'doc', 'r'].forEach(prefix => {
+      const el = document.getElementById(prefix + '-cliente-display');
+      if (el) el.textContent = window.clienteAttivoNome;
+    });
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function salvaPreventivo() {
-    const user_id = document.getElementById('p-cliente').value;
-    if (!user_id) { showMsg('preventivo-msg', 'Nessun cliente selezionato.', false); return; }
+    const user_id = document.getElementById('c-userid').value.trim();
+    if (!user_id) { showMsg('preventivo-msg', 'Nessun cliente caricato — clicca 'Carica' su un cliente dalla lista.', false); return; }
 
     const newId = crypto.randomUUID();
     const linkApprovazione = `https://vsbl.ch/preventivo.html?id=${newId}`;
@@ -671,8 +670,8 @@
   }
 
   async function salvaPagamento() {
-    const user_id = document.getElementById('pg-cliente').value;
-    if (!user_id) { showMsg('pagamento-msg', 'Nessun cliente selezionato.', false); return; }
+    const user_id = document.getElementById('c-userid').value.trim();
+    if (!user_id) { showMsg('pagamento-msg', 'Nessun cliente caricato — clicca 'Carica' su un cliente dalla lista.', false); return; }
 
     const newId = crypto.randomUUID();
     let paymentLink = document.getElementById('pg-payment-link').value || null;
@@ -702,8 +701,8 @@
   }
 
   async function salvaReport() {
-    const user_id = document.getElementById('r-cliente').value;
-    if (!user_id) { showMsg('report-msg', 'Nessun cliente selezionato.', false); return; }
+    const user_id = document.getElementById('c-userid').value.trim();
+    if (!user_id) { showMsg('report-msg', 'Nessun cliente caricato — clicca 'Carica' su un cliente dalla lista.', false); return; }
 
     const payload = {
       user_id,
@@ -720,8 +719,8 @@
   }
 
   async function salvaDocumento() {
-    const user_id = document.getElementById('doc-cliente').value;
-    if (!user_id) { showMsg('documento-msg', 'Nessun cliente selezionato.', false); return; }
+    const user_id = document.getElementById('c-userid').value.trim();
+    if (!user_id) { showMsg('documento-msg', 'Nessun cliente caricato — clicca 'Carica' su un cliente dalla lista.', false); return; }
 
     const payload = {
       user_id,
