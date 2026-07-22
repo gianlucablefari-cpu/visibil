@@ -1006,6 +1006,7 @@
     e.preventDefault();
     const form = e.target;
     const msg = document.getElementById('contact-msg');
+    const testoMessaggio = form.querySelector('textarea[name="messaggio"]').value;
     msg.textContent = "Invio in corso...";
     msg.className = "account-msg";
 
@@ -1020,6 +1021,15 @@
         msg.textContent = "Messaggio inviato.";
         msg.className = "account-msg ok";
         form.reset();
+
+        if (window.currentUserId && !window.isPreviewMode) {
+          client.from('messaggi').insert({
+            user_id: window.currentUserId,
+            tipo: 'contatto',
+            oggetto: "Messaggio dall'Area Clienti",
+            contenuto: testoMessaggio
+          }).then(() => {});
+        }
       } else {
         msg.textContent = "Errore nell'invio.";
         msg.className = "account-msg err";

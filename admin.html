@@ -146,6 +146,13 @@
 
 
         <div class="card">
+          <h2>Messaggi</h2>
+          <p class="desc">Messaggi ricevuti dai clienti e notifiche che hai inviato.</p>
+          <div id="messaggi-lista"></div>
+          <button class="secondary" id="messaggi-toggle" style="display:none; width:100%; margin-top:0.75rem;" onclick="toggleMessaggi()">Visualizza tutti</button>
+        </div>
+
+        <div class="card">
           <h2>Clienti esistenti</h2>
           <p class="desc">Clicca "Carica" per richiamare un cliente nel form e modificarlo.</p>
           <div id="clienti-lista"></div>
@@ -491,7 +498,66 @@ Gianluca — VISIBIL</textarea>
     checkAccess(data.user);
   }
 
-  function checkAccess(user) {
+  window.messaggiCache = [];
+
+  async function caricaMessaggi() {
+    const { data, error } = await client.from('messaggi').select('*').order('created_at', { ascending: false });
+    if (error) { console.error('Errore messaggi:', error); return; }
+    window.messaggiCache = data || [];
+    renderMessaggi(false);
+  }
+
+  function nomeClienteById(user_id) {
+    const c = (clientiCache || []).find(x => x.user_id === user_id);
+    return c ? (c.nome || user_id) : user_id;
+  }
+
+  function renderMessaggi(mostraTutti) {
+    const list = document.getElementById('messaggi-lista');
+    const toggleBtn = document.getElementById('messaggi-toggle');
+    const messaggi = window.messaggiCache || [];
+    list.innerHTML = '';
+
+    if (messaggi.length === 0) {
+      list.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun messaggio ancora.</p>';
+      toggleBtn.style.display = 'none';
+      return;
+    }
+
+    const daMostrare = mostraTutti ? messaggi : messaggi.slice(0, 5);
+
+    daMostrare.forEach(m => {
+      const data = m.created_at ? new Date(m.created_at).toLocaleDateString('it-CH', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+      const badge = m.tipo === 'contatto'
+        ? `<span style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; background:#E3F3E8; color:#1E6B3C; padding:0.25rem 0.5rem; border-radius:100px;">Dal cliente</span>`
+        : `<span style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; background:#F5F6FF; color:#1A1AE6; padding:0.25rem 0.5rem; border-radius:100px;">Inviata da te</span>`;
+
+      list.innerHTML += `
+        <div style="border:1px solid rgba(0,0,0,0.08); border-radius:8px; padding:0.85rem; margin-bottom:0.6rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
+            <strong style="font-size:0.8rem;">${nomeClienteById(m.user_id)}</strong>
+            ${badge}
+          </div>
+          <div style="font-size:0.7rem; color:var(--grey); margin-bottom:0.4rem;">${data}${m.oggetto ? ' · ' + m.oggetto : ''}</div>
+          <div style="font-size:0.8rem; white-space:pre-line;">${(m.contenuto || '').slice(0, 300)}${(m.contenuto || '').length > 300 ? '…' : ''}</div>
+        </div>`;
+    });
+
+    if (messaggi.length > 5) {
+      toggleBtn.style.display = 'block';
+      toggleBtn.textContent = mostraTutti ? 'Mostra meno' : 'Visualizza tutti';
+    } else {
+      toggleBtn.style.display = 'none';
+    }
+  }
+
+  function toggleMessaggi() {
+    const toggleBtn = document.getElementById('messaggi-toggle');
+    const mostraTutti = toggleBtn.textContent === 'Visualizza tutti';
+    renderMessaggi(mostraTutti);
+  }
+
+  async function checkAccess(user) {
     document.getElementById('login-box').style.display = 'none';
     if (user.id !== OWNER_ID) {
       document.getElementById('denied').style.display = 'block';
@@ -499,7 +565,8 @@ Gianluca — VISIBIL</textarea>
     }
     document.getElementById('app').style.display = 'block';
     document.getElementById('admin-email').textContent = user.email;
-    caricaClienti();
+    await caricaClienti();
+    caricaMessaggi();
   }
 
   async function logout() {
@@ -613,7 +680,8 @@ Gianluca — VISIBIL</textarea>
           incipit,
           messaggioVisibil: boxVisibil,
           messaggioCliente: boxCliente,
-          saluti
+          saluti,
+          user_id: document.getElementById('c-userid').value.trim()
         })
       });
       const result = await res.json();

@@ -34,7 +34,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { email, oggetto, incipit, messaggioVisibil, messaggioCliente, saluti } = payload;
+  const { email, oggetto, incipit, messaggioVisibil, messaggioCliente, saluti, user_id } = payload;
   if (!email) {
     return new Response(JSON.stringify({ error: "Email obbligatoria." }), { status: 400 });
   }
@@ -94,6 +94,31 @@ export default async (req) => {
     }
   } catch (e) {
     return new Response(JSON.stringify({ error: "Errore di connessione al servizio email." }), { status: 500 });
+  }
+
+  if (user_id) {
+    try {
+      const contenutoLog = [incipit, messaggioVisibil ? `[Da VISIBIL] ${messaggioVisibil}` : '', messaggioCliente ? `[Dal cliente] ${messaggioCliente}` : '', saluti]
+        .filter(Boolean).join('\n\n');
+
+      await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
+        method: "POST",
+        headers: {
+          apikey: SERVICE_KEY,
+          Authorization: `Bearer ${SERVICE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          user_id,
+          tipo: "notifica",
+          oggetto,
+          contenuto: contenutoLog
+        })
+      });
+    } catch (e) {
+      // non blocca l'invio se il log fallisce
+    }
   }
 
   return new Response(JSON.stringify({ success: true }), {
