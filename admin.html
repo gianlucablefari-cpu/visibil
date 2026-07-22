@@ -144,10 +144,23 @@
     <div class="dash-layout">
 
       <div class="side-col">
-        <div>
-          <div class="avatar">AD</div>
-          <div class="profile-name">Gianluca</div>
-          <div class="profile-tag">Amministratore</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+          <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.75rem; text-align:center;">
+            <div style="font-size:1.1rem; font-weight:700;" id="stat-clienti">—</div>
+            <div style="font-size:0.6rem; color:var(--grey); text-transform:uppercase; letter-spacing:0.05em;">Clienti</div>
+          </div>
+          <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.75rem; text-align:center;">
+            <div style="font-size:1.1rem; font-weight:700;" id="stat-pagamenti">—</div>
+            <div style="font-size:0.6rem; color:var(--grey); text-transform:uppercase; letter-spacing:0.05em;">Pagamenti sospesi</div>
+          </div>
+          <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.75rem; text-align:center;">
+            <div style="font-size:1.1rem; font-weight:700;" id="stat-messaggi">—</div>
+            <div style="font-size:0.6rem; color:var(--grey); text-transform:uppercase; letter-spacing:0.05em;">Messaggi</div>
+          </div>
+          <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.75rem; text-align:center;">
+            <div style="font-size:1.1rem; font-weight:700;" id="stat-preventivi">—</div>
+            <div style="font-size:0.6rem; color:var(--grey); text-transform:uppercase; letter-spacing:0.05em;">Preventivi da approvare</div>
+          </div>
         </div>
 
 
@@ -574,6 +587,20 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('admin-email').textContent = user.email;
     await caricaClienti();
     caricaMessaggi();
+    caricaStatistiche();
+  }
+
+  async function caricaStatistiche() {
+    document.getElementById('stat-clienti').textContent = clientiCache.length;
+
+    const { data: pagamentiSospesi } = await client.from('pagamenti').select('id').neq('stato', 'Pagato');
+    document.getElementById('stat-pagamenti').textContent = (pagamentiSospesi || []).length;
+
+    const { data: messaggiClienti } = await client.from('messaggi').select('id').eq('tipo', 'contatto');
+    document.getElementById('stat-messaggi').textContent = (messaggiClienti || []).length;
+
+    const { data: preventiviAttesa } = await client.from('preventivi').select('id').eq('stato', 'In attesa');
+    document.getElementById('stat-preventivi').textContent = (preventiviAttesa || []).length;
   }
 
   async function logout() {
