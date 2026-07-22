@@ -260,6 +260,10 @@
       <label for="c-avanzamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Da fare — Gianluca</label>
       <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese" style="min-height:180px;"></textarea>
 
+      <label style="display:flex; align-items:center; gap:0.5rem; margin-top:1rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
+        <input type="checkbox" id="c-invia-notifica" style="width:auto;"> Invia notifica email al cliente
+      </label>
+
       <button onclick="salvaDaFare()">Salva</button>
       <div class="msg" id="cliente-msg-3"></div>
       <div class="msg" id="notifica-msg"></div>
@@ -561,7 +565,7 @@
 
   async function salvaDaFare() {
     const nuovoTesto = document.getElementById('c-da-fare-cliente').value;
-    const testoCambiato = nuovoTesto.trim() !== (window.daFareClienteOriginale || '').trim();
+    const vuoiNotificare = document.getElementById('c-invia-notifica').checked;
 
     await salvaCliente();
     window.daFareClienteOriginale = nuovoTesto;
@@ -569,7 +573,7 @@
     const notificaMsg = document.getElementById('notifica-msg');
     notificaMsg.textContent = '';
 
-    if (!testoCambiato) return;
+    if (!vuoiNotificare) return;
     if (!window.clienteAttivoEmail) {
       notificaMsg.textContent = 'Nota: nessuna email salvata per questo cliente, notifica non inviata.';
       notificaMsg.className = 'msg';
@@ -692,6 +696,7 @@
     window.daFareClienteOriginale = c.da_fare_cliente || '';
     const labelDaFare = document.getElementById('label-da-fare-cliente');
     if (labelDaFare) labelDaFare.textContent = `Da fare — ${window.clienteAttivoNome}`;
+    document.getElementById('c-invia-notifica').checked = false;
     ['p', 'pg', 'doc', 'r'].forEach(prefix => {
       const el = document.getElementById(prefix + '-cliente-display');
       if (el) el.textContent = window.clienteAttivoNome;
