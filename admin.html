@@ -73,6 +73,9 @@
 
   .section-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.2rem; }
   .card { background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.75rem; margin-bottom: 2rem; }
+  .card.collapsed > *:not(:first-child) { display: none !important; }
+  .card-toggle { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .card-toggle .chevron { width: 14px; height: 14px; flex-shrink: 0; transition: transform 0.2s; }
   .card h2 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.3rem; }
   .card .desc { font-size: 0.78rem; color: var(--grey); margin-bottom: 1rem; }
 
@@ -256,8 +259,8 @@
     </h2>
 
     <!-- NUOVO CLIENTE (creazione automatica account) -->
-    <div class="card">
-      <h2>Nuovo cliente</h2>
+    <div class="card collapsed">
+      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo cliente<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
       <p class="desc">Crea in automatico l'accesso al portale per un cliente o potenziale cliente (utente + record base + email di invito).</p>
 
       <label for="nc-nome">Nome cliente/progetto</label>
@@ -273,12 +276,15 @@
       <div class="msg" id="nc-msg"></div>
     </div>
 
-    <h2 style="font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-      Da fare
+    <h2 onclick="toggleCard(this)" style="cursor:pointer; font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
+      <span style="display:flex; align-items:center; gap:0.5rem;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        Da fare
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
     </h2>
 
-    <div class="card">
+    <div class="card collapsed">
       <p class="desc">Note visibili al cliente e per te stesso — riferite al cliente selezionato a sinistra.</p>
 
       <label for="c-da-fare-cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span id="label-da-fare-cliente">Da fare — Cliente</span></label>
@@ -311,12 +317,15 @@ Gianluca — VISIBIL</textarea>
       </div>
     </div>
 
-    <h2 style="font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-      Impostazioni cliente
+    <h2 onclick="toggleCard(this)" style="cursor:pointer; font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
+      <span style="display:flex; align-items:center; gap:0.5rem;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Impostazioni cliente
+      </span>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
     </h2>
 
-    <div class="card">
+    <div class="card collapsed">
       <p class="desc">Link operativi e abbonamento — cambi raramente, di solito solo alla creazione del cliente.</p>
 
       <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
@@ -355,8 +364,8 @@ Gianluca — VISIBIL</textarea>
     </div>
 
     <!-- PREVENTIVO -->
-    <div class="card">
-      <h2>Nuovo preventivo</h2>
+    <div class="card collapsed">
+      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo preventivo<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
       <p class="desc">Seleziona il cliente e compila i dati del preventivo.</p>
 
       <p class="desc" style="margin-top:0;">Cliente: <strong id="p-cliente-display">— nessuno caricato —</strong></p>
@@ -385,8 +394,8 @@ Gianluca — VISIBIL</textarea>
     </div>
 
     <!-- PAGAMENTO -->
-    <div class="card">
-      <h2>Nuovo pagamento</h2>
+    <div class="card collapsed">
+      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo pagamento<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
       <p class="desc">Registra un pagamento (fatto o dovuto) per un cliente.</p>
 
       <p class="desc" style="margin-top:0;">Cliente: <strong id="pg-cliente-display">— nessuno caricato —</strong></p>
@@ -418,8 +427,8 @@ Gianluca — VISIBIL</textarea>
     </div>
 
     <!-- DOCUMENTO -->
-    <div class="card">
-      <h2>Nuovo documento</h2>
+    <div class="card collapsed">
+      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo documento<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
       <p class="desc">Documenti da scaricare/firmare (es. contratti, moduli).</p>
 
       <p class="desc" style="margin-top:0;">Cliente: <strong id="doc-cliente-display">— nessuno caricato —</strong></p>
@@ -444,8 +453,8 @@ Gianluca — VISIBIL</textarea>
     </div>
 
     <!-- REPORT -->
-    <div class="card">
-      <h2>Nuovo report</h2>
+    <div class="card collapsed">
+      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo report<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
       <p class="desc">Carica un report (es. analytics mensile) per un cliente.</p>
 
       <p class="desc" style="margin-top:0;">Cliente: <strong id="r-cliente-display">— nessuno caricato —</strong></p>
@@ -762,6 +771,12 @@ Gianluca — VISIBIL</textarea>
       clientiCache.map(c => `<option value="${c.user_id}">${c.nome || c.user_id}</option>`).join('');
   }
 
+  function toggleCard(headerEl) {
+    let target = headerEl.closest('.card');
+    if (!target) target = headerEl.nextElementSibling;
+    if (target) target.classList.toggle('collapsed');
+  }
+
   function nuovoCliente() {
     document.getElementById('c-userid').value = '';
     document.getElementById('c-nome').value = '';
@@ -798,6 +813,10 @@ Gianluca — VISIBIL</textarea>
   function caricaNelForm(user_id) {
     const c = clientiCache.find(x => x.user_id === user_id);
     if (!c) return;
+
+    document.getElementById('c-da-fare-cliente').closest('.card').classList.remove('collapsed');
+    document.getElementById('c-sito-url').closest('.card').classList.remove('collapsed');
+
     document.getElementById('c-userid').value = c.user_id;
     document.getElementById('c-nome').value = c.nome || '';
     document.getElementById('c-telefono').value = c.telefono || '';
