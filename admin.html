@@ -583,6 +583,8 @@
     notificaMsg.textContent = 'Invio notifica email al cliente...';
     notificaMsg.className = 'msg';
 
+    const progetto = document.getElementById('c-rinnovo-piano').value || document.getElementById('c-sito-url').value || '';
+
     try {
       const { data: sessionData } = await client.auth.getSession();
       const token = sessionData.session.access_token;
@@ -593,6 +595,7 @@
         body: JSON.stringify({
           email: window.clienteAttivoEmail,
           nome: window.clienteAttivoNome,
+          progetto,
           messaggio: nuovoTesto
         })
       });

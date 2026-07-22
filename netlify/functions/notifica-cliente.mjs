@@ -34,7 +34,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { email, nome, messaggio } = payload;
+  const { email, nome, progetto, messaggio } = payload;
   if (!email || !messaggio) {
     return new Response(JSON.stringify({ error: "Email e messaggio sono obbligatori." }), { status: 400 });
   }
@@ -43,6 +43,10 @@ export default async (req) => {
   if (!RESEND_API_KEY) {
     return new Response(JSON.stringify({ error: "Configurazione email mancante." }), { status: 500 });
   }
+
+  const contestoRiga = progetto
+    ? `<p style="color:#8A8A8A; font-size:0.85em; margin:0 0 1.25em;">Progetto: ${progetto}</p>`
+    : '';
 
   try {
     const emailRes = await fetch("https://api.resend.com/emails", {
@@ -54,14 +58,24 @@ export default async (req) => {
       body: JSON.stringify({
         from: "VISIBIL <benvenuto@vsbl.ch>",
         to: [email],
-        subject: "Aggiornamento sul tuo progetto — VISIBIL",
+        subject: nome ? `${nome}, c'è un aggiornamento sul tuo progetto` : "Aggiornamento sul tuo progetto — VISIBIL",
         html: `
-          <div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">
-            <p>Ciao${nome ? ' ' + nome : ''},</p>
-            <p>C'è un aggiornamento sul tuo progetto:</p>
-            <p style="background:#FFF4DE; padding:1rem; border-radius:6px;">${messaggio}</p>
-            <p>Puoi vedere tutti i dettagli nella tua <a href="https://vsbl.ch/area-cliente.html">Area Clienti</a>.</p>
-            <p>A presto,<br>Gianluca di VISIBIL</p>
+          <div style="font-family: 'Inter', Arial, sans-serif; color:#0F0F0F; line-height:1.6; max-width:480px; margin:0 auto;">
+            <div style="font-weight:900; font-size:0.9em; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:2em;">VISIBIL</div>
+
+            <p style="margin:0 0 0.5em;">Ciao${nome ? ' ' + nome : ''},</p>
+            <p style="margin:0 0 1.5em;">Ecco il prossimo passo per il tuo progetto:</p>
+            ${contestoRiga}
+
+            <div style="background:#F7F7F7; border-left:3px solid #1A1AE6; padding:1em 1.25em; margin:0 0 1.75em; font-size:0.95em;">
+              ${messaggio}
+            </div>
+
+            <a href="https://vsbl.ch/area-cliente.html" style="display:inline-block; background:#0F0F0F; color:#FFFFFF; text-decoration:none; font-size:0.75em; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.9em 1.75em; border-radius:5px; margin-bottom:2em;">Vai all'Area Clienti</a>
+
+            <p style="margin:0 0 0.25em;">A presto,</p>
+            <p style="margin:0 0 1.5em;">Gianluca — VISIBIL</p>
+            <p style="color:#8A8A8A; font-size:0.85em; margin:0;">Domande? Scrivimi pure, o chiamami al +41 79 644 56 83.</p>
           </div>
         `
       })
