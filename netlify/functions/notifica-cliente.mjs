@@ -34,9 +34,9 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { email, nome, progetto, messaggioVisibil, messaggioCliente } = payload;
-  if (!email || (!messaggioVisibil && !messaggioCliente)) {
-    return new Response(JSON.stringify({ error: "Email e almeno un messaggio sono obbligatori." }), { status: 400 });
+  const { email, oggetto, incipit, messaggioVisibil, messaggioCliente, saluti } = payload;
+  if (!email) {
+    return new Response(JSON.stringify({ error: "Email obbligatoria." }), { status: 400 });
   }
 
   const RESEND_API_KEY = Netlify.env.get("RESEND_API_KEY");
@@ -44,23 +44,22 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Configurazione email mancante." }), { status: 500 });
   }
 
-  const contestoRiga = progetto
-    ? `<p style="color:#8A8A8A; font-size:0.85em; margin:0 0 1.25em;">Progetto: ${progetto}</p>`
-    : '';
-
   const boxVisibil = messaggioVisibil
     ? `<div style="background:#F5F6FF; border-left:3px solid #1A1AE6; padding:1em 1.25em; margin:0 0 1em;">
         <div style="font-size:0.7em; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#1A1AE6; margin-bottom:0.4em;">Da VISIBIL</div>
-        <div style="font-size:0.95em;">${messaggioVisibil}</div>
+        <div style="font-size:0.95em; white-space:pre-line;">${messaggioVisibil}</div>
       </div>`
     : '';
 
   const boxCliente = messaggioCliente
     ? `<div style="background:#FFF4DE; border-left:3px solid #7A4E00; padding:1em 1.25em; margin:0 0 1.75em;">
         <div style="font-size:0.7em; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#7A4E00; margin-bottom:0.4em;">Dal cliente</div>
-        <div style="font-size:0.95em;">${messaggioCliente}</div>
+        <div style="font-size:0.95em; white-space:pre-line;">${messaggioCliente}</div>
       </div>`
     : '';
+
+  const incipitHtml = incipit ? `<p style="margin:0 0 1.5em; white-space:pre-line;">${incipit}</p>` : '';
+  const salutiHtml = saluti ? `<p style="margin:1.5em 0 0; white-space:pre-line;">${saluti}</p>` : '';
 
   try {
     const emailRes = await fetch("https://api.resend.com/emails", {
@@ -72,23 +71,18 @@ export default async (req) => {
       body: JSON.stringify({
         from: "VISIBIL <benvenuto@vsbl.ch>",
         to: [email],
-        subject: "La lista delle cose da fare si è aggiornata",
+        subject: oggetto || "Aggiornamento sul tuo progetto — VISIBIL",
         html: `
           <div style="font-family: 'Inter', Arial, sans-serif; color:#0F0F0F; line-height:1.6; max-width:480px; margin:0 auto;">
             <div style="font-weight:900; font-size:0.9em; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:2em;">VISIBIL</div>
 
-            <p style="margin:0 0 0.5em;">Ciao${nome ? ' ' + nome : ''},</p>
-            <p style="margin:0 0 1.5em;">La lista delle cose da fare per il tuo progetto si è aggiornata:</p>
-            ${contestoRiga}
-
+            ${incipitHtml}
             ${boxVisibil}
             ${boxCliente}
 
-            <a href="https://vsbl.ch/area-cliente.html" style="display:inline-block; background:#0F0F0F; color:#FFFFFF; text-decoration:none; font-size:0.75em; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.9em 1.75em; border-radius:5px; margin-bottom:2em;">Vai all'Area Clienti</a>
+            <a href="https://vsbl.ch/area-cliente.html" style="display:inline-block; background:#0F0F0F; color:#FFFFFF; text-decoration:none; font-size:0.75em; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.9em 1.75em; border-radius:5px; margin-bottom:1em;">Vai all'Area Clienti</a>
 
-            <p style="margin:0 0 0.25em;">A presto,</p>
-            <p style="margin:0 0 1.5em;">Gianluca — VISIBIL</p>
-            <p style="color:#8A8A8A; font-size:0.85em; margin:0;">Domande? Scrivimi pure, o chiamami al +41 79 644 56 83.</p>
+            ${salutiHtml}
           </div>
         `
       })
