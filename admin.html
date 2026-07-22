@@ -596,7 +596,8 @@
           email: window.clienteAttivoEmail,
           nome: window.clienteAttivoNome,
           progetto,
-          messaggio: nuovoTesto
+          messaggioVisibil: document.getElementById('c-avanzamento').value,
+          messaggioCliente: nuovoTesto
         })
       });
       const result = await res.json();
