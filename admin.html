@@ -649,7 +649,7 @@
 
   async function salvaPreventivo() {
     const user_id = document.getElementById('c-userid').value.trim();
-    if (!user_id) { showMsg('preventivo-msg', 'Nessun cliente caricato — clicca 'Carica' su un cliente dalla lista.', false); return; }
+    if (!user_id) { showMsg('preventivo-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
 
     const newId = crypto.randomUUID();
     const linkApprovazione = `https://vsbl.ch/preventivo.html?id=${newId}`;
@@ -675,7 +675,7 @@
 
   async function salvaPagamento() {
     const user_id = document.getElementById('c-userid').value.trim();
-    if (!user_id) { showMsg('pagamento-msg', 'Nessun cliente caricato — clicca 'Carica' su un cliente dalla lista.', false); return; }
+    if (!user_id) { showMsg('pagamento-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
 
     const newId = crypto.randomUUID();
     let paymentLink = document.getElementById('pg-payment-link').value || null;
@@ -706,7 +706,7 @@
 
   async function salvaReport() {
     const user_id = document.getElementById('c-userid').value.trim();
-    if (!user_id) { showMsg('report-msg', 'Nessun cliente caricato — clicca 'Carica' su un cliente dalla lista.', false); return; }
+    if (!user_id) { showMsg('report-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
 
     const payload = {
       user_id,
@@ -724,7 +724,7 @@
 
   async function salvaDocumento() {
     const user_id = document.getElementById('c-userid').value.trim();
-    if (!user_id) { showMsg('documento-msg', 'Nessun cliente caricato — clicca 'Carica' su un cliente dalla lista.', false); return; }
+    if (!user_id) { showMsg('documento-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
 
     const payload = {
       user_id,
