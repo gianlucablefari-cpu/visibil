@@ -390,11 +390,7 @@
           <div class="account-card" id="contatti" style="scroll-margin-top: 6rem; margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); border-left:none; border-right:none; border-bottom:none; border-radius:0; padding: 1.25rem 0 0; align-items: flex-start; text-align: left;">
             <div class="section-label" style="margin-bottom: 0.75rem;">Contattami <span style="font-weight:400; text-transform:none; letter-spacing:normal;">(rispondo entro 24h)</span></div>
 
-            <form id="contact-form" method="POST" action="https://api.web3forms.com/submit">
-              <input type="hidden" name="access_key" value="b60eacf2-4a27-416a-8999-2fe3238adfb6">
-              <input type="hidden" name="subject" value="Messaggio dall'Area Clienti">
-              <input type="hidden" name="from_name" id="contact-from-name" value="">
-              <input type="hidden" name="replyto" id="contact-from-email" value="">
+            <form id="contact-form">
               <div class="account-field" style="margin-bottom: 0.75rem;">
                 <textarea name="messaggio" placeholder="Scrivi il tuo messaggio..." required style="width:100%; min-height:80px; padding:0.6rem 0.75rem; font-family:var(--sans); font-size:0.85rem; border:1px solid rgba(0,0,0,0.1); border-radius:3px; resize:vertical;"></textarea>
               </div>
@@ -643,8 +639,6 @@
     }
 
     document.getElementById('account-email').textContent = isPreview ? '(email non visibile in anteprima)' : user.email;
-    document.getElementById('contact-from-email').value = user.email;
-    document.getElementById('contact-from-name').value = cliente ? cliente.nome : user.email;
     window.currentUserId = targetUserId;
 
     const { data: preventivi, error: errPrev } = await client.from('preventivi').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
@@ -780,19 +774,19 @@
     msg.className = "account-msg";
 
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('/api/contatto-cliente', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: 'b60eacf2-4a27-416a-8999-2fe3238adfb6',
-          subject: 'Richiesta eliminazione account — Area Clienti',
+          user_id: window.isPreviewMode ? null : window.currentUserId,
           from_name: document.getElementById('cliente-nome').textContent,
-          replyto: document.getElementById('account-email').textContent,
+          from_email: document.getElementById('account-email').textContent,
+          subject: 'Richiesta eliminazione account — Area Clienti',
           message: `Il cliente ${document.getElementById('cliente-nome').textContent} ha richiesto l'eliminazione del proprio account dall'Area Clienti.`
         })
       });
       const result = await res.json();
-      if (result.success) {
+      if (res.ok && result.success) {
         msg.textContent = "Richiesta inviata. Ti contatteremo a breve.";
         msg.className = "account-msg ok";
       } else {
@@ -814,19 +808,19 @@
     msg.className = "account-msg";
 
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
+      const res = await fetch('/api/contatto-cliente', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: 'b60eacf2-4a27-416a-8999-2fe3238adfb6',
-          subject: 'Richiesta disdetta abbonamento — Area Clienti',
+          user_id: window.isPreviewMode ? null : window.currentUserId,
           from_name: document.getElementById('cliente-nome').textContent,
-          replyto: document.getElementById('account-email').textContent,
+          from_email: document.getElementById('account-email').textContent,
+          subject: 'Richiesta disdetta abbonamento — Area Clienti',
           message: `Il cliente ${document.getElementById('cliente-nome').textContent} ha richiesto la disdetta del proprio abbonamento dall'Area Clienti.`
         })
       });
       const result = await res.json();
-      if (result.success) {
+      if (res.ok && result.success) {
         msg.textContent = "Richiesta inviata. Ti contatteremo a breve.";
         msg.className = "account-msg ok";
       } else {
@@ -1011,25 +1005,22 @@
     msg.className = "account-msg";
 
     try {
-      const res = await fetch(form.action, {
+      const res = await fetch('/api/contatto-cliente', {
         method: 'POST',
-        body: new FormData(form),
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: window.isPreviewMode ? null : window.currentUserId,
+          from_name: document.getElementById('cliente-nome').textContent,
+          from_email: document.getElementById('account-email').textContent,
+          subject: "Messaggio dall'Area Clienti",
+          message: testoMessaggio
+        })
       });
       const result = await res.json();
-      if (result.success) {
+      if (res.ok && result.success) {
         msg.textContent = "Messaggio inviato.";
         msg.className = "account-msg ok";
         form.reset();
-
-        if (window.currentUserId && !window.isPreviewMode) {
-          client.from('messaggi').insert({
-            user_id: window.currentUserId,
-            tipo: 'contatto',
-            oggetto: "Messaggio dall'Area Clienti",
-            contenuto: testoMessaggio
-          }).then(() => {});
-        }
       } else {
         msg.textContent = "Errore nell'invio.";
         msg.className = "account-msg err";
