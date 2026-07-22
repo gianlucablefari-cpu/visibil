@@ -273,11 +273,7 @@
         <label for="email-incipit">Incipit</label>
         <textarea id="email-incipit" style="min-height:80px;">Ciao, ecco il prossimo passo per il tuo progetto:</textarea>
 
-        <label for="email-box-visibil">Box "Da VISIBIL" (blu)</label>
-        <textarea id="email-box-visibil" style="min-height:100px;"></textarea>
-
-        <label for="email-box-cliente">Box "Dal cliente" (giallo)</label>
-        <textarea id="email-box-cliente" style="min-height:100px;"></textarea>
+        <p class="desc" style="margin-top:0.5rem;">I due box "Da fare" qui sopra vengono inclusi automaticamente nell'email.</p>
 
         <label for="email-saluti">Saluti</label>
         <textarea id="email-saluti" style="min-height:100px;">A presto,
@@ -584,8 +580,6 @@ Gianluca — VISIBIL</textarea>
 
   async function salvaDaFare() {
     await salvaCliente();
-    document.getElementById('email-box-visibil').value = document.getElementById('c-avanzamento').value;
-    document.getElementById('email-box-cliente').value = document.getElementById('c-da-fare-cliente').value;
   }
 
   async function inviaNotificaEmail() {
@@ -599,8 +593,8 @@ Gianluca — VISIBIL</textarea>
 
     const oggetto = document.getElementById('email-oggetto').value;
     const incipit = document.getElementById('email-incipit').value;
-    const boxVisibil = document.getElementById('email-box-visibil').value;
-    const boxCliente = document.getElementById('email-box-cliente').value;
+    const boxVisibil = document.getElementById('c-avanzamento').value;
+    const boxCliente = document.getElementById('c-da-fare-cliente').value;
     const saluti = document.getElementById('email-saluti').value;
 
     notificaMsg.textContent = 'Invio email in corso...';
@@ -725,8 +719,6 @@ Gianluca — VISIBIL</textarea>
 
     document.getElementById('email-destinatario').textContent = window.clienteAttivoEmail || '— nessuna email salvata per questo cliente —';
     document.getElementById('email-incipit').value = `Ciao ${c.referente || window.clienteAttivoNome}, ecco il prossimo passo per il tuo progetto:`;
-    document.getElementById('email-box-visibil').value = c.prossimo_passo || '';
-    document.getElementById('email-box-cliente').value = c.da_fare_cliente || '';
     ['p', 'pg', 'doc', 'r'].forEach(prefix => {
       const el = document.getElementById(prefix + '-cliente-display');
       if (el) el.textContent = window.clienteAttivoNome;
