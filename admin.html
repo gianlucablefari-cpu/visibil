@@ -1076,9 +1076,9 @@ Gianluca — VISIBIL</textarea>
     { label: 'Formazione Vetrina — CHF 120', descrizione: 'Formazione (gestione autonoma) — Vetrina', importo: 120 },
     { label: 'Formazione Completo — CHF 160', descrizione: 'Formazione (gestione autonoma) — Completo', importo: 160 },
     { label: 'Formazione Avanzato — CHF 200', descrizione: 'Formazione (gestione autonoma) — Avanzato', importo: 200 },
-    { label: 'Lavoro extra (1h) — CHF 120/h', descrizione: 'Lavoro extra (1 ora, CHF 120/h — modifica se piu\' ore)', importo: 120 },
-    { label: 'Foto/Video (1h) — CHF 130/h', descrizione: 'Servizio foto/video (1 ora, CHF 130/h — modifica se piu\' ore)', importo: 130 },
-    { label: 'Consulenza (1h) — CHF 120/h', descrizione: 'Consulenza (1 ora, CHF 120/h — modifica se piu\' ore)', importo: 120 }
+    { label: 'Lavoro extra (a ore) — CHF 120/h', descrizione: 'Lavoro extra', importo: 120, tariffaOraria: 120 },
+    { label: 'Foto/Video (a ore) — CHF 130/h', descrizione: 'Servizio foto/video', importo: 130, tariffaOraria: 130 },
+    { label: 'Consulenza (a ore) — CHF 120/h', descrizione: 'Consulenza', importo: 120, tariffaOraria: 120 }
   ];
 
   function popolaCataloghi() {
@@ -1093,8 +1093,21 @@ Gianluca — VISIBIL</textarea>
     if (indice === '') return;
     const voce = PREZZI_CATALOGO[Number(indice)];
     if (!voce) return;
-    if (prefix === 'p') aggiungiVoce(voce.descrizione, voce.importo);
-    else aggiungiVocePagamento(voce.descrizione, voce.importo);
+
+    let descrizione = voce.descrizione;
+    let importo = voce.importo;
+
+    if (voce.tariffaOraria) {
+      const oreInput = prompt(`Quante ore? (CHF ${voce.tariffaOraria}/h)`, '1');
+      if (oreInput === null) return;
+      const ore = parseFloat(oreInput.replace(',', '.')) || 0;
+      if (ore <= 0) return;
+      descrizione = `${voce.descrizione} — ${ore} ${ore === 1 ? 'ora' : 'ore'} (CHF ${voce.tariffaOraria}/h)`;
+      importo = ore * voce.tariffaOraria;
+    }
+
+    if (prefix === 'p') aggiungiVoce(descrizione, importo);
+    else aggiungiVocePagamento(descrizione, importo);
   }
 
   popolaCataloghi();
