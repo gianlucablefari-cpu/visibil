@@ -14,33 +14,8 @@
   }
   body { font-family: var(--sans); background: var(--surface); color: var(--black); line-height: 1.5; -webkit-font-smoothing: antialiased; }
 
-  nav { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 3rem; background: rgba(255,255,255,0.94); backdrop-filter: blur(10px); z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.06); }
-  .nav-logo { font-weight: 900; font-size: 0.95rem; letter-spacing: 0.22em; color: var(--black); text-decoration: none; }
-  .nav-links { display: flex; gap: 2rem; align-items: center; list-style: none; }
-  .nav-links a { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); text-decoration: none; }
-  .nav-links .cta-link { color: var(--black); font-weight: 600; border-bottom: 2px solid var(--ink); padding-bottom: 1px; }
-  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
-  .hamburger span { display: block; width: 22px; height: 2px; background: var(--black); border-radius: 2px; transition: all 0.25s; }
-  .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-  .hamburger.active span:nth-child(2) { opacity: 0; }
-  .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-  .nav-links.open {
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 60px; left: 0; right: 0;
-    background: var(--white);
-    padding: 1.5rem;
-    gap: 1.5rem;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    z-index: 99;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  }
   @media (max-width: 640px) {
     html { font-size: 118%; }
-    nav { padding: 1.25rem 1.5rem; }
-    .nav-links { display: none; }
-    .hamburger { display: flex; }
   }
 
   main { max-width: 1100px; margin: 0 auto; padding: 2rem 3rem 5rem; }
@@ -585,24 +560,6 @@ Gianluca — VISIBIL</textarea>
   );
 
   let clientiCache = [];
-
-  const hamburger = document.querySelector('.hamburger');
-  const navLinksMenu = document.querySelector('.nav-links');
-  hamburger.addEventListener('click', function(e) {
-    e.stopPropagation();
-    navLinksMenu.classList.toggle('open');
-    hamburger.classList.toggle('active');
-  });
-  document.addEventListener('click', function() {
-    navLinksMenu.classList.remove('open');
-    hamburger.classList.remove('active');
-  });
-  navLinksMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      navLinksMenu.classList.remove('open');
-      hamburger.classList.remove('active');
-    });
-  });
 
   async function login() {
     const email = document.getElementById('email').value;
