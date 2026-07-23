@@ -468,11 +468,17 @@ Gianluca — VISIBIL</textarea>
 
       <p class="desc" style="margin-top:0;">Cliente: <strong id="pg-cliente-display">— nessuno caricato —</strong></p>
 
-      <label for="pg-descrizione">Descrizione</label>
-      <input type="text" id="pg-descrizione" placeholder="es. Servizio fotografico progetti">
+      <label for="pg-descrizione">Descrizione generale</label>
+      <input type="text" id="pg-descrizione" placeholder="es. Sito Vetrina + lavoro extra">
 
-      <label for="pg-importo">Importo (CHF)</label>
-      <input type="number" id="pg-importo">
+      <label>Voci</label>
+      <div id="pg-voci-lista"></div>
+      <button type="button" class="secondary" onclick="aggiungiVocePagamento()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce</button>
+
+      <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.08); font-size:1rem; font-weight:700; display:flex; justify-content:space-between;">
+        <span>Totale</span>
+        <span>CHF <span id="pg-totale">0</span></span>
+      </div>
 
       <label for="pg-stato">Stato</label>
       <select id="pg-stato">
@@ -487,8 +493,9 @@ Gianluca — VISIBIL</textarea>
       <label for="pg-documento">Link PDF (opzionale)</label>
       <input type="text" id="pg-documento">
 
-      <label for="pg-payment-link">Link di pagamento Stripe (opzionale)</label>
-      <input type="text" id="pg-payment-link" placeholder="https://buy.stripe.com/...">
+      <label style="display:flex; align-items:center; gap:0.5rem; margin-top:1rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
+        <input type="checkbox" id="pg-genera-link" style="width:auto;" checked> Genera automaticamente il link di pagamento Stripe
+      </label>
 
       <button onclick="salvaPagamento()">Aggiungi pagamento</button>
       <div class="msg" id="pagamento-msg"></div>
@@ -1117,22 +1124,89 @@ Gianluca — VISIBIL</textarea>
     aggiungiVoce();
   }
 
+  let vociPagamentoCounter = 0;
+
+  function aggiungiVocePagamento(desc, importo) {
+    vociPagamentoCounter++;
+    const id = vociPagamentoCounter;
+    const div = document.createElement('div');
+    div.id = `voce-pg-${id}`;
+    div.style.cssText = 'display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;';
+    div.innerHTML = `
+      <input type="text" placeholder="Descrizione voce" value="${desc || ''}" style="flex:2;" oninput="ricalcolaTotalePagamento()">
+      <input type="number" placeholder="CHF" value="${importo != null ? importo : ''}" style="flex:1;" oninput="ricalcolaTotalePagamento()">
+      <button type="button" onclick="document.getElementById('voce-pg-${id}').remove(); ricalcolaTotalePagamento();" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; padding:0.5rem 0.7rem; flex-shrink:0;">✕</button>
+    `;
+    document.getElementById('pg-voci-lista').appendChild(div);
+    ricalcolaTotalePagamento();
+  }
+
+  function ricalcolaTotalePagamento() {
+    let totale = 0;
+    document.querySelectorAll('#pg-voci-lista > div').forEach(row => {
+      const importoInput = row.querySelectorAll('input')[1];
+      totale += Number(importoInput.value) || 0;
+    });
+    document.getElementById('pg-totale').textContent = totale;
+  }
+
+  function raccogliVociPagamento() {
+    const voci = [];
+    document.querySelectorAll('#pg-voci-lista > div').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const descrizione = inputs[0].value;
+      const importo = Number(inputs[1].value) || 0;
+      if (descrizione || importo) voci.push({ descrizione, importo });
+    });
+    return voci;
+  }
+
+  aggiungiVocePagamento();
+
   async function salvaPagamento() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('pagamento-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
 
     const newId = crypto.randomUUID();
-    let paymentLink = document.getElementById('pg-payment-link').value || null;
-    if (paymentLink) {
-      const sep = paymentLink.includes('?') ? '&' : '?';
-      paymentLink = `${paymentLink}${sep}client_reference_id=${newId}`;
+    const voci = raccogliVociPagamento();
+    const totale = voci.reduce((sum, v) => sum + (Number(v.importo) || 0), 0);
+    const descrizioneGenerale = document.getElementById('pg-descrizione').value;
+    const vuoiLink = document.getElementById('pg-genera-link').checked;
+
+    let paymentLink = null;
+    if (vuoiLink && totale > 0) {
+      showMsg('pagamento-msg', 'Genero il link di pagamento su Stripe...', true);
+      try {
+        const { data: sessionData } = await client.auth.getSession();
+        const token = sessionData.session.access_token;
+        const res = await fetch('/api/crea-payment-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            descrizione: descrizioneGenerale || 'Pagamento VISIBIL',
+            importo: totale,
+            pagamento_id: newId
+          })
+        });
+        const result = await res.json();
+        if (res.ok && result.url) {
+          paymentLink = result.url;
+        } else {
+          showMsg('pagamento-msg', 'Errore nella generazione del link Stripe: ' + (result.error || ''), false);
+          return;
+        }
+      } catch (e) {
+        showMsg('pagamento-msg', 'Errore di connessione a Stripe.', false);
+        return;
+      }
     }
 
     const payload = {
       id: newId,
       user_id,
-      descrizione: document.getElementById('pg-descrizione').value,
-      importo: document.getElementById('pg-importo').value || null,
+      descrizione: descrizioneGenerale,
+      importo: totale,
+      voci: voci,
       stato: document.getElementById('pg-stato').value,
       data: document.getElementById('pg-data').value || new Date().toISOString().slice(0,10),
       documento_url: document.getElementById('pg-documento').value || null,
@@ -1141,11 +1215,11 @@ Gianluca — VISIBIL</textarea>
 
     const { error } = await client.from('pagamenti').insert(payload);
     if (error) { showMsg('pagamento-msg', 'Errore: ' + error.message, false); return; }
-    showMsg('pagamento-msg', 'Pagamento aggiunto. Il link salvato ora include un riferimento univoco per l\'aggiornamento automatico dello stato.', true);
+    showMsg('pagamento-msg', paymentLink ? 'Pagamento aggiunto con link Stripe generato automaticamente.' : 'Pagamento aggiunto.', true);
     document.getElementById('pg-descrizione').value = '';
-    document.getElementById('pg-importo').value = '';
     document.getElementById('pg-documento').value = '';
-    document.getElementById('pg-payment-link').value = '';
+    document.getElementById('pg-voci-lista').innerHTML = '';
+    aggiungiVocePagamento();
   }
 
   async function salvaReport() {
