@@ -111,9 +111,15 @@
 
 <div id="cliente-attivo-bar" style="display:none; position:sticky; top:76px; margin-top:76px; z-index:90; background:#0F0F0F; color:#fff; padding:0.75rem 3rem; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
   <span style="font-size:0.8rem;">Cliente attivo: <strong id="cliente-attivo-nome">—</strong></span>
-  <select id="quick-select-cliente" onchange="caricaNelForm(this.value)" style="font-family:var(--sans); font-size:0.8rem; padding:0.4rem 0.6rem; border-radius:5px; border:1px solid rgba(255,255,255,0.3); background:#0F0F0F; color:#fff;">
-    <option value="">Cambia cliente...</option>
-  </select>
+  <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+    <a id="cliente-attivo-anteprima" href="#" target="_blank" style="font-size:0.75rem; color:#fff; border:1px solid rgba(255,255,255,0.3); padding:0.4rem 0.75rem; border-radius:5px; text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      Anteprima
+    </a>
+    <select id="quick-select-cliente" onchange="caricaNelForm(this.value)" style="font-family:var(--sans); font-size:0.8rem; padding:0.4rem 0.6rem; border-radius:5px; border:1px solid rgba(255,255,255,0.3); background:#0F0F0F; color:#fff;">
+      <option value="">Cambia cliente...</option>
+    </select>
+  </div>
 </div>
 
 <main>
@@ -884,6 +890,7 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('cliente-attivo-bar').style.display = 'flex';
     document.getElementById('cliente-attivo-nome').textContent = window.clienteAttivoNome;
     document.getElementById('quick-select-cliente').value = c.user_id;
+    document.getElementById('cliente-attivo-anteprima').href = `area-cliente.html?preview=${c.user_id}`;
 
     restoreAutosave(DA_FARE_FIELDS.concat(EMAIL_FIELDS), c.user_id);
 
