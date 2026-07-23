@@ -88,6 +88,13 @@
   .dropdown-menu button:hover { background: var(--surface); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
+  .acc-item { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
+  .acc-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; font-size: 0.85rem; font-weight: 700; background: var(--white); }
+  .acc-header:hover { background: var(--surface); }
+  .acc-chevron { width: 16px; height: 16px; flex-shrink: 0; transition: transform 0.2s; }
+  .acc-item.open .acc-chevron { transform: rotate(180deg); }
+  .acc-body { display: none; padding: 0 1.25rem 1.25rem; }
+  .acc-item.open .acc-body { display: block; }
   .card h2 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.3rem; }
   .card .desc { font-size: 0.78rem; color: var(--grey); margin-bottom: 1rem; }
 
@@ -211,47 +218,7 @@
           <label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Email di accesso</label>
           <div style="font-size:0.85rem; padding:0.6rem 0.1rem; color:var(--black);" id="c-email-accesso-display">—</div>
 
-          <div class="section-label" style="margin-top:1.25rem;">Dati di contatto</div>
 
-          <label for="c-referente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Nome e cognome</label>
-          <input type="text" id="c-referente">
-
-          <label for="c-telefono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>Telefono</label>
-          <input type="text" id="c-telefono">
-
-          <label for="c-email-contatto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Email</label>
-          <input type="email" id="c-email-contatto" placeholder="nome@email.com">
-
-          <div class="section-label" style="margin-top:1.25rem;">Preferenza di contatto</div>
-          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
-            <input type="checkbox" id="c-pref-email" style="width:auto;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; opacity:0.6;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-            Email
-          </label>
-          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
-            <input type="checkbox" id="c-pref-whatsapp" style="width:auto;">
-            <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px; height:13px; opacity:0.6;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
-            WhatsApp
-          </label>
-          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
-            <input type="checkbox" id="c-pref-telefono" style="width:auto;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; opacity:0.6;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-            Telefonata
-          </label>
-
-          <label for="c-orario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Orario preferito</label>
-          <input type="text" id="c-orario" placeholder="es. 9:00–12:00">
-
-          <div class="section-label" style="margin-top:1.25rem;">Fatturazione</div>
-
-          <label for="c-nome-fatturazione"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Nome e cognome</label>
-          <input type="text" id="c-nome-fatturazione" placeholder="Nome cognome">
-
-          <label for="c-nome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-6h6v6"></path></svg>Nome / Ragione sociale</label>
-          <input type="text" id="c-nome" placeholder="es. B3 Architetti sagl">
-
-          <label for="c-indirizzo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Indirizzo</label>
-          <input type="text" id="c-indirizzo" placeholder="Via, numero, CAP, città">
 
           <button onclick="salvaCliente()">Salva cliente</button>
           <div class="msg" id="cliente-msg"></div>
@@ -371,7 +338,66 @@ Gianluca — VISIBIL</textarea>
     </div><!-- /tab-panel -->
 
     <div class="tab-panel active" id="panel-impostazioni">
-    <div class="card">
+
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span>Dati personali</span>
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="acc-body">
+          <div class="section-label" style="margin-top:1.25rem;">Dati di contatto</div>
+
+          <label for="c-referente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Nome e cognome</label>
+          <input type="text" id="c-referente">
+
+          <label for="c-telefono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>Telefono</label>
+          <input type="text" id="c-telefono">
+
+          <label for="c-email-contatto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Email</label>
+          <input type="email" id="c-email-contatto" placeholder="nome@email.com">
+
+          <div class="section-label" style="margin-top:1.25rem;">Preferenza di contatto</div>
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
+            <input type="checkbox" id="c-pref-email" style="width:auto;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; opacity:0.6;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            Email
+          </label>
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
+            <input type="checkbox" id="c-pref-whatsapp" style="width:auto;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px; height:13px; opacity:0.6;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
+            WhatsApp
+          </label>
+          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
+            <input type="checkbox" id="c-pref-telefono" style="width:auto;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; opacity:0.6;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            Telefonata
+          </label>
+
+          <label for="c-orario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Orario preferito</label>
+          <input type="text" id="c-orario" placeholder="es. 9:00–12:00">
+
+          <div class="section-label" style="margin-top:1.25rem;">Fatturazione</div>
+
+          <label for="c-nome-fatturazione"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Nome e cognome</label>
+          <input type="text" id="c-nome-fatturazione" placeholder="Nome cognome">
+
+          <label for="c-nome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-6h6v6"></path></svg>Nome / Ragione sociale</label>
+          <input type="text" id="c-nome" placeholder="es. B3 Architetti sagl">
+
+          <label for="c-indirizzo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Indirizzo</label>
+          <input type="text" id="c-indirizzo" placeholder="Via, numero, CAP, città">
+
+        <button onclick="salvaCliente()">Salva cliente</button>
+        <div class="msg" id="cliente-msg"></div>
+      </div>
+    </div>
+
+    <div class="acc-item">
+      <div class="acc-header" onclick="toggleAcc(this)">
+        <span>Link e abbonamento</span>
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="acc-body">
       <p class="desc">Link operativi e abbonamento — cambi raramente, di solito solo alla creazione del cliente.</p>
 
       <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
@@ -407,6 +433,7 @@ Gianluca — VISIBIL</textarea>
 
       <button onclick="salvaCliente()">Salva cliente</button>
       <div class="msg" id="cliente-msg-2"></div>
+      </div>
     </div>
     </div><!-- /tab-panel -->
 
@@ -866,6 +893,10 @@ Gianluca — VISIBIL</textarea>
     'documento': 'Documento',
     'report': 'Report'
   };
+
+  function toggleAcc(headerEl) {
+    headerEl.closest('.acc-item').classList.toggle('open');
+  }
 
   function showTab(tabId) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
