@@ -347,12 +347,13 @@ Gianluca — VISIBIL</textarea>
       </div>
       <div class="acc-body">
         <div id="dati-personali-summary" style="font-size:0.85rem; line-height:2; color:var(--black);">
-          <div><span style="color:var(--grey);">Nome:</span> <span id="dp-s-nome">—</span></div>
+          <div><span style="color:var(--grey);">Nome e cognome:</span> <span id="dp-s-nome">—</span></div>
           <div><span style="color:var(--grey);">Telefono:</span> <span id="dp-s-telefono">—</span></div>
           <div><span style="color:var(--grey);">Email:</span> <span id="dp-s-email">—</span></div>
-          <div><span style="color:var(--grey);">Preferenza:</span> <span id="dp-s-pref">—</span></div>
-          <div><span style="color:var(--grey);">Orario:</span> <span id="dp-s-orario">—</span></div>
-          <div><span style="color:var(--grey);">Fatturazione:</span> <span id="dp-s-fatturazione">—</span></div>
+          <div><span style="color:var(--grey);">Preferenza di contatto:</span> <span id="dp-s-pref">—</span></div>
+          <div><span style="color:var(--grey);">Orario preferito:</span> <span id="dp-s-orario">—</span></div>
+          <div><span style="color:var(--grey);">Nome fatturazione:</span> <span id="dp-s-nome-fatturazione">—</span></div>
+          <div><span style="color:var(--grey);">Indirizzo:</span> <span id="dp-s-indirizzo">—</span></div>
           <button class="secondary" onclick="modificaDatiPersonali()" style="margin-top:0.75rem;">Modifica</button>
         </div>
 
@@ -920,8 +921,8 @@ Gianluca — VISIBIL</textarea>
     if (c.pref_telefono) prefs.push('Telefonata');
     document.getElementById('dp-s-pref').textContent = prefs.length ? prefs.join(', ') : '—';
     document.getElementById('dp-s-orario').textContent = c.orario_preferito || '—';
-    const fatt = [c.nome_fatturazione, c.indirizzo].filter(Boolean).join(' — ');
-    document.getElementById('dp-s-fatturazione').textContent = fatt || '—';
+    document.getElementById('dp-s-nome-fatturazione').textContent = c.nome_fatturazione || '—';
+    document.getElementById('dp-s-indirizzo').textContent = c.indirizzo || '—';
   }
 
   function modificaDatiPersonali() {
