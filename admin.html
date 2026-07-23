@@ -1078,7 +1078,8 @@ Gianluca — VISIBIL</textarea>
     { label: 'Formazione Avanzato — CHF 200', descrizione: 'Formazione (gestione autonoma) — Avanzato', importo: 200 },
     { label: 'Lavoro extra (a ore) — CHF 120/h', descrizione: 'Lavoro extra', importo: 120, tariffaOraria: 120 },
     { label: 'Foto/Video (a ore) — CHF 130/h', descrizione: 'Servizio foto/video', importo: 130, tariffaOraria: 130 },
-    { label: 'Consulenza (a ore) — CHF 120/h', descrizione: 'Consulenza', importo: 120, tariffaOraria: 120 }
+    { label: 'Consulenza (a ore) — CHF 120/h', descrizione: 'Consulenza', importo: 120, tariffaOraria: 120 },
+    { label: '— Sconto (percentuale) —', tipo: 'sconto' }
   ];
 
   function popolaCataloghi() {
@@ -1089,10 +1090,35 @@ Gianluca — VISIBIL</textarea>
     });
   }
 
+  function calcolaSubtotale(prefix) {
+    const listId = prefix === 'p' ? 'p-voci-lista' : 'pg-voci-lista';
+    let totale = 0;
+    document.querySelectorAll(`#${listId} > div`).forEach(row => {
+      const importoInput = row.querySelectorAll('input')[1];
+      totale += Number(importoInput.value) || 0;
+    });
+    return totale;
+  }
+
   function aggiungiDaCatalogo(prefix, indice) {
     if (indice === '') return;
     const voce = PREZZI_CATALOGO[Number(indice)];
     if (!voce) return;
+
+    if (voce.tipo === 'sconto') {
+      const subtotale = calcolaSubtotale(prefix);
+      const etichetta = prompt('Nome dello sconto (es. "Sconto amicizia")', 'Sconto');
+      if (etichetta === null) return;
+      const percInput = prompt(`Percentuale di sconto sul subtotale attuale (CHF ${subtotale})?`, '10');
+      if (percInput === null) return;
+      const perc = parseFloat(percInput.replace(',', '.')) || 0;
+      if (perc <= 0) return;
+      const importoSconto = Math.round(subtotale * perc / 100 * 100) / 100;
+      const descrizione = `${etichetta} ${perc}%`;
+      if (prefix === 'p') aggiungiVoce(descrizione, -importoSconto);
+      else aggiungiVocePagamento(descrizione, -importoSconto);
+      return;
+    }
 
     let descrizione = voce.descrizione;
     let importo = voce.importo;
