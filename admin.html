@@ -794,13 +794,16 @@ Gianluca — VISIBIL</textarea>
   async function caricaClienti() {
     const { data, error } = await client.from('clienti').select('*').order('nome');
     if (error) { console.error(error); return; }
-    clientiCache = data || [];
+    clientiCache = (data || []).sort((a, b) => (b.preferito === true) - (a.preferito === true));
 
     const lista = document.getElementById('clienti-lista');
     lista.innerHTML = clientiCache.length === 0
       ? '<p style="font-size:0.85rem; color:var(--grey);">Nessun cliente ancora.</p>'
       : clientiCache.map(c => `
           <div class="client-row" id="client-row-${c.user_id}" style="flex-wrap: nowrap;">
+            <button title="${c.preferito ? 'Togli dai preferiti' : 'Aggiungi ai preferiti'}" onclick="toggleFavorito(event, '${c.user_id}')" style="display:flex; align-items:center; justify-content:center; width:24px; height:24px; padding:0; margin:0; background:none; border:none; cursor:pointer; flex-shrink:0; color:${c.preferito ? '#e63950' : 'rgba(0,0,0,0.2)'};">
+              <svg viewBox="0 0 24 24" fill="${c.preferito ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </button>
             <span onclick="caricaNelForm('${c.user_id}')" style="cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1;">${c.nome || '(senza nome)'}</span>
             <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;">
               <a href="area-cliente.html?preview=${c.user_id}" target="_blank" title="Anteprima" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:var(--black);">
@@ -818,6 +821,16 @@ Gianluca — VISIBIL</textarea>
     const quickSelect = document.getElementById('quick-select-cliente');
     quickSelect.innerHTML = '<option value="">Cambia cliente...</option>' +
       clientiCache.map(c => `<option value="${c.user_id}">${c.nome || c.user_id}</option>`).join('');
+  }
+
+  async function toggleFavorito(event, user_id) {
+    event.stopPropagation();
+    const c = clientiCache.find(x => x.user_id === user_id);
+    if (!c) return;
+    const nuovoValore = !c.preferito;
+    const { error } = await client.from('clienti').update({ preferito: nuovoValore }).eq('user_id', user_id);
+    if (error) { console.error(error); return; }
+    caricaClienti();
   }
 
   const DA_FARE_FIELDS = ['c-da-fare-cliente', 'c-avanzamento'];
