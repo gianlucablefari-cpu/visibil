@@ -100,6 +100,7 @@
 </style>
 </head>
 <body>
+<script src="partials/prezzi-dati.js"></script>
 
 <div id="cliente-attivo-bar" style="display:none; position:sticky; top:0; z-index:90; background:#0F0F0F; color:#fff; padding:0.6rem 3rem; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:nowrap; overflow-x:auto;">
   <span style="font-size:0.95rem; white-space:nowrap;">Cliente attivo: <strong id="cliente-attivo-nome">—</strong></span>
@@ -1067,21 +1068,14 @@ Gianluca — VISIBIL</textarea>
   }
 
   const PREZZI_CATALOGO = [
-    { label: 'Sito Vetrina (base) — CHF 290 una tantum', descrizione: 'Sito Vetrina (base)', importo: 290 },
-    { label: 'Sito Completo — CHF 790 una tantum', descrizione: 'Sito Completo', importo: 790 },
-    { label: 'Sito Avanzato — CHF 1290 una tantum', descrizione: 'Sito Avanzato', importo: 1290 },
-    { label: 'Abbonamento Base — CHF 19/mese', descrizione: 'Abbonamento Base (mensile)', importo: 19 },
-    { label: 'Abbonamento Completo — CHF 39/mese', descrizione: 'Abbonamento Completo (mensile)', importo: 39 },
-    { label: 'Abbonamento Avanzato — CHF 69/mese', descrizione: 'Abbonamento Avanzato (mensile)', importo: 69 },
-    { label: 'Abbonamento Base — CHF 190/anno', descrizione: 'Abbonamento Base (annuale)', importo: 190 },
-    { label: 'Abbonamento Completo — CHF 390/anno', descrizione: 'Abbonamento Completo (annuale)', importo: 390 },
-    { label: 'Abbonamento Avanzato — CHF 690/anno', descrizione: 'Abbonamento Avanzato (annuale)', importo: 690 },
-    { label: 'Formazione Vetrina — CHF 120', descrizione: 'Formazione (gestione autonoma) — Vetrina', importo: 120 },
-    { label: 'Formazione Completo — CHF 160', descrizione: 'Formazione (gestione autonoma) — Completo', importo: 160 },
-    { label: 'Formazione Avanzato — CHF 200', descrizione: 'Formazione (gestione autonoma) — Avanzato', importo: 200 },
-    { label: 'Lavoro extra (a ore) — CHF 120/h', descrizione: 'Lavoro extra', importo: 120, tariffaOraria: 120 },
-    { label: 'Foto/Video (a ore) — CHF 130/h', descrizione: 'Servizio foto/video', importo: 130, tariffaOraria: 130 },
-    { label: 'Consulenza (a ore) — CHF 120/h', descrizione: 'Consulenza', importo: 120, tariffaOraria: 120 },
+    ...PREZZI_DATI.siti.map(s => ({ label: `${s.lbl} — CHF ${s.once} una tantum`, descrizione: s.lbl, importo: s.once })),
+    ...PREZZI_DATI.siti.map(s => ({ label: `Abbonamento ${s.lbl.replace('Sito ', '')} — CHF ${s.monthly}/mese`, descrizione: `Abbonamento ${s.lbl.replace('Sito ', '')} (mensile)`, importo: s.monthly })),
+    ...PREZZI_DATI.siti.map(s => ({ label: `Abbonamento ${s.lbl.replace('Sito ', '')} — CHF ${s.monthly * 10}/anno`, descrizione: `Abbonamento ${s.lbl.replace('Sito ', '')} (annuale)`, importo: s.monthly * 10 })),
+    ...PREZZI_DATI.siti.map(s => ({ label: `Formazione ${s.lbl.replace('Sito ', '')} — CHF ${s.formazione}`, descrizione: `Formazione (gestione autonoma) — ${s.lbl.replace('Sito ', '')}`, importo: s.formazione })),
+    ...PREZZI_DATI.instagram.map(ig => ({ label: `${ig.lbl} — CHF ${ig.monthly}/mese`, descrizione: ig.lbl, importo: ig.monthly })),
+    ...PREZZI_DATI.fotoVideo.map(fv => ({ label: `${fv.lbl} — CHF ${fv.once}`, descrizione: fv.lbl, importo: fv.once })),
+    { label: `Lavoro extra (a ore) — CHF ${PREZZI_DATI.lavoroExtra.orario}/h`, descrizione: 'Lavoro extra', importo: PREZZI_DATI.lavoroExtra.orario, tariffaOraria: PREZZI_DATI.lavoroExtra.orario },
+    { label: `Consulenza (a ore) — CHF ${PREZZI_DATI.consulenza.orario}/h`, descrizione: 'Consulenza', importo: PREZZI_DATI.consulenza.orario, tariffaOraria: PREZZI_DATI.consulenza.orario },
     { label: '— Sconto (percentuale) —', tipo: 'sconto' }
   ];
 

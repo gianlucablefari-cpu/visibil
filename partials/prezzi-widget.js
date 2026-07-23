@@ -90,9 +90,10 @@ function selGdCard(e, card, tierKey) {
   document.querySelectorAll('.gd-card').forEach(c => c.classList.remove('active'));
 
   const tierMap = { landing: 'Sito Base', completo: 'Sito Completo', avanzato: 'Sito Avanzato' };
-  const prices  = { landing: 290, completo: 790, avanzato: 1290 };
-  const monthly = { landing: 19,  completo: 39,  avanzato: 79 };
-  const forms   = { landing: 120, completo: 160, avanzato: 200 };
+  const datiTier = { landing: PREZZI_DATI.siti[0], completo: PREZZI_DATI.siti[1], avanzato: PREZZI_DATI.siti[2] };
+  const prices  = { landing: datiTier.landing.once, completo: datiTier.completo.once, avanzato: datiTier.avanzato.once };
+  const monthly = { landing: datiTier.landing.monthly, completo: datiTier.completo.monthly, avanzato: datiTier.avanzato.monthly };
+  const forms   = { landing: datiTier.landing.formazione, completo: datiTier.completo.formazione, avanzato: datiTier.avanzato.formazione };
 
   sitoCard.querySelectorAll('.cfg-tier').forEach(t => {
     if (t.dataset.lbl === tierMap[tierKey]) t.classList.add('sel');
@@ -130,12 +131,13 @@ function selGest(e, type) {
   document.getElementById('gd-self').classList.remove('on');
   document.getElementById('gd-visibil').classList.remove('on');
   const tier = card.querySelector('.cfg-tier.sel');
-  const base = tier ? +tier.dataset.price : 290;
-  const mo = tier ? +tier.dataset.monthly : 19;
-  const lbl = tier ? tier.dataset.lbl : 'Sito Base';
+  const base = tier ? +tier.dataset.price : PREZZI_DATI.siti[0].once;
+  const mo = tier ? +tier.dataset.monthly : PREZZI_DATI.siti[0].monthly;
+  const lbl = tier ? tier.dataset.lbl : PREZZI_DATI.siti[0].lbl;
+  const datiSelezionato = PREZZI_DATI.siti.find(s => s.lbl === lbl) || PREZZI_DATI.siti[0];
   if (type === 'self') {
     document.getElementById('gd-self').classList.add('on');
-    S['sito'] = { lbl: lbl + ' + Formazione', once: base + 100, monthly: 0 };
+    S['sito'] = { lbl: lbl + ' + Formazione', once: base + datiSelezionato.formazione, monthly: 0 };
   } else {
     document.getElementById('gd-visibil').classList.add('on');
     S['sito'] = { lbl: lbl + ' (gestito)', once: base, monthly: mo };
