@@ -63,6 +63,13 @@
   .dropdown-menu button:hover { background: var(--surface); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
+  .catalogo-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+  .catalogo-card { flex: 1 1 calc(16.666% - 0.5rem); min-width: 110px; max-width: calc(16.666% - 0.5rem); font-family: var(--sans); font-size: 0.7rem; font-weight: 500; line-height: 1.35; text-align: center; padding: 0.6rem 0.5rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; background: var(--white); color: var(--black); cursor: pointer; }
+  .catalogo-card:hover { background: var(--surface); border-color: rgba(0,0,0,0.2); }
+  .catalogo-card.sconto { color: #A32D2D; border-color: rgba(163,45,45,0.25); }
+  @media (max-width: 640px) {
+    .catalogo-card { flex: 1 1 calc(33.33% - 0.5rem); max-width: calc(33.33% - 0.5rem); }
+  }
   .acc-item { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
   .acc-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; font-size: 0.85rem; font-weight: 700; background: var(--white); }
   .acc-header:hover { background: var(--surface); }
@@ -429,10 +436,8 @@ Gianluca — VISIBIL</textarea>
       <input type="text" id="p-titolo" placeholder="es. Sito Vetrina + lavoro extra">
 
       <label>Voci</label>
-      <label for="p-catalogo">Aggiungi da catalogo prezzi</label>
-      <select id="p-catalogo" onchange="aggiungiDaCatalogo('p', this.value); this.value='';">
-        <option value="">Scegli una voce...</option>
-      </select>
+      <label>Aggiungi da catalogo prezzi</label>
+      <div id="p-catalogo" class="catalogo-grid"></div>
 
       <div id="p-voci-lista"></div>
       <button type="button" class="secondary" onclick="aggiungiVoce()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce vuota</button>
@@ -477,10 +482,8 @@ Gianluca — VISIBIL</textarea>
       <input type="text" id="pg-descrizione" placeholder="es. Sito Vetrina + lavoro extra">
 
       <label>Voci</label>
-      <label for="pg-catalogo">Aggiungi da catalogo prezzi</label>
-      <select id="pg-catalogo" onchange="aggiungiDaCatalogo('pg', this.value); this.value='';">
-        <option value="">Scegli una voce...</option>
-      </select>
+      <label>Aggiungi da catalogo prezzi</label>
+      <div id="pg-catalogo" class="catalogo-grid"></div>
 
       <div id="pg-voci-lista"></div>
       <button type="button" class="secondary" onclick="aggiungiVocePagamento()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce vuota</button>
@@ -1083,10 +1086,10 @@ Gianluca — VISIBIL</textarea>
   ];
 
   function popolaCataloghi() {
-    const opzioni = PREZZI_CATALOGO.map((v, i) => `<option value="${i}">${v.label}</option>`).join('');
-    ['p-catalogo', 'pg-catalogo'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = '<option value="">Scegli una voce...</option>' + opzioni;
+    const card = (v, i) => `<button type="button" class="catalogo-card ${v.tipo === 'sconto' ? 'sconto' : ''}" onclick="aggiungiDaCatalogo('__PREFIX__', ${i})">${v.label}</button>`;
+    ['p', 'pg'].forEach(prefix => {
+      const el = document.getElementById(prefix + '-catalogo');
+      if (el) el.innerHTML = PREZZI_CATALOGO.map((v, i) => card(v, i).replace('__PREFIX__', prefix)).join('');
     });
   }
 
