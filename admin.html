@@ -958,6 +958,12 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('quick-select-cliente').value = '';
     window.clienteAttivoNome = null;
     window.clienteAttivoEmail = null;
+
+    showTab('impostazioni');
+    document.getElementById('acc-dati-personali').classList.add('open');
+    updateDatiPersonaliSummary({});
+    modificaDatiPersonali();
+
     document.getElementById('c-userid').focus();
   }
 
