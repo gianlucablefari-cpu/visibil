@@ -43,7 +43,7 @@
     .hamburger { display: flex; }
   }
 
-  main { max-width: 1100px; margin: 0 auto; padding: 3rem 3rem 5rem; }
+  main { max-width: 1100px; margin: 0 auto; padding: 2rem 3rem 5rem; }
   .dash-layout { display: grid; grid-template-columns: 280px 1fr; gap: 3rem; align-items: start; }
   .side-col { display: flex; flex-direction: column; gap: 1.5rem; }
   .avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--surface); border: 1px solid rgba(0,0,0,0.08); color: var(--black); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; margin: 0 auto; }
@@ -111,7 +111,7 @@
 
   @media (max-width: 640px) {
     nav { padding: 1.25rem 1.5rem; }
-    main { padding: 2.5rem 1.5rem 3rem; }
+    main { padding: 1.5rem 1.5rem 3rem; }
     .dash-layout { grid-template-columns: 1fr; }
     .side-col { position: static; }
   }
@@ -119,16 +119,7 @@
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo">VISIBIL</a>
-  <ul class="nav-links">
-    <li><a href="area-cliente.html">Area Clienti</a></li>
-    <li><a href="admin.html" class="cta-link">Admin</a></li>
-  </ul>
-  <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
-</nav>
-
-<div id="cliente-attivo-bar" style="display:none; position:sticky; top:76px; margin-top:76px; z-index:90; background:#0F0F0F; color:#fff; padding:0.6rem 3rem; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:nowrap; overflow-x:auto;">
+<div id="cliente-attivo-bar" style="display:none; position:sticky; top:0; z-index:90; background:#0F0F0F; color:#fff; padding:0.6rem 3rem; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:nowrap; overflow-x:auto;">
   <span style="font-size:0.95rem; white-space:nowrap;">Cliente attivo: <strong id="cliente-attivo-nome">—</strong></span>
   <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:nowrap; flex-shrink:0;">
     <a id="cliente-attivo-anteprima" href="#" target="_blank" style="font-size:0.85rem; color:#fff; border:1px solid rgba(255,255,255,0.3); padding:0.4rem 0.75rem; border-radius:5px; text-decoration:none; display:flex; align-items:center; gap:0.4rem; white-space:nowrap;">
