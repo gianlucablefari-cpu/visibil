@@ -64,9 +64,12 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
   .catalogo-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
-  .catalogo-card { flex: 1 1 calc(16.666% - 0.5rem); min-width: 110px; max-width: calc(16.666% - 0.5rem); font-family: var(--sans); font-size: 0.7rem; font-weight: 500; line-height: 1.35; text-align: center; padding: 0.6rem 0.5rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; background: var(--white); color: var(--black); cursor: pointer; }
-  .catalogo-card:hover { background: var(--surface); border-color: rgba(0,0,0,0.2); }
-  .catalogo-card.sconto { color: #A32D2D; border-color: rgba(163,45,45,0.25); }
+  .catalogo-card { flex: 1 1 calc(16.666% - 0.5rem); min-width: 110px; max-width: calc(16.666% - 0.5rem); display: flex; flex-direction: column; gap: 0.3rem; font-family: var(--sans); text-align: left; padding: 0.7rem 0.65rem; border: 1.5px solid rgba(0,0,0,0.08); border-radius: 6px; background: var(--white); cursor: pointer; transition: all 0.15s; }
+  .catalogo-card:hover { border-color: var(--grey); }
+  .catalogo-card-nome { font-size: 0.7rem; font-weight: 700; color: var(--black); line-height: 1.25; }
+  .catalogo-card-prezzo { font-size: 0.72rem; font-weight: 900; color: var(--ink); letter-spacing: -0.01em; }
+  .catalogo-card.sconto { border-style: dashed; }
+  .catalogo-card.sconto .catalogo-card-nome, .catalogo-card.sconto .catalogo-card-prezzo { color: #A32D2D; }
   @media (max-width: 640px) {
     .catalogo-card { flex: 1 1 calc(33.33% - 0.5rem); max-width: calc(33.33% - 0.5rem); }
   }
@@ -1068,22 +1071,25 @@ Gianluca — VISIBIL</textarea>
   }
 
   const PREZZI_CATALOGO = [
-    ...PREZZI_DATI.siti.map(s => ({ label: `${s.lbl} — CHF ${s.once} una tantum`, descrizione: s.lbl, importo: s.once })),
-    ...PREZZI_DATI.siti.map(s => ({ label: `Abbonamento ${s.lbl.replace('Sito ', '')} — CHF ${s.monthly}/mese`, descrizione: `Abbonamento ${s.lbl.replace('Sito ', '')} (mensile)`, importo: s.monthly })),
-    ...PREZZI_DATI.siti.map(s => ({ label: `Abbonamento ${s.lbl.replace('Sito ', '')} — CHF ${s.monthly * 10}/anno`, descrizione: `Abbonamento ${s.lbl.replace('Sito ', '')} (annuale)`, importo: s.monthly * 10 })),
-    ...PREZZI_DATI.siti.map(s => ({ label: `Formazione ${s.lbl.replace('Sito ', '')} — CHF ${s.formazione}`, descrizione: `Formazione (gestione autonoma) — ${s.lbl.replace('Sito ', '')}`, importo: s.formazione })),
-    ...PREZZI_DATI.instagram.map(ig => ({ label: `${ig.lbl} — CHF ${ig.monthly}/mese`, descrizione: ig.lbl, importo: ig.monthly })),
-    ...PREZZI_DATI.fotoVideo.map(fv => ({ label: `${fv.lbl} — CHF ${fv.once}`, descrizione: fv.lbl, importo: fv.once })),
-    { label: `Lavoro extra (a ore) — CHF ${PREZZI_DATI.lavoroExtra.orario}/h`, descrizione: 'Lavoro extra', importo: PREZZI_DATI.lavoroExtra.orario, tariffaOraria: PREZZI_DATI.lavoroExtra.orario },
-    { label: `Consulenza (a ore) — CHF ${PREZZI_DATI.consulenza.orario}/h`, descrizione: 'Consulenza', importo: PREZZI_DATI.consulenza.orario, tariffaOraria: PREZZI_DATI.consulenza.orario },
-    { label: '— Sconto (percentuale) —', tipo: 'sconto' }
+    ...PREZZI_DATI.siti.map(s => ({ nome: s.lbl, prezzoDisplay: `CHF ${s.once}`, descrizione: s.lbl, importo: s.once })),
+    ...PREZZI_DATI.siti.map(s => ({ nome: `Abbonamento ${s.lbl.replace('Sito ', '')}`, prezzoDisplay: `CHF ${s.monthly}/mese`, descrizione: `Abbonamento ${s.lbl.replace('Sito ', '')} (mensile)`, importo: s.monthly })),
+    ...PREZZI_DATI.siti.map(s => ({ nome: `Abbonamento ${s.lbl.replace('Sito ', '')}`, prezzoDisplay: `CHF ${s.monthly * 10}/anno`, descrizione: `Abbonamento ${s.lbl.replace('Sito ', '')} (annuale)`, importo: s.monthly * 10 })),
+    ...PREZZI_DATI.siti.map(s => ({ nome: `Formazione ${s.lbl.replace('Sito ', '')}`, prezzoDisplay: `CHF ${s.formazione}`, descrizione: `Formazione (gestione autonoma) — ${s.lbl.replace('Sito ', '')}`, importo: s.formazione })),
+    ...PREZZI_DATI.instagram.map(ig => ({ nome: ig.lbl, prezzoDisplay: `CHF ${ig.monthly}/mese`, descrizione: ig.lbl, importo: ig.monthly })),
+    ...PREZZI_DATI.fotoVideo.map(fv => ({ nome: fv.lbl, prezzoDisplay: `CHF ${fv.once}`, descrizione: fv.lbl, importo: fv.once })),
+    { nome: 'Lavoro extra', prezzoDisplay: `CHF ${PREZZI_DATI.lavoroExtra.orario}/h`, descrizione: 'Lavoro extra', importo: PREZZI_DATI.lavoroExtra.orario, tariffaOraria: PREZZI_DATI.lavoroExtra.orario },
+    { nome: 'Consulenza', prezzoDisplay: `CHF ${PREZZI_DATI.consulenza.orario}/h`, descrizione: 'Consulenza', importo: PREZZI_DATI.consulenza.orario, tariffaOraria: PREZZI_DATI.consulenza.orario },
+    { nome: 'Sconto', prezzoDisplay: '%', tipo: 'sconto' }
   ];
 
   function popolaCataloghi() {
-    const card = (v, i) => `<button type="button" class="catalogo-card ${v.tipo === 'sconto' ? 'sconto' : ''}" onclick="aggiungiDaCatalogo('__PREFIX__', ${i})">${v.label}</button>`;
+    const card = (v, i, prefix) => `<button type="button" class="catalogo-card ${v.tipo === 'sconto' ? 'sconto' : ''}" onclick="aggiungiDaCatalogo('${prefix}', ${i})">
+        <span class="catalogo-card-nome">${v.nome}</span>
+        <span class="catalogo-card-prezzo">${v.prezzoDisplay}</span>
+      </button>`;
     ['p', 'pg'].forEach(prefix => {
       const el = document.getElementById(prefix + '-catalogo');
-      if (el) el.innerHTML = PREZZI_CATALOGO.map((v, i) => card(v, i).replace('__PREFIX__', prefix)).join('');
+      if (el) el.innerHTML = PREZZI_CATALOGO.map((v, i) => card(v, i, prefix)).join('');
     });
   }
 
