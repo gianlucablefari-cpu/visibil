@@ -429,8 +429,13 @@ Gianluca — VISIBIL</textarea>
       <input type="text" id="p-titolo" placeholder="es. Sito Vetrina + lavoro extra">
 
       <label>Voci</label>
+      <label for="p-catalogo">Aggiungi da catalogo prezzi</label>
+      <select id="p-catalogo" onchange="aggiungiDaCatalogo('p', this.value); this.value='';">
+        <option value="">Scegli una voce...</option>
+      </select>
+
       <div id="p-voci-lista"></div>
-      <button type="button" class="secondary" onclick="aggiungiVoce()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce</button>
+      <button type="button" class="secondary" onclick="aggiungiVoce()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce vuota</button>
 
       <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.08); font-size:1rem; font-weight:700; display:flex; justify-content:space-between;">
         <span>Totale</span>
@@ -472,8 +477,13 @@ Gianluca — VISIBIL</textarea>
       <input type="text" id="pg-descrizione" placeholder="es. Sito Vetrina + lavoro extra">
 
       <label>Voci</label>
+      <label for="pg-catalogo">Aggiungi da catalogo prezzi</label>
+      <select id="pg-catalogo" onchange="aggiungiDaCatalogo('pg', this.value); this.value='';">
+        <option value="">Scegli una voce...</option>
+      </select>
+
       <div id="pg-voci-lista"></div>
-      <button type="button" class="secondary" onclick="aggiungiVocePagamento()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce</button>
+      <button type="button" class="secondary" onclick="aggiungiVocePagamento()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce vuota</button>
 
       <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.08); font-size:1rem; font-weight:700; display:flex; justify-content:space-between;">
         <span>Totale</span>
@@ -1052,6 +1062,42 @@ Gianluca — VISIBIL</textarea>
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  const PREZZI_CATALOGO = [
+    { label: 'Sito Vetrina (base) — CHF 290 una tantum', descrizione: 'Sito Vetrina (base)', importo: 290 },
+    { label: 'Sito Completo — CHF 790 una tantum', descrizione: 'Sito Completo', importo: 790 },
+    { label: 'Sito Avanzato — CHF 1290 una tantum', descrizione: 'Sito Avanzato', importo: 1290 },
+    { label: 'Abbonamento Base — CHF 19/mese', descrizione: 'Abbonamento Base (mensile)', importo: 19 },
+    { label: 'Abbonamento Completo — CHF 39/mese', descrizione: 'Abbonamento Completo (mensile)', importo: 39 },
+    { label: 'Abbonamento Avanzato — CHF 69/mese', descrizione: 'Abbonamento Avanzato (mensile)', importo: 69 },
+    { label: 'Abbonamento Base — CHF 190/anno', descrizione: 'Abbonamento Base (annuale)', importo: 190 },
+    { label: 'Abbonamento Completo — CHF 390/anno', descrizione: 'Abbonamento Completo (annuale)', importo: 390 },
+    { label: 'Abbonamento Avanzato — CHF 690/anno', descrizione: 'Abbonamento Avanzato (annuale)', importo: 690 },
+    { label: 'Formazione Vetrina — CHF 120', descrizione: 'Formazione (gestione autonoma) — Vetrina', importo: 120 },
+    { label: 'Formazione Completo — CHF 160', descrizione: 'Formazione (gestione autonoma) — Completo', importo: 160 },
+    { label: 'Formazione Avanzato — CHF 200', descrizione: 'Formazione (gestione autonoma) — Avanzato', importo: 200 },
+    { label: 'Lavoro extra (1h) — CHF 120/h', descrizione: 'Lavoro extra (1 ora, CHF 120/h — modifica se piu\' ore)', importo: 120 },
+    { label: 'Foto/Video (1h) — CHF 130/h', descrizione: 'Servizio foto/video (1 ora, CHF 130/h — modifica se piu\' ore)', importo: 130 },
+    { label: 'Consulenza (1h) — CHF 120/h', descrizione: 'Consulenza (1 ora, CHF 120/h — modifica se piu\' ore)', importo: 120 }
+  ];
+
+  function popolaCataloghi() {
+    const opzioni = PREZZI_CATALOGO.map((v, i) => `<option value="${i}">${v.label}</option>`).join('');
+    ['p-catalogo', 'pg-catalogo'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<option value="">Scegli una voce...</option>' + opzioni;
+    });
+  }
+
+  function aggiungiDaCatalogo(prefix, indice) {
+    if (indice === '') return;
+    const voce = PREZZI_CATALOGO[Number(indice)];
+    if (!voce) return;
+    if (prefix === 'p') aggiungiVoce(voce.descrizione, voce.importo);
+    else aggiungiVocePagamento(voce.descrizione, voce.importo);
+  }
+
+  popolaCataloghi();
 
   let vociCounter = 0;
 
