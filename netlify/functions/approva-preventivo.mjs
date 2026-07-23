@@ -16,7 +16,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { id, nome, indirizzo, email } = payload;
+  const { id, nome, indirizzo, email, piano_scelto } = payload;
   if (!id || !nome || !email) {
     return new Response(JSON.stringify({ error: "Nome ed email sono obbligatori." }), { status: 400 });
   }
@@ -28,7 +28,7 @@ export default async (req) => {
 
   // Legge il preventivo per sapere titolo/importo/cliente (per l'email di notifica)
   const getRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/preventivi?id=eq.${id}&select=titolo,importo,stato,user_id`,
+    `${SUPABASE_URL}/rest/v1/preventivi?id=eq.${id}&select=titolo,importo,stato,user_id,richiedi_scelta_piano`,
     { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` } }
   );
   const rows = await getRes.json();
@@ -36,6 +36,10 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Preventivo non trovato." }), { status: 404 });
   }
   const preventivo = rows[0];
+
+  if (preventivo.richiedi_scelta_piano && !piano_scelto) {
+    return new Response(JSON.stringify({ error: "Devi scegliere un piano abbonamento." }), { status: 400 });
+  }
 
   if (preventivo.stato === "Accettato") {
     return new Response(JSON.stringify({ error: "Questo preventivo è già stato approvato." }), { status: 409 });
@@ -55,13 +59,32 @@ export default async (req) => {
       approvato_nome: nome,
       approvato_indirizzo: indirizzo || null,
       approvato_email: email,
-      approvato_data: new Date().toISOString()
+      approvato_data: new Date().toISOString(),
+      piano_scelto: piano_scelto || null
     })
   });
 
   if (!updateRes.ok) {
     const errText = await updateRes.text().catch(() => "");
     return new Response(JSON.stringify({ error: "Errore nell'aggiornamento: " + errText }), { status: 500 });
+  }
+
+  // Se il cliente ha scelto un piano, lo salva anche nel suo profilo
+  if (piano_scelto) {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/clienti?user_id=eq.${preventivo.user_id}`, {
+        method: "PATCH",
+        headers: {
+          apikey: SERVICE_KEY,
+          Authorization: `Bearer ${SERVICE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({ rinnovo_piano: piano_scelto })
+      });
+    } catch (e) {
+      // non blocca l'approvazione se questo fallisce
+    }
   }
 
   // Notifica Gianluca via email
@@ -85,6 +108,7 @@ export default async (req) => {
                 Nome: ${nome}<br>
                 Email: ${email}<br>
                 ${indirizzo ? `Indirizzo: ${indirizzo}<br>` : ''}
+                ${piano_scelto ? `Piano scelto: ${piano_scelto}<br>` : ''}
               </p>
             </div>
           `

@@ -108,9 +108,10 @@
     <div class="quote-card">
       <div class="quote-eyebrow">Preventivo</div>
       <div class="quote-title" id="q-titolo"></div>
+      <div id="q-voci"></div>
       <div class="quote-row"><span>Cliente</span><span id="q-cliente"></span></div>
       <div class="quote-row"><span>Data</span><span id="q-data"></span></div>
-      <div class="quote-row"><span>Importo</span><span id="q-importo"></span></div>
+      <div class="quote-row" style="font-weight:700;"><span>Totale</span><span id="q-importo"></span></div>
       <div class="quote-row"><span>Stato</span><span id="q-stato"></span></div>
     </div>
 
@@ -138,6 +139,21 @@
     <div class="approve-box" id="approve-box">
       <h2>Approvazione</h2>
       <p>Per approvare il preventivo puoi stamparlo, firmarlo, scansionarlo e inviarmelo, oppure semplicemente completare i campi sotto.</p>
+
+      <div id="piano-scelta-box" style="display:none; margin-bottom: 1.5rem;">
+        <label style="margin-top:0;">Scegli il tuo piano abbonamento</label>
+        <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:0.5rem;">
+          <label style="display:flex; align-items:center; gap:0.6rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer; font-weight:400;">
+            <input type="radio" name="piano" value="Base" style="width:auto;"> Base — CHF 19/mese
+          </label>
+          <label style="display:flex; align-items:center; gap:0.6rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer; font-weight:400;">
+            <input type="radio" name="piano" value="Completo" style="width:auto;"> Completo — CHF 39/mese
+          </label>
+          <label style="display:flex; align-items:center; gap:0.6rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer; font-weight:400;">
+            <input type="radio" name="piano" value="Avanzato" style="width:auto;"> Avanzato — CHF 69/mese
+          </label>
+        </div>
+      </div>
 
       <label for="a-nome">Nome e cognome</label>
       <input type="text" id="a-nome" placeholder="Nome cognome">
@@ -192,6 +208,20 @@
       document.getElementById('q-data').textContent = data.data ? new Date(data.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '—';
       document.getElementById('q-importo').textContent = data.importo ? `CHF ${data.importo}.–` : '—';
 
+      const vociEl = document.getElementById('q-voci');
+      vociEl.innerHTML = '';
+      (data.voci || []).forEach(v => {
+        vociEl.innerHTML += `<div class="quote-row"><span>${v.descrizione || ''}</span><span>CHF ${v.importo}.–</span></div>`;
+      });
+
+      if (data.richiedi_scelta_piano && data.stato !== 'Accettato') {
+        document.getElementById('piano-scelta-box').style.display = 'block';
+      }
+      if (data.piano_scelto) {
+        const radio = document.querySelector(`input[name="piano"][value="${data.piano_scelto}"]`);
+        if (radio) radio.checked = true;
+      }
+
       const statoEl = document.getElementById('q-stato');
       statoEl.innerHTML = data.stato === 'Accettato'
         ? '<span class="badge accettato">Accettato</span>'
@@ -220,9 +250,16 @@
     const checked = document.getElementById('a-check').checked;
     const msg = document.getElementById('a-msg');
     const btn = document.getElementById('a-submit');
+    const pianoRadio = document.querySelector('input[name="piano"]:checked');
+    const piano_scelto = pianoRadio ? pianoRadio.value : null;
 
     if (!nome || !email) {
       msg.textContent = "Nome ed email sono obbligatori.";
+      msg.className = "msg err";
+      return;
+    }
+    if (preventivoData && preventivoData.richiedi_scelta_piano && !piano_scelto) {
+      msg.textContent = "Scegli un piano abbonamento prima di approvare.";
       msg.className = "msg err";
       return;
     }
@@ -240,7 +277,7 @@
       const res = await fetch('/api/approva-preventivo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: preventivoId, nome, indirizzo, email })
+        body: JSON.stringify({ id: preventivoId, nome, indirizzo, email, piano_scelto })
       });
       const result = await res.json();
 

@@ -18,7 +18,7 @@ export default async (req) => {
   }
 
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/preventivi?id=eq.${id}&select=id,titolo,importo,stato,data,user_id,approvato_data`,
+    `${SUPABASE_URL}/rest/v1/preventivi?id=eq.${id}&select=id,titolo,importo,stato,data,user_id,approvato_data,voci,richiedi_scelta_piano,piano_scelto`,
     {
       headers: {
         apikey: SERVICE_KEY,
@@ -55,6 +55,9 @@ export default async (req) => {
       stato: preventivo.stato,
       data: preventivo.data,
       approvato_data: preventivo.approvato_data,
+      voci: preventivo.voci || [],
+      richiedi_scelta_piano: preventivo.richiedi_scelta_piano || false,
+      piano_scelto: preventivo.piano_scelto || null,
       cliente_nome: clienteData.nome || "",
       cliente_indirizzo: clienteData.indirizzo || "",
       cliente_nome_fatturazione: clienteData.nome_fatturazione || "",
