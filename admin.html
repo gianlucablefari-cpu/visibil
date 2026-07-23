@@ -73,9 +73,13 @@
 
   .section-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.2rem; }
   .card { background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.75rem; margin-bottom: 2rem; }
-  .card.collapsed > *:not(:first-child) { display: none !important; }
-  .card-toggle { cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
-  .card-toggle .chevron { width: 14px; height: 14px; flex-shrink: 0; transition: transform 0.2s; }
+
+  .tabs-bar { display: flex; flex-wrap: wrap; gap: 0.35rem; background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 0.4rem; margin-bottom: 1.5rem; }
+  .tab-btn { font-family: var(--sans); font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.5rem 0.75rem; border: none; background: none; border-radius: 5px; cursor: pointer; color: var(--grey); white-space: nowrap; }
+  .tab-btn:hover { background: var(--surface); }
+  .tab-btn.active { background: #0F0F0F; color: #fff; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
   .card h2 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.3rem; }
   .card .desc { font-size: 0.78rem; color: var(--grey); margin-bottom: 1rem; }
 
@@ -262,14 +266,20 @@
 
       <div class="content-col">
 
-    <h2 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-      Azioni rapide
-    </h2>
+    <div class="tabs-bar">
+      <button class="tab-btn active" id="tab-nuovo-cliente" onclick="showTab('nuovo-cliente')">Nuovo cliente</button>
+      <button class="tab-btn" id="tab-da-fare" onclick="showTab('da-fare')">Da fare</button>
+      <button class="tab-btn" id="tab-impostazioni" onclick="showTab('impostazioni')">Impostazioni</button>
+      <button class="tab-btn" id="tab-preventivo" onclick="showTab('preventivo')">Preventivo</button>
+      <button class="tab-btn" id="tab-pagamento" onclick="showTab('pagamento')">Pagamento</button>
+      <button class="tab-btn" id="tab-documento" onclick="showTab('documento')">Documento</button>
+      <button class="tab-btn" id="tab-report" onclick="showTab('report')">Report</button>
+    </div>
 
     <!-- NUOVO CLIENTE (creazione automatica account) -->
-    <div class="card collapsed">
-      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo cliente<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
+    <div class="tab-panel active" id="panel-nuovo-cliente">
+    <div class="card">
+      <h2>Nuovo cliente</h2>
       <p class="desc">Crea in automatico l'accesso al portale per un cliente o potenziale cliente (utente + record base + email di invito).</p>
 
       <label for="nc-nome">Nome cliente/progetto</label>
@@ -284,16 +294,10 @@
       <button onclick="creaClienteRapido()">Crea cliente</button>
       <div class="msg" id="nc-msg"></div>
     </div>
+    </div><!-- /tab-panel -->
 
-    <h2 onclick="toggleCard(this)" style="cursor:pointer; font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
-      <span style="display:flex; align-items:center; gap:0.5rem;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-        Da fare
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-    </h2>
-
-    <div class="card collapsed">
+    <div class="tab-panel" id="panel-da-fare">
+    <div class="card">
       <p class="desc">Note visibili al cliente e per te stesso — riferite al cliente selezionato a sinistra.</p>
 
       <label for="c-da-fare-cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span id="label-da-fare-cliente">Da fare — Cliente</span></label>
@@ -325,16 +329,10 @@ Gianluca — VISIBIL</textarea>
         <div class="msg" id="notifica-msg"></div>
       </div>
     </div>
+    </div><!-- /tab-panel -->
 
-    <h2 onclick="toggleCard(this)" style="cursor:pointer; font-size: 1.1rem; font-weight: 700; margin: 2.5rem 0 1.5rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; color:#4A4A4A; text-transform:none; letter-spacing:normal; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 2rem;">
-      <span style="display:flex; align-items:center; gap:0.5rem;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-        Impostazioni cliente
-      </span>
-      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-    </h2>
-
-    <div class="card collapsed">
+    <div class="tab-panel" id="panel-impostazioni">
+    <div class="card">
       <p class="desc">Link operativi e abbonamento — cambi raramente, di solito solo alla creazione del cliente.</p>
 
       <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
@@ -371,10 +369,12 @@ Gianluca — VISIBIL</textarea>
       <button onclick="salvaCliente()">Salva cliente</button>
       <div class="msg" id="cliente-msg-2"></div>
     </div>
+    </div><!-- /tab-panel -->
 
     <!-- PREVENTIVO -->
-    <div class="card collapsed">
-      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo preventivo<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
+    <div class="tab-panel" id="panel-preventivo">
+    <div class="card">
+      <h2>Nuovo preventivo</h2>
       <p class="desc">Seleziona il cliente e compila i dati del preventivo.</p>
 
       <p class="desc" style="margin-top:0;">Cliente: <strong id="p-cliente-display">— nessuno caricato —</strong></p>
@@ -401,10 +401,12 @@ Gianluca — VISIBIL</textarea>
       <button onclick="salvaPreventivo()">Aggiungi preventivo</button>
       <div class="msg" id="preventivo-msg"></div>
     </div>
+    </div><!-- /tab-panel -->
 
     <!-- PAGAMENTO -->
-    <div class="card collapsed">
-      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo pagamento<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
+    <div class="tab-panel" id="panel-pagamento">
+    <div class="card">
+      <h2>Nuovo pagamento</h2>
       <p class="desc">Registra un pagamento (fatto o dovuto) per un cliente.</p>
 
       <p class="desc" style="margin-top:0;">Cliente: <strong id="pg-cliente-display">— nessuno caricato —</strong></p>
@@ -434,10 +436,12 @@ Gianluca — VISIBIL</textarea>
       <button onclick="salvaPagamento()">Aggiungi pagamento</button>
       <div class="msg" id="pagamento-msg"></div>
     </div>
+    </div><!-- /tab-panel -->
 
     <!-- DOCUMENTO -->
-    <div class="card collapsed">
-      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo documento<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
+    <div class="tab-panel" id="panel-documento">
+    <div class="card">
+      <h2>Nuovo documento</h2>
       <p class="desc">Documenti da scaricare/firmare (es. contratti, moduli).</p>
 
       <p class="desc" style="margin-top:0;">Cliente: <strong id="doc-cliente-display">— nessuno caricato —</strong></p>
@@ -460,10 +464,12 @@ Gianluca — VISIBIL</textarea>
       <button onclick="salvaDocumento()">Aggiungi documento</button>
       <div class="msg" id="documento-msg"></div>
     </div>
+    </div><!-- /tab-panel -->
 
     <!-- REPORT -->
-    <div class="card collapsed">
-      <h2 class="card-toggle" onclick="toggleCard(this)">Nuovo report<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></h2>
+    <div class="tab-panel" id="panel-report">
+    <div class="card">
+      <h2>Nuovo report</h2>
       <p class="desc">Carica un report (es. analytics mensile) per un cliente.</p>
 
       <p class="desc" style="margin-top:0;">Cliente: <strong id="r-cliente-display">— nessuno caricato —</strong></p>
@@ -480,6 +486,7 @@ Gianluca — VISIBIL</textarea>
       <button onclick="salvaReport()">Aggiungi report</button>
       <div class="msg" id="report-msg"></div>
     </div>
+    </div><!-- /tab-panel -->
 
 
 
@@ -762,12 +769,9 @@ Gianluca — VISIBIL</textarea>
     lista.innerHTML = clientiCache.length === 0
       ? '<p style="font-size:0.85rem; color:var(--grey);">Nessun cliente ancora.</p>'
       : clientiCache.map(c => `
-          <div class="client-row" id="client-row-${c.user_id}">
-            <span onclick="caricaNelForm('${c.user_id}')" style="cursor:pointer;">
-              <span style="display:block;">${c.nome || '(senza nome)'}</span>
-              ${c.email_accesso ? `<span style="display:block; font-size:0.7rem; color:var(--grey); font-weight:400;">${c.email_accesso}</span>` : ''}
-            </span>
-            <div style="display:flex; align-items:center; gap:0.4rem;">
+          <div class="client-row" id="client-row-${c.user_id}" style="flex-wrap: nowrap;">
+            <span onclick="caricaNelForm('${c.user_id}')" style="cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1;">${c.nome || '(senza nome)'}</span>
+            <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;">
               <a href="area-cliente.html?preview=${c.user_id}" target="_blank" title="Anteprima" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:var(--black);">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
               </a>
@@ -816,10 +820,13 @@ Gianluca — VISIBIL</textarea>
 
   setupAutosave(DA_FARE_FIELDS.concat(EMAIL_FIELDS));
 
-  function toggleCard(headerEl) {
-    let target = headerEl.closest('.card');
-    if (!target) target = headerEl.nextElementSibling;
-    if (target) target.classList.toggle('collapsed');
+  function showTab(tabId) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const panel = document.getElementById('panel-' + tabId);
+    const btn = document.getElementById('tab-' + tabId);
+    if (panel) panel.classList.add('active');
+    if (btn) btn.classList.add('active');
   }
 
   function nuovoCliente() {
@@ -859,8 +866,7 @@ Gianluca — VISIBIL</textarea>
     const c = clientiCache.find(x => x.user_id === user_id);
     if (!c) return;
 
-    document.getElementById('c-da-fare-cliente').closest('.card').classList.remove('collapsed');
-    document.getElementById('c-sito-url').closest('.card').classList.remove('collapsed');
+    showTab('da-fare');
 
     document.getElementById('c-userid').value = c.user_id;
     document.getElementById('c-nome').value = c.nome || '';
