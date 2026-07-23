@@ -338,8 +338,9 @@ Gianluca — VISIBIL</textarea>
     </div><!-- /tab-panel -->
 
     <div class="tab-panel active" id="panel-impostazioni">
+    <div class="card" style="padding:1rem;">
 
-    <div class="acc-item">
+    <div class="acc-item" id="acc-dati-personali">
       <div class="acc-header" onclick="toggleAcc(this)">
         <span>Dati personali</span>
         <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -446,6 +447,7 @@ Gianluca — VISIBIL</textarea>
       <button onclick="salvaCliente()">Salva cliente</button>
       <div class="msg" id="cliente-msg-2"></div>
       </div>
+    </div>
     </div>
     </div><!-- /tab-panel -->
 
@@ -1005,7 +1007,8 @@ Gianluca — VISIBIL</textarea>
     const c = clientiCache.find(x => x.user_id === user_id);
     if (!c) return;
 
-    showTab('da-fare');
+    showTab('impostazioni');
+    document.getElementById('acc-dati-personali').classList.add('open');
     updateDatiPersonaliSummary(c);
     tornaAlRiepilogoDatiPersonali();
 
