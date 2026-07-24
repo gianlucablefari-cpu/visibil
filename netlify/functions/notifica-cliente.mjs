@@ -1,4 +1,4 @@
-// Funzione server-side: avvisa il cliente via email quando il suo "Da fare" viene aggiornato.
+// Funzione server-side: avvisa il cliente via email quando le sue "Note" vengono aggiornate.
 // Richiede l'autorizzazione del titolare (token della sessione admin.html).
 
 const SUPABASE_URL = "https://zmdnuplqgpznryxfooez.supabase.co";
@@ -34,7 +34,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { email, oggetto, incipit, messaggioVisibil, messaggioCliente, saluti, user_id } = payload;
+  const { email, oggetto, incipit, nota, saluti, user_id } = payload;
   if (!email) {
     return new Response(JSON.stringify({ error: "Email obbligatoria." }), { status: 400 });
   }
@@ -44,17 +44,9 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Configurazione email mancante." }), { status: 500 });
   }
 
-  const boxVisibil = messaggioVisibil
-    ? `<div style="background:#F5F6FF; border-left:3px solid #1A1AE6; padding:1em 1.25em; margin:0 0 1em;">
-        <div style="font-size:0.7em; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#1A1AE6; margin-bottom:0.4em;">Da VISIBIL</div>
-        <div style="font-size:0.95em; white-space:pre-line;">${messaggioVisibil}</div>
-      </div>`
-    : '';
-
-  const boxCliente = messaggioCliente
-    ? `<div style="background:#FFF4DE; border-left:3px solid #7A4E00; padding:1em 1.25em; margin:0 0 1.75em;">
-        <div style="font-size:0.7em; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#7A4E00; margin-bottom:0.4em;">Dal cliente</div>
-        <div style="font-size:0.95em; white-space:pre-line;">${messaggioCliente}</div>
+  const notaHtml = nota
+    ? `<div style="background:#F5F6FF; border-left:3px solid #1A1AE6; padding:1em 1.25em; margin:0 0 1.5em;">
+        <div style="font-size:0.95em; white-space:pre-line;">${nota}</div>
       </div>`
     : '';
 
@@ -77,8 +69,7 @@ export default async (req) => {
             <div style="font-weight:900; font-size:0.9em; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:2em;">VISIBIL</div>
 
             ${incipitHtml}
-            ${boxVisibil}
-            ${boxCliente}
+            ${notaHtml}
 
             <a href="https://vsbl.ch/area-cliente.html" style="display:inline-block; background:#0F0F0F; color:#FFFFFF; text-decoration:none; font-size:0.75em; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.9em 1.75em; border-radius:5px; margin-bottom:1em;">Vai all'Area Clienti</a>
 
@@ -97,27 +88,29 @@ export default async (req) => {
   }
 
   if (user_id) {
-    try {
-      const contenutoLog = [incipit, messaggioVisibil ? `[Da VISIBIL] ${messaggioVisibil}` : '', messaggioCliente ? `[Dal cliente] ${messaggioCliente}` : '', saluti]
-        .filter(Boolean).join('\n\n');
+    const SERVICE_KEY = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (SERVICE_KEY) {
+      try {
+        const contenutoLog = [incipit, nota, saluti].filter(Boolean).join('\n\n');
 
-      await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
-        method: "POST",
-        headers: {
-          apikey: SERVICE_KEY,
-          Authorization: `Bearer ${SERVICE_KEY}`,
-          "Content-Type": "application/json",
-          Prefer: "return=minimal"
-        },
-        body: JSON.stringify({
-          user_id,
-          tipo: "notifica",
-          oggetto,
-          contenuto: contenutoLog
-        })
-      });
-    } catch (e) {
-      // non blocca l'invio se il log fallisce
+        await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
+          method: "POST",
+          headers: {
+            apikey: SERVICE_KEY,
+            Authorization: `Bearer ${SERVICE_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "return=minimal"
+          },
+          body: JSON.stringify({
+            user_id,
+            tipo: "notifica",
+            oggetto,
+            contenuto: contenutoLog
+          })
+        });
+      } catch (e) {
+        // non blocca l'invio se il log fallisce
+      }
     }
   }
 

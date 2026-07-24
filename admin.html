@@ -256,12 +256,9 @@
         <button class="secondary btn-small" onclick="showTab('impostazioni')" style="flex-shrink:0; white-space:nowrap;">Modifica dati →</button>
       </div>
 
-      <p class="desc">Note visibili al cliente e per te stesso — riferite al cliente selezionato a sinistra.</p>
+      <p class="desc">Note libere sul cliente — le usi anche come base per l'email che gli mandi (sotto).</p>
 
-      <label for="c-da-fare-cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg><span id="label-da-fare-cliente">Da fare — Cliente</span></label>
-      <textarea id="c-da-fare-cliente" placeholder="es. Mandare foto prodotti e testo pagina Chi siamo" style="min-height:180px;"></textarea>
-
-      <label for="c-avanzamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Da fare — Gianluca</label>
+      <label for="c-avanzamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Note</label>
       <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese" style="min-height:180px;"></textarea>
 
       <button onclick="salvaDaFare()">Salva</button>
@@ -277,7 +274,7 @@
         <label for="email-incipit">Incipit</label>
         <textarea id="email-incipit" style="min-height:80px;">Ciao, ecco il prossimo passo per il tuo progetto:</textarea>
 
-        <p class="desc" style="margin-top:0.5rem;">I due box "Da fare" qui sopra vengono inclusi automaticamente nell'email.</p>
+        <p class="desc" style="margin-top:0.5rem;">Le "Note" qui sopra vengono incluse automaticamente nell'email.</p>
 
         <label for="email-saluti">Saluti</label>
         <textarea id="email-saluti" style="min-height:100px;">A presto,
@@ -728,7 +725,13 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('stat-clienti').textContent = clientiCache.length;
 
     const TESTO_AUTOMATICO_DEFAULT = 'Stiamo preparando la proposta per il tuo progetto.';
-    const daFareGenerale = clientiCache.filter(c => c.prossimo_passo && c.prossimo_passo.trim() && c.prossimo_passo.trim() !== TESTO_AUTOMATICO_DEFAULT);
+    const daFareGenerale = clientiCache.filter(c => {
+      const testo = (c.prossimo_passo || '').trim();
+      if (!testo) return false;
+      if (testo === TESTO_AUTOMATICO_DEFAULT) return false;
+      if (testo.startsWith('Benvenuto') && testo.includes('Area Clienti')) return false;
+      return true;
+    });
     renderListaHome('home-da-fare-generale', daFareGenerale, c => `<strong>${c.nome || c.user_id}</strong>: ${c.prossimo_passo}`);
 
     const { data: pagamentiSospesi } = await client.from('pagamenti').select('*').neq('stato', 'Pagato').order('data', { ascending: true });
@@ -830,7 +833,6 @@ Gianluca — VISIBIL</textarea>
       sito_password: document.getElementById('c-sito-password').value,
       instagram_url: document.getElementById('c-instagram').value,
       prossimo_passo: document.getElementById('c-avanzamento').value,
-      da_fare_cliente: document.getElementById('c-da-fare-cliente').value,
       upload_link: document.getElementById('c-upload').value,
       rinnovo_piano: document.getElementById('c-rinnovo-piano').value,
       rinnovo_data: document.getElementById('c-rinnovo-data').value || null,
@@ -868,8 +870,7 @@ Gianluca — VISIBIL</textarea>
 
     const oggetto = document.getElementById('email-oggetto').value;
     const incipit = document.getElementById('email-incipit').value;
-    const boxVisibil = document.getElementById('c-avanzamento').value;
-    const boxCliente = document.getElementById('c-da-fare-cliente').value;
+    const nota = document.getElementById('c-avanzamento').value;
     const saluti = document.getElementById('email-saluti').value;
 
     notificaMsg.textContent = 'Invio email in corso...';
@@ -886,8 +887,7 @@ Gianluca — VISIBIL</textarea>
           email: window.clienteAttivoEmail,
           oggetto,
           incipit,
-          messaggioVisibil: boxVisibil,
-          messaggioCliente: boxCliente,
+          nota,
           saluti,
           user_id: document.getElementById('c-userid').value.trim()
         })
@@ -1004,7 +1004,7 @@ Gianluca — VISIBIL</textarea>
     caricaClienti();
   }
 
-  const DA_FARE_FIELDS = ['c-da-fare-cliente', 'c-avanzamento'];
+  const DA_FARE_FIELDS = ['c-avanzamento'];
   const EMAIL_FIELDS = ['email-oggetto', 'email-incipit', 'email-saluti'];
 
   function setupAutosave(fieldIds) {
@@ -1139,7 +1139,6 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('c-sito-password').value = c.sito_password || '';
     document.getElementById('c-instagram').value = c.instagram_url || '';
     document.getElementById('c-avanzamento').value = c.prossimo_passo || '';
-    document.getElementById('c-da-fare-cliente').value = c.da_fare_cliente || '';
     document.getElementById('c-upload').value = c.upload_link || '';
     document.getElementById('c-rinnovo-piano').value = c.rinnovo_piano || '';
     document.getElementById('c-rinnovo-data').value = c.rinnovo_data || '';
@@ -1167,9 +1166,6 @@ Gianluca — VISIBIL</textarea>
       row.style.borderRadius = attiva ? '6px' : '0';
     });
     window.clienteAttivoEmail = c.email_contatto || '';
-    window.daFareClienteOriginale = c.da_fare_cliente || '';
-    const labelDaFare = document.getElementById('label-da-fare-cliente');
-    if (labelDaFare) labelDaFare.textContent = `Da fare — ${window.clienteAttivoNome}`;
 
     document.getElementById('email-destinatario').textContent = window.clienteAttivoEmail || '— nessuna email salvata per questo cliente —';
     document.getElementById('email-incipit').value = `Ciao ${c.referente || window.clienteAttivoNome}, ecco il prossimo passo per il tuo progetto:`;
