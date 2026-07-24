@@ -247,6 +247,8 @@
 
     <div class="tab-panel" id="panel-da-fare">
     <div class="card">
+      <div id="pan-link-lavoro" style="display:none; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.25rem;"></div>
+
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; padding-bottom:1.25rem; margin-bottom:1.25rem; border-bottom:1px solid rgba(0,0,0,0.08); font-size:0.82rem; line-height:1.8;">
         <div>
           <span style="color:var(--grey);">Tel:</span> <span id="pan-s-telefono">—</span> ·
@@ -430,6 +432,13 @@ Gianluca — VISIBIL</textarea>
       </div>
       <div class="acc-body">
       <p class="desc">Link operativi e abbonamento — cambi raramente, di solito solo alla creazione del cliente.</p>
+
+      <div class="section-label" style="margin-top:0;">Link di lavoro rapidi</div>
+      <p class="desc" style="margin-top:0;">Es. Webflow, Canva, chat Claude dedicata — compaiono come icone in cima a Panoramica.</p>
+      <div id="link-lavoro-lista"></div>
+      <button type="button" class="secondary" onclick="aggiungiLinkLavoro()" style="width:100%; margin-top:0.5rem;">+ Aggiungi link</button>
+
+      <div class="section-label">Link sito e abbonamento</div>
 
       <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
       <input type="text" id="c-sito-url">
@@ -836,7 +845,8 @@ Gianluca — VISIBIL</textarea>
       upload_link: document.getElementById('c-upload').value,
       rinnovo_piano: document.getElementById('c-rinnovo-piano').value,
       rinnovo_data: document.getElementById('c-rinnovo-data').value || null,
-      rinnovo_importo: document.getElementById('c-rinnovo-importo').value || null
+      rinnovo_importo: document.getElementById('c-rinnovo-importo').value || null,
+      link_lavoro: raccogliLinkLavoro()
     };
 
     const { error } = await client.from('clienti').upsert(payload, { onConflict: 'user_id' });
@@ -851,6 +861,7 @@ Gianluca — VISIBIL</textarea>
     showMsg('cliente-msg-3', 'Cliente salvato.', true);
     updateDatiPersonaliSummary(payload);
     tornaAlRiepilogoDatiPersonali();
+    renderLinkLavoroPanoramica(payload.link_lavoro);
     caricaClienti();
   }
 
@@ -1076,6 +1087,8 @@ Gianluca — VISIBIL</textarea>
       row.style.padding = '0.8rem 0';
       row.style.borderRadius = '0';
     });
+    document.getElementById('link-lavoro-lista').innerHTML = '';
+    renderLinkLavoroPanoramica([]);
     showTab('nuovo-cliente');
   }
 
@@ -1144,6 +1157,10 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('c-rinnovo-data').value = c.rinnovo_data || '';
     document.getElementById('c-rinnovo-importo').value = c.rinnovo_importo || '';
 
+    document.getElementById('link-lavoro-lista').innerHTML = '';
+    (c.link_lavoro || []).forEach(l => aggiungiLinkLavoro(l.nome, l.url));
+    renderLinkLavoroPanoramica(c.link_lavoro || []);
+
     window.clienteAttivoNome = c.nome || c.user_id;
 
     document.getElementById('cliente-attivo-bar').style.display = 'flex';
@@ -1201,6 +1218,48 @@ Gianluca — VISIBIL</textarea>
     showTab('documenti');
     showSubDoc(prefix === 'p' ? 'preventivo' : 'pagamento');
   }  let vociCounter = 0;
+
+  let linkLavoroCounter = 0;
+
+  function aggiungiLinkLavoro(nome, url) {
+    linkLavoroCounter++;
+    const id = linkLavoroCounter;
+    const div = document.createElement('div');
+    div.id = `link-lavoro-${id}`;
+    div.style.cssText = 'display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;';
+    div.innerHTML = `
+      <input type="text" placeholder="Nome (es. Webflow)" value="${nome || ''}" style="flex:1;">
+      <input type="text" placeholder="URL" value="${url || ''}" style="flex:2;">
+      <button type="button" onclick="document.getElementById('link-lavoro-${id}').remove();" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; padding:0.5rem 0.7rem; flex-shrink:0;">✕</button>
+    `;
+    document.getElementById('link-lavoro-lista').appendChild(div);
+  }
+
+  function raccogliLinkLavoro() {
+    const link = [];
+    document.querySelectorAll('#link-lavoro-lista > div').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const nome = inputs[0].value.trim();
+      const url = inputs[1].value.trim();
+      if (nome && url) link.push({ nome, url });
+    });
+    return link;
+  }
+
+  function renderLinkLavoroPanoramica(link) {
+    const container = document.getElementById('pan-link-lavoro');
+    if (!link || link.length === 0) {
+      container.style.display = 'none';
+      container.innerHTML = '';
+      return;
+    }
+    container.style.display = 'flex';
+    container.innerHTML = link.map(l => `
+      <a href="${l.url}" target="_blank" style="font-size:0.8rem; font-weight:600; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        ${l.nome}
+      </a>`).join('');
+  }
 
   function aggiungiVoce(desc, importo) {
     vociCounter++;
