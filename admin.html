@@ -433,12 +433,7 @@ Gianluca — VISIBIL</textarea>
       <div class="acc-body">
       <p class="desc">Link operativi e abbonamento — cambi raramente, di solito solo alla creazione del cliente.</p>
 
-      <div class="section-label" style="margin-top:0;">Link di lavoro rapidi</div>
-      <p class="desc" style="margin-top:0;">Es. Webflow, Canva, chat Claude dedicata — compaiono come icone in cima a Panoramica.</p>
-      <div id="link-lavoro-lista"></div>
-      <button type="button" class="secondary" onclick="aggiungiLinkLavoro()" style="width:100%; margin-top:0.5rem;">+ Aggiungi link</button>
-
-      <div class="section-label">Link sito e abbonamento</div>
+      <div class="section-label" style="margin-top:0;">Link sito e abbonamento</div>
 
       <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
       <input type="text" id="c-sito-url">
@@ -470,6 +465,11 @@ Gianluca — VISIBIL</textarea>
 
       <label for="c-rinnovo-importo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>Importo rinnovo (CHF)</label>
       <input type="number" id="c-rinnovo-importo">
+
+      <div class="section-label">Link di lavoro rapidi</div>
+      <p class="desc" style="margin-top:0;">Es. Webflow, Canva, chat Claude dedicata — compaiono come icone in Panoramica.</p>
+      <div id="link-lavoro-lista"></div>
+      <button type="button" class="secondary" onclick="aggiungiLinkLavoro()" style="width:100%; margin-top:0.5rem;">+ Aggiungi link</button>
 
       <button onclick="salvaCliente()">Salva cliente</button>
       <div class="msg" id="cliente-msg-2"></div>
@@ -1253,8 +1253,8 @@ Gianluca — VISIBIL</textarea>
   function renderLinkLavoroPanoramica(link, dropboxUrl) {
     const container = document.getElementById('pan-link-lavoro');
     const tutti = [];
-    if (dropboxUrl) tutti.push({ nome: '📁 Dropbox', url: dropboxUrl });
     (link || []).forEach(l => tutti.push(l));
+    if (dropboxUrl) tutti.push({ nome: '📁 Dropbox', url: dropboxUrl });
 
     if (tutti.length === 0) {
       container.style.display = 'none';
