@@ -9,7 +9,7 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --white: #FFFFFF; --black: #0F0F0F; --grey: #8A8A8A; --ink: #1A1AE6; --surface: #F7F7F7;
+    --white: #FFFFFF; --black: #0F0F0F; --grey: #8A8A8A; --grey-lt: #D0D0D0; --ink: #1A1AE6; --surface: #F7F7F7;
     --sans: 'Inter', sans-serif;
   }
   body { font-family: var(--sans); background: var(--surface); color: var(--black); line-height: 1.5; -webkit-font-smoothing: antialiased; }
@@ -101,9 +101,11 @@
     .side-col { position: static; }
   }
 </style>
+<link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
 <body>
 <script src="partials/prezzi-dati.js"></script>
+<script src="partials/prezzi-widget.js"></script>
 
 <div id="cliente-attivo-bar" style="display:none; position:sticky; top:0; z-index:90; background:#0F0F0F; color:#fff; padding:0.6rem 3rem; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:nowrap; overflow-x:auto;">
   <span style="font-size:0.95rem; white-space:nowrap;">Cliente attivo: <strong id="cliente-attivo-nome">—</strong></span>
@@ -253,6 +255,10 @@
           <button onclick="selectNuovo('report', 'Report')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
             Report
+          </button>
+          <button onclick="selectNuovo('configuratore', 'Configuratore prezzi')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Configuratore prezzi
           </button>
         </div>
       </div>
@@ -440,8 +446,7 @@ Gianluca — VISIBIL</textarea>
       <input type="text" id="p-titolo" placeholder="es. Sito Vetrina + lavoro extra">
 
       <label>Voci</label>
-      <label>Aggiungi da catalogo prezzi</label>
-      <div id="p-catalogo" class="catalogo-grid"></div>
+      <button type="button" class="secondary" onclick="showTab('configuratore'); window.importaTarget='p';" style="width:100%; margin-top:0.5rem;">📐 Apri il configuratore prezzi</button>
 
       <div id="p-voci-lista"></div>
       <button type="button" class="secondary" onclick="aggiungiVoce()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce vuota</button>
@@ -486,8 +491,7 @@ Gianluca — VISIBIL</textarea>
       <input type="text" id="pg-descrizione" placeholder="es. Sito Vetrina + lavoro extra">
 
       <label>Voci</label>
-      <label>Aggiungi da catalogo prezzi</label>
-      <div id="pg-catalogo" class="catalogo-grid"></div>
+      <button type="button" class="secondary" onclick="showTab('configuratore'); window.importaTarget='pg';" style="width:100%; margin-top:0.5rem;">📐 Apri il configuratore prezzi</button>
 
       <div id="pg-voci-lista"></div>
       <button type="button" class="secondary" onclick="aggiungiVocePagamento()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce vuota</button>
@@ -566,6 +570,22 @@ Gianluca — VISIBIL</textarea>
 
       <button onclick="salvaReport()">Aggiungi report</button>
       <div class="msg" id="report-msg"></div>
+    </div>
+    </div><!-- /tab-panel -->
+
+    <!-- CONFIGURATORE PREZZI (vero widget del sito) -->
+    <div class="tab-panel" id="panel-configuratore">
+    <div class="card">
+      <h2>Configuratore prezzi</h2>
+      <p class="desc">Lo stesso configuratore della home. Componi la proposta, poi importala in un preventivo o pagamento.</p>
+
+      <div id="configuratore-mount"></div>
+
+      <div style="display:flex; gap:0.75rem; margin-top:1.5rem; flex-wrap:wrap;">
+        <button onclick="importaDaConfiguratore('p')" style="flex:1;">→ Importa in Preventivo</button>
+        <button onclick="importaDaConfiguratore('pg')" class="secondary" style="flex:1;">→ Importa in Pagamento</button>
+      </div>
+      <div class="msg" id="configuratore-msg"></div>
     </div>
     </div><!-- /tab-panel -->
 
@@ -900,7 +920,8 @@ Gianluca — VISIBIL</textarea>
     'preventivo': 'Preventivo',
     'pagamento': 'Pagamento',
     'documento': 'Documento',
-    'report': 'Report'
+    'report': 'Report',
+    'configuratore': 'Configuratore prezzi'
   };
 
   function updateDatiPersonaliSummary(c) {
@@ -1070,29 +1091,6 @@ Gianluca — VISIBIL</textarea>
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  const PREZZI_CATALOGO = [
-    ...PREZZI_DATI.siti.map(s => ({ nome: s.lbl, prezzoDisplay: `CHF ${s.once}`, descrizione: s.lbl, importo: s.once })),
-    ...PREZZI_DATI.siti.map(s => ({ nome: `Abbonamento ${s.lbl.replace('Sito ', '')}`, prezzoDisplay: `CHF ${s.monthly}/mese`, descrizione: `Abbonamento ${s.lbl.replace('Sito ', '')} (mensile)`, importo: s.monthly })),
-    ...PREZZI_DATI.siti.map(s => ({ nome: `Abbonamento ${s.lbl.replace('Sito ', '')}`, prezzoDisplay: `CHF ${s.monthly * 10}/anno`, descrizione: `Abbonamento ${s.lbl.replace('Sito ', '')} (annuale)`, importo: s.monthly * 10 })),
-    ...PREZZI_DATI.siti.map(s => ({ nome: `Formazione ${s.lbl.replace('Sito ', '')}`, prezzoDisplay: `CHF ${s.formazione}`, descrizione: `Formazione (gestione autonoma) — ${s.lbl.replace('Sito ', '')}`, importo: s.formazione })),
-    ...PREZZI_DATI.instagram.map(ig => ({ nome: ig.lbl, prezzoDisplay: `CHF ${ig.monthly}/mese`, descrizione: ig.lbl, importo: ig.monthly })),
-    ...PREZZI_DATI.fotoVideo.map(fv => ({ nome: fv.lbl, prezzoDisplay: `CHF ${fv.once}`, descrizione: fv.lbl, importo: fv.once })),
-    { nome: 'Lavoro extra', prezzoDisplay: `CHF ${PREZZI_DATI.lavoroExtra.orario}/h`, descrizione: 'Lavoro extra', importo: PREZZI_DATI.lavoroExtra.orario, tariffaOraria: PREZZI_DATI.lavoroExtra.orario },
-    { nome: 'Consulenza', prezzoDisplay: `CHF ${PREZZI_DATI.consulenza.orario}/h`, descrizione: 'Consulenza', importo: PREZZI_DATI.consulenza.orario, tariffaOraria: PREZZI_DATI.consulenza.orario },
-    { nome: 'Sconto', prezzoDisplay: '%', tipo: 'sconto' }
-  ];
-
-  function popolaCataloghi() {
-    const card = (v, i, prefix) => `<button type="button" class="catalogo-card ${v.tipo === 'sconto' ? 'sconto' : ''}" onclick="aggiungiDaCatalogo('${prefix}', ${i})">
-        <span class="catalogo-card-nome">${v.nome}</span>
-        <span class="catalogo-card-prezzo">${v.prezzoDisplay}</span>
-      </button>`;
-    ['p', 'pg'].forEach(prefix => {
-      const el = document.getElementById(prefix + '-catalogo');
-      if (el) el.innerHTML = PREZZI_CATALOGO.map((v, i) => card(v, i, prefix)).join('');
-    });
-  }
-
   function calcolaSubtotale(prefix) {
     const listId = prefix === 'p' ? 'p-voci-lista' : 'pg-voci-lista';
     let totale = 0;
@@ -1103,45 +1101,32 @@ Gianluca — VISIBIL</textarea>
     return totale;
   }
 
-  function aggiungiDaCatalogo(prefix, indice) {
-    if (indice === '') return;
-    const voce = PREZZI_CATALOGO[Number(indice)];
-    if (!voce) return;
+  fetch('partials/prezzi-widget.html').then(r => r.text()).then(html => {
+    document.getElementById('configuratore-mount').innerHTML = html;
+  });
 
-    if (voce.tipo === 'sconto') {
-      const subtotale = calcolaSubtotale(prefix);
-      const etichetta = prompt('Nome dello sconto (es. "Sconto amicizia")', 'Sconto');
-      if (etichetta === null) return;
-      const percInput = prompt(`Percentuale di sconto sul subtotale attuale (CHF ${subtotale})?`, '10');
-      if (percInput === null) return;
-      const perc = parseFloat(percInput.replace(',', '.')) || 0;
-      if (perc <= 0) return;
-      const importoSconto = Math.round(subtotale * perc / 100 * 100) / 100;
-      const descrizione = `${etichetta} ${perc}%`;
-      if (prefix === 'p') aggiungiVoce(descrizione, -importoSconto);
-      else aggiungiVocePagamento(descrizione, -importoSconto);
+  function importaDaConfiguratore(prefix) {
+    if (typeof S === 'undefined' || Object.keys(S).length === 0) {
+      const msg = document.getElementById('configuratore-msg');
+      msg.textContent = 'Componi prima qualcosa nel configuratore qui sopra.';
+      msg.className = 'msg err';
       return;
     }
 
-    let descrizione = voce.descrizione;
-    let importo = voce.importo;
+    Object.values(S).forEach(item => {
+      if (item.once > 0) {
+        if (prefix === 'p') aggiungiVoce(item.lbl, item.once);
+        else aggiungiVocePagamento(item.lbl, item.once);
+      }
+      if (item.monthly > 0) {
+        const descrizioneMese = `${item.lbl} (mensile)`;
+        if (prefix === 'p') aggiungiVoce(descrizioneMese, item.monthly);
+        else aggiungiVocePagamento(descrizioneMese, item.monthly);
+      }
+    });
 
-    if (voce.tariffaOraria) {
-      const oreInput = prompt(`Quante ore? (CHF ${voce.tariffaOraria}/h)`, '1');
-      if (oreInput === null) return;
-      const ore = parseFloat(oreInput.replace(',', '.')) || 0;
-      if (ore <= 0) return;
-      descrizione = `${voce.descrizione} — ${ore} ${ore === 1 ? 'ora' : 'ore'} (CHF ${voce.tariffaOraria}/h)`;
-      importo = ore * voce.tariffaOraria;
-    }
-
-    if (prefix === 'p') aggiungiVoce(descrizione, importo);
-    else aggiungiVocePagamento(descrizione, importo);
-  }
-
-  popolaCataloghi();
-
-  let vociCounter = 0;
+    showTab(prefix === 'p' ? 'preventivo' : 'pagamento');
+  }  let vociCounter = 0;
 
   function aggiungiVoce(desc, importo) {
     vociCounter++;
