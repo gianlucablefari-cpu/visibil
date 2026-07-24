@@ -179,7 +179,10 @@
           <h2>Clienti esistenti</h2>
           <p class="desc">Clicca "Carica" per richiamare un cliente nel form e modificarlo.</p>
           <button class="secondary" onclick="apriNuovoCliente()" style="width:100%; margin-bottom:1rem;">+ Nuovo cliente</button>
+          <input type="text" id="cerca-cliente" placeholder="Cerca per nome..." oninput="renderClientiLista()" style="margin-bottom:0.75rem;">
           <div id="clienti-lista"></div>
+          <button class="secondary btn-small" onclick="toggleArchiviati()" id="toggle-archiviati-btn" style="width:100%; margin-top:0.75rem;">Mostra archiviati</button>
+          <div id="clienti-archiviati-lista" style="display:none; margin-top:0.75rem;"></div>
         </div>
 
         <div class="card">
@@ -301,6 +304,11 @@ Gianluca — VISIBIL</textarea>
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
         <div class="section-label" style="margin-top:0;">Preventivi da approvare</div>
         <div id="home-preventivi-attesa"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Da fare — tutti i clienti</div>
+        <div id="home-da-fare-generale"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
       </div>
 
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
@@ -709,10 +717,18 @@ Gianluca — VISIBIL</textarea>
     await caricaClienti();
     await caricaMessaggi();
     caricaStatistiche();
+
+    setInterval(async () => {
+      await caricaMessaggi();
+      caricaStatistiche();
+    }, 45000);
   }
 
   async function caricaStatistiche() {
     document.getElementById('stat-clienti').textContent = clientiCache.length;
+
+    const daFareGenerale = clientiCache.filter(c => c.prossimo_passo && c.prossimo_passo.trim());
+    renderListaHome('home-da-fare-generale', daFareGenerale, c => `<strong>${c.nome || c.user_id}</strong>: ${c.prossimo_passo}`);
 
     const { data: pagamentiSospesi } = await client.from('pagamenti').select('*').neq('stato', 'Pagato').order('data', { ascending: true });
     document.getElementById('stat-pagamenti').textContent = (pagamentiSospesi || []).length;
@@ -894,30 +910,87 @@ Gianluca — VISIBIL</textarea>
   async function caricaClienti() {
     const { data, error } = await client.from('clienti').select('*').order('nome');
     if (error) { console.error(error); return; }
-    clientiCache = (data || []).sort((a, b) => (b.preferito === true) - (a.preferito === true));
+    const tutti = (data || []).sort((a, b) => (b.preferito === true) - (a.preferito === true));
+    clientiCache = tutti.filter(c => !c.archiviato);
+    window.clientiArchiviatiCache = tutti.filter(c => c.archiviato);
 
-    const lista = document.getElementById('clienti-lista');
-    lista.innerHTML = clientiCache.length === 0
-      ? '<p style="font-size:0.85rem; color:var(--grey);">Nessun cliente ancora.</p>'
-      : clientiCache.map(c => `
-          <div class="client-row" id="client-row-${c.user_id}" style="flex-wrap: nowrap;">
-            <button title="${c.preferito ? 'Togli dai preferiti' : 'Aggiungi ai preferiti'}" onclick="toggleFavorito(event, '${c.user_id}')" style="display:flex; align-items:center; justify-content:center; width:24px; height:24px; padding:0; margin:0; background:none; border:none; cursor:pointer; flex-shrink:0; color:${c.preferito ? '#e63950' : 'rgba(0,0,0,0.2)'};">
-              <svg viewBox="0 0 24 24" fill="${c.preferito ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-            </button>
-            <span onclick="caricaNelForm('${c.user_id}')" style="cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1;">${c.nome || '(senza nome)'}</span>
-            <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;">
-              <a href="area-cliente.html?preview=${c.user_id}" target="_blank" title="Anteprima" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:var(--black);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              </a>
-              <button title="Elimina cliente" onclick="eliminaCliente('${c.user_id}', '${(c.nome || '').replace(/'/g, "\\'")}')" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
-            </div>
-          </div>`).join('');
+    renderClientiLista();
 
     const quickSelect = document.getElementById('quick-select-cliente');
     quickSelect.innerHTML = '<option value="">Cambia cliente...</option>' +
       clientiCache.map(c => `<option value="${c.user_id}">${c.nome || c.user_id}</option>`).join('');
+  }
+
+  function rigaClienteHtml(c, archiviato) {
+    const azioneDestra = archiviato
+      ? `<button title="Ripristina" onclick="ripristinaCliente('${c.user_id}')" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:var(--black); cursor:pointer;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              </button>
+              <button title="Elimina definitivamente" onclick="eliminaCliente('${c.user_id}', '${(c.nome || '').replace(/'/g, "\\'")}')" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>`
+      : `<a href="area-cliente.html?preview=${c.user_id}" target="_blank" title="Anteprima" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:var(--black);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </a>
+              <button title="Archivia cliente" onclick="archiviaCliente('${c.user_id}', '${(c.nome || '').replace(/'/g, "\\'")}')" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>`;
+
+    return `
+          <div class="client-row" id="client-row-${c.user_id}" style="flex-wrap: nowrap;">
+            <button title="${c.preferito ? 'Togli dai preferiti' : 'Aggiungi ai preferiti'}" onclick="toggleFavorito(event, '${c.user_id}')" style="display:flex; align-items:center; justify-content:center; width:24px; height:24px; padding:0; margin:0; background:none; border:none; cursor:pointer; flex-shrink:0; color:${c.preferito ? '#e63950' : 'rgba(0,0,0,0.2)'};">
+              <svg viewBox="0 0 24 24" fill="${c.preferito ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            </button>
+            <span onclick="${archiviato ? '' : `caricaNelForm('${c.user_id}')`}" style="cursor:${archiviato ? 'default' : 'pointer'}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1; ${archiviato ? 'color:var(--grey);' : ''}">${c.nome || '(senza nome)'}</span>
+            <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;">
+              ${azioneDestra}
+            </div>
+          </div>`;
+  }
+
+  function renderClientiLista() {
+    const filtro = (document.getElementById('cerca-cliente').value || '').toLowerCase().trim();
+    const filtrati = filtro
+      ? clientiCache.filter(c => (c.nome || '').toLowerCase().includes(filtro))
+      : clientiCache;
+
+    const lista = document.getElementById('clienti-lista');
+    lista.innerHTML = filtrati.length === 0
+      ? '<p style="font-size:0.85rem; color:var(--grey);">Nessun cliente trovato.</p>'
+      : filtrati.map(c => rigaClienteHtml(c, false)).join('');
+  }
+
+  function toggleArchiviati() {
+    const container = document.getElementById('clienti-archiviati-lista');
+    const btn = document.getElementById('toggle-archiviati-btn');
+    const aperto = container.style.display !== 'none';
+    if (aperto) {
+      container.style.display = 'none';
+      btn.textContent = 'Mostra archiviati';
+    } else {
+      const archiviati = window.clientiArchiviatiCache || [];
+      container.innerHTML = archiviati.length === 0
+        ? '<p style="font-size:0.8rem; color:var(--grey);">Nessun cliente archiviato.</p>'
+        : archiviati.map(c => rigaClienteHtml(c, true)).join('');
+      container.style.display = 'block';
+      btn.textContent = 'Nascondi archiviati';
+    }
+  }
+
+  async function archiviaCliente(userId, nome) {
+    const conferma = confirm(`Archiviare "${nome}"?\n\nSparirà dalla lista principale ma i suoi dati restano intatti — potrai ripristinarlo quando vuoi da "Mostra archiviati".`);
+    if (!conferma) return;
+    const { error } = await client.from('clienti').update({ archiviato: true }).eq('user_id', userId);
+    if (error) { alert('Errore: ' + error.message); return; }
+    await caricaClienti();
+  }
+
+  async function ripristinaCliente(userId) {
+    const { error } = await client.from('clienti').update({ archiviato: false }).eq('user_id', userId);
+    if (error) { alert('Errore: ' + error.message); return; }
+    await caricaClienti();
+    toggleArchiviati();
+    toggleArchiviati();
   }
 
   async function toggleFavorito(event, user_id) {
@@ -1026,46 +1099,6 @@ Gianluca — VISIBIL</textarea>
     if (btn) btn.classList.add('active');
   }
 
-  function nuovoCliente() {
-    document.getElementById('c-userid').value = '';
-    document.getElementById('c-nome').value = '';
-    document.getElementById('c-telefono').value = '';
-    document.getElementById('c-email-contatto').value = '';
-    document.getElementById('c-referente').value = '';
-    document.getElementById('c-indirizzo').value = '';
-    document.getElementById('c-nome-fatturazione').value = '';
-    document.getElementById('c-pref-email').checked = false;
-    document.getElementById('c-pref-whatsapp').checked = false;
-    document.getElementById('c-pref-telefono').checked = false;
-    document.getElementById('c-orario').value = '';
-    document.getElementById('c-onedrive').value = '';
-    document.getElementById('c-sito-url').value = '';
-    document.getElementById('c-sito-stato').value = '';
-    document.getElementById('c-sito-password').value = '';
-    document.getElementById('c-instagram').value = '';
-    document.getElementById('c-avanzamento').value = '';
-    document.getElementById('c-da-fare-cliente').value = '';
-    document.getElementById('c-upload').value = '';
-    document.getElementById('c-rinnovo-piano').value = '';
-    document.getElementById('c-rinnovo-data').value = '';
-    document.getElementById('c-rinnovo-importo').value = '';
-    document.getElementById('cliente-msg').textContent = '';
-    document.getElementById('cliente-msg-2').textContent = '';
-    document.getElementById('cliente-msg-3').textContent = '';
-    document.getElementById('cliente-attivo-bar').style.display = 'none';
-    document.getElementById('cliente-attivo-titolo').style.display = 'none';
-    document.getElementById('quick-select-cliente').value = '';
-    window.clienteAttivoNome = null;
-    window.clienteAttivoEmail = null;
-
-    showTab('impostazioni');
-    document.getElementById('acc-dati-personali').classList.add('open');
-    updateDatiPersonaliSummary({});
-    modificaDatiPersonali();
-
-    document.getElementById('c-userid').focus();
-  }
-
   function caricaNelForm(user_id) {
     const c = clientiCache.find(x => x.user_id === user_id);
     if (!c) return;
@@ -1134,16 +1167,6 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('doctab-cliente-display').textContent = window.clienteAttivoNome;
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function calcolaSubtotale(prefix) {
-    const listId = prefix === 'p' ? 'p-voci-lista' : 'pg-voci-lista';
-    let totale = 0;
-    document.querySelectorAll(`#${listId} > div`).forEach(row => {
-      const importoInput = row.querySelectorAll('input')[1];
-      totale += Number(importoInput.value) || 0;
-    });
-    return totale;
   }
 
   fetch('partials/prezzi-widget.html').then(r => r.text()).then(html => {
@@ -1236,6 +1259,7 @@ Gianluca — VISIBIL</textarea>
     const { error } = await client.from('preventivi').insert(payload);
     if (error) { showMsg('preventivo-msg', 'Errore: ' + error.message, false); return; }
     showMsg('preventivo-msg', `Preventivo aggiunto. Link da mandare al cliente: ${linkApprovazione}`, true);
+    caricaStatistiche();
     document.getElementById('p-titolo').value = '';
     document.getElementById('p-documento').value = '';
     document.getElementById('p-scelta-piano').checked = false;
@@ -1335,6 +1359,7 @@ Gianluca — VISIBIL</textarea>
     const { error } = await client.from('pagamenti').insert(payload);
     if (error) { showMsg('pagamento-msg', 'Errore: ' + error.message, false); return; }
     showMsg('pagamento-msg', paymentLink ? 'Pagamento aggiunto con link Stripe generato automaticamente.' : 'Pagamento aggiunto.', true);
+    caricaStatistiche();
     document.getElementById('pg-descrizione').value = '';
     document.getElementById('pg-documento').value = '';
     document.getElementById('pg-voci-lista').innerHTML = '';
@@ -1355,6 +1380,7 @@ Gianluca — VISIBIL</textarea>
     const { error } = await client.from('report').insert(payload);
     if (error) { showMsg('report-msg', 'Errore: ' + error.message, false); return; }
     showMsg('report-msg', 'Report aggiunto.', true);
+    caricaStatistiche();
     document.getElementById('r-titolo').value = '';
     document.getElementById('r-documento').value = '';
   }
@@ -1374,6 +1400,7 @@ Gianluca — VISIBIL</textarea>
     const { error } = await client.from('documenti').insert(payload);
     if (error) { showMsg('documento-msg', 'Errore: ' + error.message, false); return; }
     showMsg('documento-msg', 'Documento aggiunto.', true);
+    caricaStatistiche();
     document.getElementById('doc-titolo').value = '';
     document.getElementById('doc-documento').value = '';
   }
