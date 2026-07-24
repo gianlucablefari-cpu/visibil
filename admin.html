@@ -294,8 +294,6 @@ Gianluca — VISIBIL</textarea>
       <h2>Bentornato, Gianluca</h2>
       <p class="desc">Nessun cliente selezionato — qui trovi le cose trasversali e una panoramica generale.</p>
 
-      <button onclick="showTab('configuratore')" style="width:100%; margin-top:1rem;">📐 Apri il configuratore prezzi</button>
-
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
         <div class="section-label" style="margin-top:0;">Da fare — tutti i clienti</div>
         <div id="home-da-fare-generale"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
@@ -348,6 +346,8 @@ Gianluca — VISIBIL</textarea>
         <button class="secondary btn-small" onclick="cambiaPasswordAdminHome()" style="margin-top:0.75rem;">Cambia password</button>
         <div class="msg" id="home-admin-password-msg"></div>
       </div>
+
+      <button onclick="showTab('configuratore')" style="width:100%; margin-top:1.5rem;">📐 Apri il configuratore prezzi</button>
     </div>
     </div><!-- /tab-panel -->
 
@@ -727,7 +727,8 @@ Gianluca — VISIBIL</textarea>
   async function caricaStatistiche() {
     document.getElementById('stat-clienti').textContent = clientiCache.length;
 
-    const daFareGenerale = clientiCache.filter(c => c.prossimo_passo && c.prossimo_passo.trim());
+    const TESTO_AUTOMATICO_DEFAULT = 'Stiamo preparando la proposta per il tuo progetto.';
+    const daFareGenerale = clientiCache.filter(c => c.prossimo_passo && c.prossimo_passo.trim() && c.prossimo_passo.trim() !== TESTO_AUTOMATICO_DEFAULT);
     renderListaHome('home-da-fare-generale', daFareGenerale, c => `<strong>${c.nome || c.user_id}</strong>: ${c.prossimo_passo}`);
 
     const { data: pagamentiSospesi } = await client.from('pagamenti').select('*').neq('stato', 'Pagato').order('data', { ascending: true });
@@ -1088,6 +1089,14 @@ Gianluca — VISIBIL</textarea>
     if (btn) btn.classList.add('active');
 
     document.querySelector('.tabs-bar').style.display = (tabId === 'home') ? 'none' : 'flex';
+
+    if (tabId === 'home') {
+      document.getElementById('cliente-attivo-bar').style.display = 'none';
+      document.getElementById('cliente-attivo-titolo').style.display = 'none';
+    } else if (window.clienteAttivoNome) {
+      document.getElementById('cliente-attivo-bar').style.display = 'flex';
+      document.getElementById('cliente-attivo-titolo').style.display = 'block';
+    }
   }
 
   function showSubDoc(tipo) {
