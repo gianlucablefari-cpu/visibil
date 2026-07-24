@@ -513,9 +513,7 @@
       clienteItemsHtml += `
         <div style="background: rgba(163,45,45,0.05); border: 1px solid rgba(163,45,45,0.2); border-radius: 8px; padding: 1rem; text-align:center; margin-top:0.6rem;">
           <div style="font-size:0.88rem; margin-bottom:0.75rem;"><strong style="color:#A32D2D;">Fattura in sospeso:</strong> ${p.descrizione || ''}${importo}</div>
-          ${p.payment_link
-            ? `<a href="${p.payment_link}" target="_blank" style="display:inline-block; background:#A32D2D; color:#fff; font-size:0.78rem; font-weight:600; padding:0.5rem 1.25rem; border-radius:4px; text-decoration:none;">Paga ora</a>`
-            : `<span style="font-size:0.75rem; color:var(--grey);">Contattami per pagare</span>`}
+          <a href="pagamento.html?id=${p.id}" target="_blank" style="display:inline-block; background:#A32D2D; color:#fff; font-size:0.78rem; font-weight:600; padding:0.5rem 1.25rem; border-radius:4px; text-decoration:none;">Visualizza e paga</a>
         </div>`;
     });
 
@@ -912,6 +910,7 @@
             <span style="font-size:0.8rem; color:var(--grey);">${data}${p.importo ? ` · CHF ${p.importo}.–` : ''}</span>
             <div style="display:flex; align-items:center; gap:0.75rem;">
               <span class="badge ${badgeClass(p.stato)}">${p.stato || ''}</span>
+              <a href="pagamento.html?id=${p.id}" target="_blank" style="color:var(--ink); font-size:0.78rem; text-decoration:none;">Visualizza fattura</a>
               ${download}
             </div>
           </div>

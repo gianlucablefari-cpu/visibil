@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fattura — VISIBIL</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --white: #FFFFFF; --black: #0F0F0F; --grey: #8A8A8A; --ink: #1A1AE6; --surface: #F7F7F7;
+    --sans: 'Inter', sans-serif;
+  }
+  body { font-family: var(--sans); background: var(--surface); color: var(--black); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  .logo { font-weight: 900; font-size: 0.95rem; letter-spacing: 0.22em; text-align:center; padding: 2rem 0 0; }
+  .logo .cursor { display:inline-block; width:2px; height:12px; background:var(--ink); margin-left:4px; animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  main { max-width: 560px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .quote-card { background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 2rem; margin-top: 2rem; }
+  .quote-eyebrow { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.75rem; }
+  .quote-title { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 1.5rem; }
+  .quote-row { display:flex; justify-content:space-between; padding: 0.75rem 0; border-top: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+  .quote-row:first-of-type { border-top: none; }
+  .quote-row span:first-child { color: var(--grey); }
+  .badge { display:inline-block; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.3rem 0.7rem; border-radius: 100px; }
+  .badge.attesa { background: #FFF4DE; color: #7A4E00; }
+  .badge.pagato { background: #E3F3E8; color: #1E6B3C; }
+  .badge.scaduto { background: #FBE4E4; color: #A32D2D; }
+
+  .pay-box { background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 2rem; margin-top: 1.5rem; text-align: center; }
+  .pay-box p { font-size: 0.85rem; color: var(--grey); line-height: 1.6; margin-bottom: 1.25rem; }
+
+  a.pay-btn, button { display:block; width: 100%; font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--white); background: var(--black); border: none; border-radius: 5px; padding: 0.9rem; cursor: pointer; text-decoration:none; text-align:center; }
+  a.pay-btn:hover, button:hover { background: var(--ink); }
+
+  #loading, #error { text-align: center; padding: 4rem 1.5rem; color: var(--grey); font-size: 0.9rem; }
+  #error { display: none; }
+  #content { display: none; }
+
+  .download-bar { display:flex; justify-content:center; margin-top: 1.5rem; }
+  .download-bar button { width:auto; background:none; color:var(--black); border:1px solid rgba(0,0,0,0.15); padding:0.7rem 1.5rem; }
+  .download-bar button:hover { background:var(--surface); color:var(--black); }
+
+  .letterhead { display: none; }
+
+  @media print {
+    @page { size: A4; margin: 2cm; }
+    body { background: #fff; }
+    .logo, .download-bar, .pay-box { display: none !important; }
+    main { max-width: none; padding: 0; margin: 0; }
+    .letterhead { display: flex; justify-content: space-between; margin-bottom: 2.5rem; font-size: 0.8rem; }
+    .letterhead div { line-height: 1.6; }
+    .letterhead .from { color: var(--black); }
+    .letterhead .to { color: var(--black); text-align: right; }
+    .quote-card { border: none; padding: 0; margin-top: 0; }
+    .quote-title { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">VISIBIL<span class="cursor"></span></div>
+
+<main>
+  <div id="loading">Caricamento fattura...</div>
+  <div id="error">Fattura non trovata. Controlla il link ricevuto.</div>
+
+  <div id="content">
+    <div class="letterhead">
+      <div class="from">
+        <strong>Gianluca Blefari — VISIBIL</strong><br>
+        Via Romerio 10, 6600 Locarno<br>
+        +41 79 644 56 83<br>
+        gianluca.blefari@outlook.com
+      </div>
+      <div class="to">
+        <strong>Fattura per</strong><br>
+        <span id="lh-nome"></span><br>
+        <span id="lh-indirizzo"></span>
+      </div>
+    </div>
+
+    <div class="quote-card">
+      <div class="quote-eyebrow">Fattura</div>
+      <div class="quote-title" id="q-titolo"></div>
+      <div id="q-voci"></div>
+      <div class="quote-row"><span>Cliente</span><span id="q-cliente"></span></div>
+      <div class="quote-row"><span>Data</span><span id="q-data"></span></div>
+      <div class="quote-row" style="font-weight:700;"><span>Totale</span><span id="q-importo"></span></div>
+      <div class="quote-row"><span>Stato</span><span id="q-stato"></span></div>
+    </div>
+
+    <div class="download-bar">
+      <button onclick="window.print()">📄 Scarica PDF</button>
+    </div>
+
+    <div class="pay-box" id="pay-box">
+      <p id="pay-box-testo">Puoi pagare direttamente online, in modo sicuro tramite Stripe.</p>
+      <a class="pay-btn" id="pay-link" href="#" target="_blank">Paga ora</a>
+    </div>
+  </div>
+</main>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const pagamentoId = params.get('id');
+
+  async function caricaPagamento() {
+    if (!pagamentoId) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/get-pagamento?id=' + encodeURIComponent(pagamentoId));
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+
+      document.getElementById('q-titolo').textContent = data.descrizione || 'Fattura';
+      document.getElementById('q-cliente').textContent = data.cliente_nome || '—';
+      document.getElementById('lh-nome').textContent = data.cliente_nome_fatturazione || data.cliente_nome || '';
+      document.getElementById('lh-indirizzo').textContent = data.cliente_indirizzo || '';
+      document.getElementById('q-data').textContent = data.data ? new Date(data.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '—';
+      document.getElementById('q-importo').textContent = data.importo ? `CHF ${data.importo}.–` : '—';
+
+      const vociEl = document.getElementById('q-voci');
+      vociEl.innerHTML = '';
+      (data.voci || []).forEach(v => {
+        vociEl.innerHTML += `<div class="quote-row"><span>${v.descrizione || ''}</span><span>CHF ${v.importo}.–</span></div>`;
+      });
+
+      const statoEl = document.getElementById('q-stato');
+      const statoClasse = data.stato === 'Pagato' ? 'pagato' : data.stato === 'Scaduto' ? 'scaduto' : 'attesa';
+      statoEl.innerHTML = `<span class="badge ${statoClasse}">${data.stato || 'In attesa'}</span>`;
+
+      const payBox = document.getElementById('pay-box');
+      const payLink = document.getElementById('pay-link');
+      const payTesto = document.getElementById('pay-box-testo');
+
+      if (data.stato === 'Pagato') {
+        payTesto.textContent = 'Questa fattura è già stata saldata. Grazie!';
+        payLink.style.display = 'none';
+      } else if (data.payment_link) {
+        payLink.href = data.payment_link;
+        payTesto.textContent = 'Puoi pagare direttamente online, in modo sicuro tramite Stripe.';
+      } else {
+        payTesto.textContent = 'Per pagare questa fattura, contattami direttamente.';
+        payLink.style.display = 'none';
+      }
+    } catch (e) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+    }
+  }
+
+  caricaPagamento();
+</script>
+
+</body>
+</html>
