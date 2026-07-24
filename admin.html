@@ -178,7 +178,7 @@
         <div class="card">
           <h2>Clienti esistenti</h2>
           <p class="desc">Clicca "Carica" per richiamare un cliente nel form e modificarlo.</p>
-          <button class="secondary" onclick="showTab('nuovo-cliente')" style="width:100%; margin-bottom:1rem;">+ Nuovo cliente</button>
+          <button class="secondary" onclick="apriNuovoCliente()" style="width:100%; margin-bottom:1rem;">+ Nuovo cliente</button>
           <div id="clienti-lista"></div>
         </div>
 
@@ -1005,6 +1005,21 @@ Gianluca — VISIBIL</textarea>
 
   function toggleAcc(headerEl) {
     headerEl.closest('.acc-item').classList.toggle('open');
+  }
+
+  function apriNuovoCliente() {
+    document.getElementById('c-userid').value = '';
+    window.clienteAttivoNome = null;
+    window.clienteAttivoEmail = null;
+    document.getElementById('cliente-attivo-bar').style.display = 'none';
+    document.getElementById('cliente-attivo-titolo').style.display = 'none';
+    document.getElementById('quick-select-cliente').value = '';
+    document.querySelectorAll('.client-row').forEach(row => {
+      row.style.background = '';
+      row.style.padding = '0.8rem 0';
+      row.style.borderRadius = '0';
+    });
+    showTab('nuovo-cliente');
   }
 
   function showTab(tabId) {
