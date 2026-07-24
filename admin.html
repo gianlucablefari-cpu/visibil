@@ -223,7 +223,11 @@
     <div id="cliente-attivo-titolo" style="display:none; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 1.25rem;"></div>
 
     <div class="tabs-bar">
-      <button class="tab-tile active" id="tab-impostazioni" onclick="showTab('impostazioni')">
+      <button class="tab-tile active" id="tab-home" onclick="showTab('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span>Home</span>
+      </button>
+      <button class="tab-tile" id="tab-impostazioni" onclick="showTab('impostazioni')">
         <span>Impostazioni</span>
       </button>
       <button class="tab-tile" id="tab-da-fare" onclick="showTab('da-fare')">
@@ -319,7 +323,40 @@ Gianluca — VISIBIL</textarea>
     </div>
     </div><!-- /tab-panel -->
 
-    <div class="tab-panel active" id="panel-impostazioni">
+    <div class="tab-panel active" id="panel-home">
+    <div class="card">
+      <h2>Bentornato, Gianluca</h2>
+      <p class="desc">Nessun cliente selezionato — qui trovi le cose trasversali e una panoramica generale.</p>
+
+      <button onclick="showTab('configuratore')" style="width:100%; margin-top:1rem;">📐 Apri il configuratore prezzi</button>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Pagamenti in sospeso</div>
+        <div id="home-pagamenti-sospesi"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Preventivi da approvare</div>
+        <div id="home-preventivi-attesa"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Account</div>
+        <div class="account-field">
+          <label>Email di accesso</label>
+          <div class="readonly" id="home-admin-email"></div>
+        </div>
+        <div class="account-field">
+          <label for="home-admin-password">Nuova password</label>
+          <input type="password" id="home-admin-password" placeholder="••••••••">
+        </div>
+        <button class="secondary btn-small" onclick="cambiaPasswordAdminHome()" style="margin-top:0.75rem;">Cambia password</button>
+        <div class="msg" id="home-admin-password-msg"></div>
+      </div>
+    </div>
+    </div><!-- /tab-panel -->
+
+    <div class="tab-panel" id="panel-impostazioni">
     <div class="card" style="padding:1rem;">
 
     <div class="acc-item" id="acc-dati-personali">
@@ -701,14 +738,27 @@ Gianluca — VISIBIL</textarea>
   async function caricaStatistiche() {
     document.getElementById('stat-clienti').textContent = clientiCache.length;
 
-    const { data: pagamentiSospesi } = await client.from('pagamenti').select('id').neq('stato', 'Pagato');
+    const { data: pagamentiSospesi } = await client.from('pagamenti').select('*').neq('stato', 'Pagato').order('data', { ascending: true });
     document.getElementById('stat-pagamenti').textContent = (pagamentiSospesi || []).length;
+    renderListaHome('home-pagamenti-sospesi', pagamentiSospesi, p => `${nomeClienteById(p.user_id)} — ${p.descrizione || ''} — CHF ${p.importo || 0}`);
 
     const { data: messaggiClienti } = await client.from('messaggi').select('id').eq('tipo', 'contatto');
     document.getElementById('stat-messaggi').textContent = (messaggiClienti || []).length;
 
-    const { data: preventiviAttesa } = await client.from('preventivi').select('id').eq('stato', 'In attesa');
+    const { data: preventiviAttesa } = await client.from('preventivi').select('*').eq('stato', 'In attesa').order('data', { ascending: true });
     document.getElementById('stat-preventivi').textContent = (preventiviAttesa || []).length;
+    renderListaHome('home-preventivi-attesa', preventiviAttesa, p => `${nomeClienteById(p.user_id)} — ${p.titolo || ''} — CHF ${p.importo || 0}`);
+
+    document.getElementById('home-admin-email').textContent = document.getElementById('admin-email').textContent;
+  }
+
+  function renderListaHome(containerId, righe, formattatore) {
+    const el = document.getElementById(containerId);
+    if (!righe || righe.length === 0) {
+      el.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessuno al momento.</p>';
+      return;
+    }
+    el.innerHTML = righe.map(r => `<div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem;">${formattatore(r)}</div>`).join('');
   }
 
   async function logout() {
@@ -724,9 +774,11 @@ Gianluca — VISIBIL</textarea>
     el.className = 'msg ' + (ok ? 'ok' : 'err');
   }
 
-  async function cambiaPasswordAdmin() {
-    const nuova = document.getElementById('admin-password').value;
-    const msg = document.getElementById('admin-password-msg');
+  async function cambiaPasswordAdmin(passwordFieldId, msgFieldId) {
+    passwordFieldId = passwordFieldId || 'admin-password';
+    msgFieldId = msgFieldId || 'admin-password-msg';
+    const nuova = document.getElementById(passwordFieldId).value;
+    const msg = document.getElementById(msgFieldId);
 
     if (nuova.length < 6) {
       msg.textContent = "Minimo 6 caratteri.";
@@ -741,8 +793,12 @@ Gianluca — VISIBIL</textarea>
     } else {
       msg.textContent = "Password aggiornata.";
       msg.className = "msg ok";
-      document.getElementById('admin-password').value = '';
+      document.getElementById(passwordFieldId).value = '';
     }
+  }
+
+  function cambiaPasswordAdminHome() {
+    cambiaPasswordAdmin('home-admin-password', 'home-admin-password-msg');
   }
 
   async function salvaCliente() {
