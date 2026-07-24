@@ -225,7 +225,7 @@
 
     <div id="cliente-attivo-titolo" style="display:none; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 1.25rem;"></div>
 
-    <div class="tabs-bar">
+    <div class="tabs-bar" style="display:none;">
       <button class="tab-tile" id="tab-impostazioni" onclick="showTab('impostazioni')">
         <span>Impostazioni</span>
       </button>
@@ -1023,6 +1023,7 @@ Gianluca — VISIBIL</textarea>
     }
 
     document.getElementById('nuovo-menu').classList.remove('open');
+    document.querySelector('.tabs-bar').style.display = (tabId === 'home') ? 'none' : 'flex';
   }
 
   function toggleNuovoMenu(e) {
