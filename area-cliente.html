@@ -356,6 +356,11 @@
             <div id="project-widget-mount" class="stacked-cfg" style="display:none; margin-top: 1.5rem;"></div>
           </div>
 
+          <div id="strumenti-section" style="display:none;">
+            <div class="section-label" style="margin-top: 1.25rem; margin-bottom: 0.5rem;">Strumenti</div>
+            <div id="strumenti-lista" style="display:flex; flex-wrap:wrap; gap:0.6rem;"></div>
+          </div>
+
           <div class="section-label" style="margin-top: 1.25rem; margin-bottom: 0.5rem;">Materiali</div>
           <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
             <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
@@ -579,6 +584,16 @@
       }
 
       window.progettoTesto = cliente.prossimo_passo || null;
+
+      const strumentiList = cliente.link_lavoro || [];
+      if (strumentiList.length > 0) {
+        document.getElementById('strumenti-section').style.display = 'block';
+        document.getElementById('strumenti-lista').innerHTML = strumentiList.map(l => `
+          <a href="${l.url}" target="_blank" style="font-size:0.8rem; font-weight:600; padding:0.6rem 1rem; border:1px solid rgba(0,0,0,0.1); border-radius:6px; color:var(--black); text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            ${l.nome}
+          </a>`).join('');
+      }
       window.clienteNome = cliente.nome || null;
 
       document.getElementById('account-telefono').value = cliente.telefono || '';

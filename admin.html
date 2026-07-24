@@ -861,7 +861,7 @@ Gianluca — VISIBIL</textarea>
     showMsg('cliente-msg-3', 'Cliente salvato.', true);
     updateDatiPersonaliSummary(payload);
     tornaAlRiepilogoDatiPersonali();
-    renderLinkLavoroPanoramica(payload.link_lavoro);
+    renderLinkLavoroPanoramica(payload.link_lavoro, payload.onedrive_link);
     caricaClienti();
   }
 
@@ -1162,7 +1162,7 @@ Gianluca — VISIBIL</textarea>
 
     document.getElementById('link-lavoro-lista').innerHTML = '';
     (c.link_lavoro || []).forEach(l => aggiungiLinkLavoro(l.nome, l.url));
-    renderLinkLavoroPanoramica(c.link_lavoro || []);
+    renderLinkLavoroPanoramica(c.link_lavoro || [], c.onedrive_link);
 
     window.clienteAttivoNome = c.nome || c.user_id;
 
@@ -1249,15 +1249,19 @@ Gianluca — VISIBIL</textarea>
     return link;
   }
 
-  function renderLinkLavoroPanoramica(link) {
+  function renderLinkLavoroPanoramica(link, dropboxUrl) {
     const container = document.getElementById('pan-link-lavoro');
-    if (!link || link.length === 0) {
+    const tutti = [];
+    if (dropboxUrl) tutti.push({ nome: '📁 Dropbox', url: dropboxUrl });
+    (link || []).forEach(l => tutti.push(l));
+
+    if (tutti.length === 0) {
       container.style.display = 'none';
       container.innerHTML = '';
       return;
     }
     container.style.display = 'flex';
-    container.innerHTML = link.map(l => `
+    container.innerHTML = tutti.map(l => `
       <a href="${l.url}" target="_blank" style="font-size:0.8rem; font-weight:600; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
         ${l.nome}
