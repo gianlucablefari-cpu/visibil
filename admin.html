@@ -179,7 +179,7 @@
           <h2>Clienti esistenti</h2>
           <p class="desc">Clicca "Carica" per richiamare un cliente nel form e modificarlo.</p>
           <button class="secondary" onclick="apriNuovoCliente()" style="width:100%; margin-bottom:1rem;">+ Nuovo cliente</button>
-          <input type="text" id="cerca-cliente" name="cerca-cliente-visibil" placeholder="Cerca per nome..." oninput="renderClientiLista()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="margin-bottom:0.75rem;">
+          <input type="text" id="cerca-cliente" name="cerca-cliente-visibil" placeholder="Cerca per nome..." oninput="renderClientiLista()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" readonly onfocus="this.removeAttribute('readonly')" style="margin-bottom:0.75rem;">
           <div id="clienti-lista"></div>
           <button class="secondary btn-small" onclick="toggleArchiviati()" id="toggle-archiviati-btn" style="width:100%; margin-top:0.75rem;">Mostra archiviati</button>
           <div id="clienti-archiviati-lista" style="display:none; margin-top:0.75rem;"></div>
