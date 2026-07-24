@@ -529,6 +529,14 @@ Gianluca — VISIBIL</textarea>
       </div>
 
       <div class="sub-doc-panel" id="subpanel-pagamento" style="display:none;">
+        <div class="section-label" style="margin-top:0;">Pagamenti esistenti</div>
+        <div id="pg-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
+        <button type="button" class="secondary" onclick="resetFormPagamento()" style="width:100%; margin-top:0.5rem; margin-bottom:1.5rem;">+ Nuovo pagamento</button>
+
+        <div style="border-top:1px solid rgba(0,0,0,0.08); padding-top:1.25rem;">
+        <div id="pg-form-titolo" class="section-label" style="margin-top:0;">Nuovo pagamento</div>
+        <input type="hidden" id="pg-editing-id">
+
         <label for="pg-descrizione">Descrizione generale</label>
         <input type="text" id="pg-descrizione" placeholder="es. Sito Vetrina + lavoro extra">
 
@@ -560,8 +568,14 @@ Gianluca — VISIBIL</textarea>
           <input type="checkbox" id="pg-genera-link" style="width:auto;" checked> Genera automaticamente il link di pagamento Stripe
         </label>
 
-        <button onclick="salvaPagamento()">Aggiungi pagamento</button>
+        <button onclick="salvaPagamento()" id="pg-salva-btn">Aggiungi pagamento</button>
         <div class="msg" id="pagamento-msg"></div>
+
+        <div id="pg-notifica-box" style="display:none; border-top:1px solid rgba(0,0,0,0.08); margin-top:1.5rem; padding-top:1.25rem;">
+          <button class="secondary" onclick="inviaNotificaPagamento()">📧 Invia notifica email al cliente</button>
+          <div class="msg" id="pagamento-notifica-msg"></div>
+        </div>
+        </div>
       </div>
 
       <div class="sub-doc-panel" id="subpanel-documento" style="display:none;">
@@ -1191,6 +1205,8 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('email-destinatario').textContent = window.clienteAttivoEmail || '— nessuna email salvata per questo cliente —';
     document.getElementById('email-incipit').value = `Ciao ${c.referente || window.clienteAttivoNome}, ecco il prossimo passo per il tuo progetto:`;
     document.getElementById('doctab-cliente-display').textContent = window.clienteAttivoNome;
+    caricaPagamentiEsistenti(user_id);
+    resetFormPagamento();
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -1378,17 +1394,129 @@ Gianluca — VISIBIL</textarea>
 
   aggiungiVocePagamento();
 
+  async function caricaPagamentiEsistenti(user_id) {
+    const container = document.getElementById('pg-lista-esistenti');
+    if (!user_id) {
+      container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p>';
+      return;
+    }
+    const { data, error } = await client.from('pagamenti').select('*').eq('user_id', user_id).order('data', { ascending: false });
+    if (error) { container.innerHTML = '<p style="font-size:0.85rem; color:#c0392b;">Errore nel caricamento.</p>'; return; }
+    window.pagamentiCache = data || [];
+    if (window.pagamentiCache.length === 0) {
+      container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun pagamento ancora.</p>';
+      return;
+    }
+    container.innerHTML = window.pagamentiCache.map(p => `
+      <div onclick="caricaPagamentoNelForm('${p.id}')" style="cursor:pointer; border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+        <span>${p.descrizione || '(senza descrizione)'} — CHF ${p.importo || 0}</span>
+        <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${p.stato === 'Pagato' ? '#1E6B3C' : p.stato === 'Scaduto' ? '#c0392b' : '#7A4E00'};">${p.stato}</span>
+      </div>`).join('');
+  }
+
+  function caricaPagamentoNelForm(id) {
+    const p = (window.pagamentiCache || []).find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('pg-editing-id').value = p.id;
+    document.getElementById('pg-form-titolo').textContent = 'Modifica pagamento';
+    document.getElementById('pg-salva-btn').textContent = 'Salva modifiche';
+    document.getElementById('pg-descrizione').value = p.descrizione || '';
+    document.getElementById('pg-stato').value = p.stato || 'In attesa';
+    document.getElementById('pg-data').value = p.data || '';
+    document.getElementById('pg-documento').value = p.documento_url || '';
+    document.getElementById('pg-genera-link').checked = false;
+
+    document.getElementById('pg-voci-lista').innerHTML = '';
+    (p.voci || []).forEach(v => aggiungiVocePagamento(v.descrizione, v.importo));
+    if (!p.voci || p.voci.length === 0) aggiungiVocePagamento(p.descrizione, p.importo);
+    ricalcolaTotalePagamento();
+
+    window.pagamentoAttivoLink = p.payment_link || null;
+    document.getElementById('pg-notifica-box').style.display = p.payment_link ? 'block' : 'none';
+    document.getElementById('pagamento-notifica-msg').textContent = '';
+
+    window.scrollTo({ top: document.getElementById('subpanel-pagamento').offsetTop, behavior: 'smooth' });
+  }
+
+  function resetFormPagamento() {
+    document.getElementById('pg-editing-id').value = '';
+    document.getElementById('pg-form-titolo').textContent = 'Nuovo pagamento';
+    document.getElementById('pg-salva-btn').textContent = 'Aggiungi pagamento';
+    document.getElementById('pg-descrizione').value = '';
+    document.getElementById('pg-documento').value = '';
+    document.getElementById('pg-stato').value = 'Pagato';
+    document.getElementById('pg-data').value = '';
+    document.getElementById('pg-genera-link').checked = true;
+    document.getElementById('pg-voci-lista').innerHTML = '';
+    aggiungiVocePagamento();
+    window.pagamentoAttivoLink = null;
+    document.getElementById('pg-notifica-box').style.display = 'none';
+    document.getElementById('pagamento-msg').textContent = '';
+  }
+
+  async function inviaNotificaPagamento() {
+    const msg = document.getElementById('pagamento-notifica-msg');
+    if (!window.clienteAttivoEmail) {
+      msg.textContent = 'Nessuna email salvata per questo cliente.';
+      msg.className = 'msg err';
+      return;
+    }
+    if (!window.pagamentoAttivoLink) {
+      msg.textContent = 'Nessun link di pagamento disponibile per questo pagamento.';
+      msg.className = 'msg err';
+      return;
+    }
+
+    const descrizione = document.getElementById('pg-descrizione').value || 'Pagamento VISIBIL';
+    const importo = document.getElementById('pg-totale').textContent;
+    const nota = `${descrizione}\n\nImporto: CHF ${importo}\n\n<a href="${window.pagamentoAttivoLink}" style="display:inline-block; background:#1A1AE6; color:#fff; text-decoration:none; font-size:0.85em; font-weight:600; padding:0.7em 1.4em; border-radius:5px; margin-top:0.5em;">Paga ora</a>`;
+
+    msg.textContent = 'Invio email in corso...';
+    msg.className = 'msg';
+
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      const token = sessionData.session.access_token;
+      const res = await fetch('/api/notifica-cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          email: window.clienteAttivoEmail,
+          oggetto: 'Un pagamento da saldare — VISIBIL',
+          incipit: `Ciao, ecco un pagamento da saldare per il tuo progetto:`,
+          nota,
+          saluti: 'A presto,\nGianluca — VISIBIL',
+          user_id: document.getElementById('c-userid').value.trim()
+        })
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        msg.textContent = 'Email inviata.';
+        msg.className = 'msg ok';
+      } else {
+        msg.textContent = 'Errore invio: ' + (result.error || '');
+        msg.className = 'msg err';
+      }
+    } catch (e) {
+      msg.textContent = 'Errore di connessione.';
+      msg.className = 'msg err';
+    }
+  }
+
   async function salvaPagamento() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('pagamento-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
 
-    const newId = crypto.randomUUID();
+    const editingId = document.getElementById('pg-editing-id').value.trim();
+    const isEditing = !!editingId;
+    const idPagamento = isEditing ? editingId : crypto.randomUUID();
     const voci = raccogliVociPagamento();
     const totale = voci.reduce((sum, v) => sum + (Number(v.importo) || 0), 0);
     const descrizioneGenerale = document.getElementById('pg-descrizione').value;
     const vuoiLink = document.getElementById('pg-genera-link').checked;
 
-    let paymentLink = null;
+    let paymentLink = isEditing ? (window.pagamentoAttivoLink || null) : null;
     if (vuoiLink && totale > 0) {
       showMsg('pagamento-msg', 'Genero il link di pagamento su Stripe...', true);
       try {
@@ -1400,7 +1528,7 @@ Gianluca — VISIBIL</textarea>
           body: JSON.stringify({
             descrizione: descrizioneGenerale || 'Pagamento VISIBIL',
             importo: totale,
-            pagamento_id: newId
+            pagamento_id: idPagamento
           })
         });
         const result = await res.json();
@@ -1417,7 +1545,6 @@ Gianluca — VISIBIL</textarea>
     }
 
     const payload = {
-      id: newId,
       user_id,
       descrizione: descrizioneGenerale,
       importo: totale,
@@ -1428,14 +1555,22 @@ Gianluca — VISIBIL</textarea>
       payment_link: paymentLink
     };
 
-    const { error } = await client.from('pagamenti').insert(payload);
+    let error;
+    if (isEditing) {
+      ({ error } = await client.from('pagamenti').update(payload).eq('id', idPagamento));
+    } else {
+      ({ error } = await client.from('pagamenti').insert({ id: idPagamento, ...payload }));
+    }
     if (error) { showMsg('pagamento-msg', 'Errore: ' + error.message, false); return; }
-    showMsg('pagamento-msg', paymentLink ? 'Pagamento aggiunto con link Stripe generato automaticamente.' : 'Pagamento aggiunto.', true);
+
+    showMsg('pagamento-msg', isEditing ? 'Pagamento aggiornato.' : (paymentLink ? 'Pagamento aggiunto con link Stripe generato automaticamente.' : 'Pagamento aggiunto.'), true);
     caricaStatistiche();
-    document.getElementById('pg-descrizione').value = '';
-    document.getElementById('pg-documento').value = '';
-    document.getElementById('pg-voci-lista').innerHTML = '';
-    aggiungiVocePagamento();
+    caricaPagamentiEsistenti(user_id);
+
+    window.pagamentoAttivoLink = paymentLink;
+    document.getElementById('pg-notifica-box').style.display = paymentLink ? 'block' : 'none';
+
+    if (!isEditing) resetFormPagamento();
   }
 
   async function salvaReport() {
