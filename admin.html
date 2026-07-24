@@ -340,6 +340,30 @@ Gianluca — VISIBIL</textarea>
       </div>
 
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Documenti da firmare</div>
+        <div id="home-documenti-firmare"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Rinnovi in scadenza (30 giorni)</div>
+        <div id="home-rinnovi-scadenza"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Messaggi recenti</div>
+        <div id="home-messaggi-recenti"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Link rapidi</div>
+        <div style="display:flex; flex-wrap:wrap; gap:0.6rem;">
+          <a href="https://www.dropbox.com/home" target="_blank" style="font-size:0.8rem; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none;">📁 Dropbox</a>
+          <a href="https://ticktick.com/webapp/#p/all/tasks" target="_blank" style="font-size:0.8rem; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none;">✅ TickTick</a>
+          <a href="https://dashboard.stripe.com/" target="_blank" style="font-size:0.8rem; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none;">💳 Stripe</a>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
         <div class="section-label" style="margin-top:0;">Account</div>
         <div class="account-field">
           <label>Email di accesso</label>
@@ -730,7 +754,7 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('app').style.display = 'block';
     document.getElementById('admin-email').textContent = user.email;
     await caricaClienti();
-    caricaMessaggi();
+    await caricaMessaggi();
     caricaStatistiche();
   }
 
@@ -747,6 +771,20 @@ Gianluca — VISIBIL</textarea>
     const { data: preventiviAttesa } = await client.from('preventivi').select('*').eq('stato', 'In attesa').order('data', { ascending: true });
     document.getElementById('stat-preventivi').textContent = (preventiviAttesa || []).length;
     renderListaHome('home-preventivi-attesa', preventiviAttesa, p => `${nomeClienteById(p.user_id)} — ${p.titolo || ''} — CHF ${p.importo || 0}`);
+
+    const { data: documentiFirmare } = await client.from('documenti').select('*').eq('stato', 'Da firmare').order('data', { ascending: true });
+    renderListaHome('home-documenti-firmare', documentiFirmare, d => `${nomeClienteById(d.user_id)} — ${d.titolo || ''}`);
+
+    const oggi = new Date();
+    const tra30giorni = new Date(oggi.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const rinnoviInScadenza = clientiCache.filter(c => {
+      if (!c.rinnovo_data) return false;
+      const data = new Date(c.rinnovo_data);
+      return data >= oggi && data <= tra30giorni;
+    }).sort((a, b) => new Date(a.rinnovo_data) - new Date(b.rinnovo_data));
+    renderListaHome('home-rinnovi-scadenza', rinnoviInScadenza, c => `${c.nome || c.user_id} — ${c.rinnovo_piano || ''} — scade il ${new Date(c.rinnovo_data).toLocaleDateString('it-CH')}`);
+
+    renderListaHome('home-messaggi-recenti', (window.messaggiCache || []).slice(0, 5), m => `${nomeClienteById(m.user_id)} — ${m.tipo === 'contatto' ? 'Dal cliente' : 'Inviata da te'} — ${(m.contenuto || '').slice(0, 60)}${(m.contenuto || '').length > 60 ? '…' : ''}`);
 
     document.getElementById('home-admin-email').textContent = document.getElementById('admin-email').textContent;
   }
