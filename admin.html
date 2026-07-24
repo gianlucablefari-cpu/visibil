@@ -297,6 +297,11 @@ Gianluca — VISIBIL</textarea>
       <button onclick="showTab('configuratore')" style="width:100%; margin-top:1rem;">📐 Apri il configuratore prezzi</button>
 
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Da fare — tutti i clienti</div>
+        <div id="home-da-fare-generale"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
         <div class="section-label" style="margin-top:0;">Pagamenti in sospeso</div>
         <div id="home-pagamenti-sospesi"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
       </div>
@@ -304,11 +309,6 @@ Gianluca — VISIBIL</textarea>
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
         <div class="section-label" style="margin-top:0;">Preventivi da approvare</div>
         <div id="home-preventivi-attesa"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
-      </div>
-
-      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
-        <div class="section-label" style="margin-top:0;">Da fare — tutti i clienti</div>
-        <div id="home-da-fare-generale"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
       </div>
 
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
@@ -764,7 +764,7 @@ Gianluca — VISIBIL</textarea>
       el.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessuno al momento.</p>';
       return;
     }
-    el.innerHTML = righe.map(r => `<div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem;">${formattatore(r)}</div>`).join('');
+    el.innerHTML = righe.map(r => `<div onclick="caricaNelForm('${r.user_id}')" style="cursor:pointer; border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem;">${formattatore(r)}</div>`).join('');
   }
 
   async function logout() {
