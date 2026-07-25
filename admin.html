@@ -251,7 +251,8 @@
 
     <div class="tab-panel" id="panel-da-fare">
     <div class="card">
-      <div id="pan-link-lavoro" style="display:none; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.25rem;"></div>
+      <div id="pan-link-lavoro" style="display:none; gap:0.6rem; flex-wrap:wrap; margin-bottom:0.6rem;"></div>
+      <button class="secondary btn-small" onclick="vaiAiLinkLavoro()" style="margin-bottom:1.25rem;">+ Gestisci link</button>
 
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; padding-bottom:1.25rem; margin-bottom:1.25rem; border-bottom:1px solid rgba(0,0,0,0.08); font-size:0.82rem; line-height:1.8;">
         <div>
@@ -1246,6 +1247,15 @@ Gianluca — VISIBIL</textarea>
 
   let linkLavoroCounter = 0;
 
+  function vaiAiLinkLavoro() {
+    showTab('impostazioni');
+    document.getElementById('acc-dati-personali').classList.add('open');
+    document.getElementById('acc-link-abbonamento').classList.add('open');
+    setTimeout(() => {
+      document.getElementById('link-lavoro-lista').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }
+
   function aggiungiLinkLavoro(nome, url) {
     linkLavoroCounter++;
     const id = linkLavoroCounter;
@@ -1274,7 +1284,7 @@ Gianluca — VISIBIL</textarea>
   function renderLinkLavoroPanoramica(link, dropboxUrl, sitoUrl) {
     const container = document.getElementById('pan-link-lavoro');
     const tutti = [];
-    if (sitoUrl) tutti.push({ nome: '🌐 Sito', url: sitoUrl });
+    if (sitoUrl) tutti.push({ nome: '🌐 ' + sitoUrl.replace(/^https?:\/\//, '').replace(/\/$/, ''), url: sitoUrl });
     if (dropboxUrl) tutti.push({ nome: '📁 Dropbox', url: dropboxUrl });
     (link || []).forEach(l => tutti.push(l));
 
