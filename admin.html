@@ -879,7 +879,7 @@ Gianluca — VISIBIL</textarea>
     showMsg('cliente-msg-3', 'Cliente salvato.', true);
     updateDatiPersonaliSummary(payload);
     tornaAlRiepilogoDatiPersonali();
-    renderLinkLavoroPanoramica(payload.link_lavoro, payload.onedrive_link);
+    renderLinkLavoroPanoramica(payload.link_lavoro, payload.onedrive_link, payload.sito_url);
     caricaClienti();
   }
 
@@ -1182,7 +1182,7 @@ Gianluca — VISIBIL</textarea>
 
     document.getElementById('link-lavoro-lista').innerHTML = '';
     (c.link_lavoro || []).forEach(l => aggiungiLinkLavoro(l.nome, l.url));
-    renderLinkLavoroPanoramica(c.link_lavoro || [], c.onedrive_link);
+    renderLinkLavoroPanoramica(c.link_lavoro || [], c.onedrive_link, c.sito_url);
 
     window.clienteAttivoNome = c.nome || c.user_id;
 
@@ -1271,11 +1271,12 @@ Gianluca — VISIBIL</textarea>
     return link;
   }
 
-  function renderLinkLavoroPanoramica(link, dropboxUrl) {
+  function renderLinkLavoroPanoramica(link, dropboxUrl, sitoUrl) {
     const container = document.getElementById('pan-link-lavoro');
     const tutti = [];
-    (link || []).forEach(l => tutti.push(l));
+    if (sitoUrl) tutti.push({ nome: '🌐 Sito', url: sitoUrl });
     if (dropboxUrl) tutti.push({ nome: '📁 Dropbox', url: dropboxUrl });
+    (link || []).forEach(l => tutti.push(l));
 
     if (tutti.length === 0) {
       container.style.display = 'none';
