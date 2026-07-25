@@ -63,6 +63,10 @@
   .dropdown-menu button:hover { background: var(--surface); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
+  .subdoc-pills { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .subdoc-pill { font-family: var(--sans); font-size: 0.72rem; font-weight: 600; padding: 0.5rem 0.9rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 100px; background: var(--white); color: var(--black); cursor: pointer; }
+  .subdoc-pill.active { background: #0F0F0F; color: #fff; border-color: #0F0F0F; }
+  .subdoc-pill:hover { border-color: rgba(0,0,0,0.3); }
   .catalogo-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
   .catalogo-card { flex: 1 1 calc(16.666% - 0.5rem); min-width: 110px; max-width: calc(16.666% - 0.5rem); display: flex; flex-direction: column; gap: 0.3rem; font-family: var(--sans); text-align: left; padding: 0.7rem 0.65rem; border: 1.5px solid rgba(0,0,0,0.08); border-radius: 6px; background: var(--white); cursor: pointer; transition: all 0.15s; }
   .catalogo-card:hover { border-color: var(--grey); }
@@ -482,13 +486,13 @@ Gianluca — VISIBIL</textarea>
     <div class="tab-panel" id="panel-documenti">
     <div class="card">
       <h2>Documenti</h2>
-      <p class="desc" style="margin-top:0;">Cliente: <strong id="doctab-cliente-display">— nessuno caricato —</strong></p>
+      <p class="desc" style="margin-top:0; margin-bottom:1rem;">Cliente: <strong id="doctab-cliente-display">— nessuno caricato —</strong></p>
 
-      <div class="tabs-bar" style="margin-bottom:1.5rem;">
-        <button class="tab-tile active" id="subdoc-preventivo" onclick="showSubDoc('preventivo')"><span>Preventivo</span></button>
-        <button class="tab-tile" id="subdoc-pagamento" onclick="showSubDoc('pagamento')"><span>Pagamento</span></button>
-        <button class="tab-tile" id="subdoc-documento" onclick="showSubDoc('documento')"><span>Documento</span></button>
-        <button class="tab-tile" id="subdoc-report" onclick="showSubDoc('report')"><span>Report</span></button>
+      <div class="subdoc-pills">
+        <button class="subdoc-pill active" id="subdoc-preventivo" onclick="showSubDoc('preventivo')">Preventivo</button>
+        <button class="subdoc-pill" id="subdoc-pagamento" onclick="showSubDoc('pagamento')">Pagamento</button>
+        <button class="subdoc-pill" id="subdoc-documento" onclick="showSubDoc('documento')">Documento</button>
+        <button class="subdoc-pill" id="subdoc-report" onclick="showSubDoc('report')">Report</button>
       </div>
 
       <div class="sub-doc-panel active" id="subpanel-preventivo">
@@ -1128,7 +1132,7 @@ Gianluca — VISIBIL</textarea>
 
   function showSubDoc(tipo) {
     document.querySelectorAll('.sub-doc-panel').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
-    document.querySelectorAll('#panel-documenti .tabs-bar .tab-tile').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#panel-documenti .subdoc-pill').forEach(b => b.classList.remove('active'));
     const panel = document.getElementById('subpanel-' + tipo);
     if (panel) { panel.classList.add('active'); panel.style.display = 'block'; }
     const btn = document.getElementById('subdoc-' + tipo);
