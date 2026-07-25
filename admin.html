@@ -927,6 +927,7 @@ Gianluca — VISIBIL</textarea>
         notificaMsg.textContent = 'Email inviata.';
         notificaMsg.className = 'msg ok';
         clearAutosave(EMAIL_FIELDS, document.getElementById('c-userid').value.trim());
+        caricaMessaggi();
       } else {
         notificaMsg.textContent = 'Errore invio: ' + (result.error || '');
         notificaMsg.className = 'msg err';
@@ -1498,6 +1499,7 @@ Gianluca — VISIBIL</textarea>
       if (res.ok && result.success) {
         msg.textContent = 'Email inviata.';
         msg.className = 'msg ok';
+        caricaMessaggi();
       } else {
         msg.textContent = 'Errore invio: ' + (result.error || '');
         msg.className = 'msg err';
