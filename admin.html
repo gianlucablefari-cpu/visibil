@@ -533,11 +533,6 @@ Gianluca — VISIBIL</textarea>
       </div>
 
       <div class="sub-doc-panel" id="subpanel-pagamento" style="display:none;">
-        <div class="section-label" style="margin-top:0;">Pagamenti esistenti</div>
-        <div id="pg-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
-        <button type="button" class="secondary" onclick="resetFormPagamento()" style="width:100%; margin-top:0.5rem; margin-bottom:1.5rem;">+ Nuovo pagamento</button>
-
-        <div style="border-top:1px solid rgba(0,0,0,0.08); padding-top:1.25rem;">
         <div id="pg-form-titolo" class="section-label" style="margin-top:0;">Nuovo pagamento</div>
         <input type="hidden" id="pg-editing-id">
 
@@ -579,6 +574,11 @@ Gianluca — VISIBIL</textarea>
           <button class="secondary" onclick="inviaNotificaPagamento()">📧 Invia notifica email al cliente</button>
           <div class="msg" id="pagamento-notifica-msg"></div>
         </div>
+
+        <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:2rem;">
+          <div class="section-label" style="margin-top:0;">📋 Pagamenti esistenti di questo cliente</div>
+          <div id="pg-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
+          <button type="button" class="secondary" onclick="resetFormPagamento()" style="width:100%; margin-top:0.75rem;">+ Nuovo pagamento</button>
         </div>
       </div>
 
