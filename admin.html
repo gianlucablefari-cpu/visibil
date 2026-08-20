@@ -227,6 +227,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
         <span>Documenti</span>
       </button>
+      <button class="tab-tile" id="tab-comunicazioni" onclick="showTab('comunicazioni')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        <span>Comunicazioni</span>
+      </button>
     </div>
 
     <!-- NUOVO CLIENTE (creazione automatica account) -->
@@ -245,9 +249,17 @@
       <input type="text" id="nc-password" placeholder="minimo 6 caratteri">
 
       <label style="display:flex; align-items:center; gap:0.5rem; font-weight:400; margin-top:0.75rem;">
-        <input type="checkbox" id="nc-invia-email" style="width:auto;">
+        <input type="checkbox" id="nc-invia-email" style="width:auto;" onchange="toggleTestoEmailNuovoCliente()">
         Invia subito la mail di benvenuto
       </label>
+
+      <div id="nc-testo-email-wrap" style="display:none; margin-top:0.75rem;">
+        <label for="nc-oggetto">Oggetto</label>
+        <input type="text" id="nc-oggetto">
+
+        <label for="nc-corpo">Testo email</label>
+        <textarea id="nc-corpo" rows="8"></textarea>
+      </div>
 
       <button onclick="creaClienteRapido()">Crea cliente</button>
       <div class="msg" id="nc-msg"></div>
@@ -281,37 +293,83 @@
           <span style="color:var(--grey);">Indirizzo:</span> <span id="pan-s-indirizzo">—</span>
           <br>
           <span style="color:var(--grey);">Mail benvenuto:</span> <span id="pan-s-email-benvenuto">—</span>
-          <button class="secondary btn-small" id="btn-invia-benvenuto" onclick="inviaBenvenutoManuale()" style="margin-left:0.5rem;">Invia mail di benvenuto</button>
+          <a href="javascript:void(0)" onclick="showTab('comunicazioni')" style="margin-left:0.4rem; color:var(--blu);">Vai a Comunicazioni →</a>
         </div>
         <button class="secondary btn-small" onclick="showTab('impostazioni')" style="flex-shrink:0; white-space:nowrap;">Modifica dati →</button>
       </div>
 
-      <p class="desc">Note libere sul cliente — le usi anche come base per l'email che gli mandi (sotto).</p>
+      <p class="desc">Note libere sul cliente — visibili anche nel compositore email della sezione Comunicazioni.</p>
 
       <label for="c-avanzamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Note</label>
       <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese" style="min-height:180px;"></textarea>
 
       <button onclick="salvaDaFare()">Salva</button>
       <div class="msg" id="cliente-msg-3"></div>
+    </div>
+    </div><!-- /tab-panel -->
+
+    <!-- COMUNICAZIONI (cronologia + invio unificato per il cliente attivo) -->
+    <div class="tab-panel" id="panel-comunicazioni">
+    <div class="card">
+      <h2>Comunicazioni</h2>
+      <p class="desc">Storico e invio di email per: <strong id="com-cliente-nome">—</strong></p>
+
+      <div class="section-label" style="margin-top:0;">Cronologia</div>
+      <div id="com-cronologia"><p style="font-size:0.85rem; color:var(--grey);">Nessun cliente caricato.</p></div>
 
       <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 2rem; padding-top: 1.5rem;">
-        <div class="section-label" style="margin-top:0;">Vuoi informarne il cliente?</div>
+        <div class="section-label" style="margin-top:0;">Nuova comunicazione</div>
+
+        <label for="com-tipo">Tipo</label>
+        <select id="com-tipo" onchange="cambiaTipoComunicazione()">
+          <option value="notifica">Aggiornamento progetto</option>
+          <option value="benvenuto">Benvenuto</option>
+          <option value="libera">Libera</option>
+        </select>
+
         <p class="desc" style="margin-top:0;">A: <strong id="email-destinatario" style="color:var(--black); background:#FFF4DE; padding:0.2rem 0.5rem; border-radius:4px;">— nessun cliente caricato —</strong></p>
 
-        <label for="email-oggetto">Oggetto</label>
-        <input type="text" id="email-oggetto" value="La lista delle cose da fare si è aggiornata">
+        <!-- Aggiornamento progetto -->
+        <div id="com-blocco-notifica">
+          <label for="email-oggetto">Oggetto</label>
+          <input type="text" id="email-oggetto" value="La lista delle cose da fare si è aggiornata">
 
-        <label for="email-incipit">Incipit</label>
-        <textarea id="email-incipit" style="min-height:80px;">Ciao, ecco il prossimo passo per il tuo progetto:</textarea>
+          <label for="email-incipit">Incipit</label>
+          <textarea id="email-incipit" style="min-height:80px;">Ciao, ecco il prossimo passo per il tuo progetto:</textarea>
 
-        <p class="desc" style="margin-top:0.5rem;">Le "Note" qui sopra vengono incluse automaticamente nell'email.</p>
+          <p class="desc" style="margin-top:0.5rem;">Le "Note" della Panoramica vengono incluse automaticamente nell'email.</p>
 
-        <label for="email-saluti">Saluti</label>
-        <textarea id="email-saluti" style="min-height:100px;">A presto,
+          <label for="email-saluti">Saluti</label>
+          <textarea id="email-saluti" style="min-height:100px;">A presto,
 Gianluca — VISIBIL</textarea>
 
-        <button onclick="inviaNotificaEmail()">Invia email</button>
-        <div class="msg" id="notifica-msg"></div>
+          <button onclick="inviaNotificaEmail()">Invia email</button>
+          <div class="msg" id="notifica-msg"></div>
+        </div>
+
+        <!-- Benvenuto -->
+        <div id="com-blocco-benvenuto" style="display:none;">
+          <label for="pan-benvenuto-oggetto">Oggetto</label>
+          <input type="text" id="pan-benvenuto-oggetto">
+
+          <label for="pan-benvenuto-corpo">Testo email</label>
+          <textarea id="pan-benvenuto-corpo" rows="8"></textarea>
+
+          <button onclick="confermaInvioBenvenutoManuale()">Invia email</button>
+          <div class="msg" id="benvenuto-msg"></div>
+        </div>
+
+        <!-- Libera -->
+        <div id="com-blocco-libera" style="display:none;">
+          <label for="com-libera-oggetto">Oggetto</label>
+          <input type="text" id="com-libera-oggetto">
+
+          <label for="com-libera-corpo">Testo email</label>
+          <textarea id="com-libera-corpo" rows="8"></textarea>
+
+          <button onclick="inviaComunicazioneLibera()">Invia email</button>
+          <div class="msg" id="libera-msg"></div>
+        </div>
       </div>
     </div>
     </div><!-- /tab-panel -->
@@ -719,9 +777,7 @@ Gianluca — VISIBIL</textarea>
 
     daMostrare.forEach(m => {
       const data = m.created_at ? new Date(m.created_at).toLocaleDateString('it-CH', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
-      const badge = m.tipo === 'contatto'
-        ? `<span style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; background:#E3F3E8; color:#1E6B3C; padding:0.25rem 0.5rem; border-radius:100px;">Dal cliente</span>`
-        : `<span style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; background:#F5F6FF; color:#1A1AE6; padding:0.25rem 0.5rem; border-radius:100px;">Inviata da te</span>`;
+      const badge = badgeMessaggio(m.tipo);
 
       list.innerHTML += `
         <div style="border:1px solid rgba(0,0,0,0.08); border-radius:8px; padding:0.85rem; margin-bottom:0.6rem;">
@@ -947,7 +1003,8 @@ Gianluca — VISIBIL</textarea>
         notificaMsg.textContent = 'Email inviata.';
         notificaMsg.className = 'msg ok';
         clearAutosave(EMAIL_FIELDS, document.getElementById('c-userid').value.trim());
-        caricaMessaggi();
+        await caricaMessaggi();
+        renderCronologiaComunicazioni(document.getElementById('c-userid').value.trim());
       } else {
         notificaMsg.textContent = 'Errore invio: ' + (result.error || '');
         notificaMsg.className = 'msg err';
@@ -1231,6 +1288,10 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('email-destinatario').textContent = window.clienteAttivoEmail || '— nessuna email salvata per questo cliente —';
     document.getElementById('email-incipit').value = `Ciao ${c.referente || window.clienteAttivoNome}, ecco il prossimo passo per il tuo progetto:`;
     document.getElementById('doctab-cliente-display').textContent = window.clienteAttivoNome;
+    document.getElementById('com-cliente-nome').textContent = window.clienteAttivoNome;
+    document.getElementById('com-tipo').value = 'notifica';
+    cambiaTipoComunicazione();
+    renderCronologiaComunicazioni(c.user_id);
     caricaPagamentiEsistenti(user_id);
     resetFormPagamento();
 
@@ -1514,6 +1575,7 @@ Gianluca — VISIBIL</textarea>
           incipit: `Ciao, ecco un pagamento da saldare per il tuo progetto:`,
           nota,
           saluti: 'A presto,\nGianluca — VISIBIL',
+          tipo: 'pagamento',
           user_id: document.getElementById('c-userid').value.trim()
         })
       });
@@ -1521,7 +1583,8 @@ Gianluca — VISIBIL</textarea>
       if (res.ok && result.success) {
         msg.textContent = 'Email inviata.';
         msg.className = 'msg ok';
-        caricaMessaggi();
+        await caricaMessaggi();
+        renderCronologiaComunicazioni(document.getElementById('c-userid').value.trim());
       } else {
         msg.textContent = 'Errore invio: ' + (result.error || '');
         msg.className = 'msg err';
@@ -1665,11 +1728,30 @@ Gianluca — VISIBIL</textarea>
     }
   }
 
+  function testoDefaultNuovoCliente() {
+    const nome = document.getElementById('nc-nome').value.trim() || '[nome cliente]';
+    const email = document.getElementById('nc-email').value.trim() || '[email]';
+    const password = document.getElementById('nc-password').value || '[password]';
+    return `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n🔑 Password provvisoria: ${password}\n\nTi consigliamo di cambiarla al primo accesso, dalla sezione "Dati personali".\n\nA presto,\nGianluca di VISIBIL\n\nPer qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83`;
+  }
+
+  function toggleTestoEmailNuovoCliente() {
+    const checked = document.getElementById('nc-invia-email').checked;
+    const wrap = document.getElementById('nc-testo-email-wrap');
+    wrap.style.display = checked ? 'block' : 'none';
+    if (checked && !document.getElementById('nc-corpo').value) {
+      document.getElementById('nc-oggetto').value = 'Benvenuto/a nella tua Area Clienti VISIBIL';
+      document.getElementById('nc-corpo').value = testoDefaultNuovoCliente();
+    }
+  }
+
   async function creaClienteRapido() {
     const nome = document.getElementById('nc-nome').value.trim();
     const email = document.getElementById('nc-email').value.trim();
     const password = document.getElementById('nc-password').value;
     const inviaEmail = document.getElementById('nc-invia-email').checked;
+    const oggetto = document.getElementById('nc-oggetto').value;
+    const corpo = document.getElementById('nc-corpo').value;
 
     if (!nome || !email || !password) {
       showMsg('nc-msg', 'Compila nome, email e password.', false);
@@ -1689,7 +1771,7 @@ Gianluca — VISIBIL</textarea>
       const res = await fetch('/api/crea-cliente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ nome, email, password, invia_email: inviaEmail })
+        body: JSON.stringify({ nome, email, password, invia_email: inviaEmail, oggetto, corpo })
       });
       const result = await res.json();
       if (!res.ok) {
@@ -1701,31 +1783,98 @@ Gianluca — VISIBIL</textarea>
       document.getElementById('nc-email').value = '';
       document.getElementById('nc-password').value = '';
       document.getElementById('nc-invia-email').checked = false;
+      document.getElementById('nc-oggetto').value = '';
+      document.getElementById('nc-corpo').value = '';
+      document.getElementById('nc-testo-email-wrap').style.display = 'none';
       caricaClienti();
     } catch (err) {
       showMsg('nc-msg', 'Errore di connessione.', false);
     }
   }
 
+  function badgeMessaggio(tipo) {
+    const stili = {
+      contatto: { bg: '#E3F3E8', fg: '#1E6B3C', label: 'Dal cliente' },
+      benvenuto: { bg: '#F5F6FF', fg: '#1A1AE6', label: 'Benvenuto' },
+      notifica: { bg: '#F5F6FF', fg: '#1A1AE6', label: 'Aggiornamento' },
+      libera: { bg: '#F5F6FF', fg: '#1A1AE6', label: 'Libera' },
+      pagamento: { bg: '#FFF4DE', fg: '#8A5A00', label: 'Pagamento' }
+    };
+    const s = stili[tipo] || { bg: '#F5F6FF', fg: '#1A1AE6', label: 'Inviata da te' };
+    return `<span style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; background:${s.bg}; color:${s.fg}; padding:0.25rem 0.5rem; border-radius:100px;">${s.label}</span>`;
+  }
+
+  function ultimoMessaggioBenvenuto(userId) {
+    return (window.messaggiCache || [])
+      .filter(m => m.user_id === userId && m.tipo === 'benvenuto')
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0] || null;
+  }
+
   function aggiornaStatoEmailBenvenuto(c) {
     const el = document.getElementById('pan-s-email-benvenuto');
-    if (c.email_benvenuto_inviata) {
-      const data = c.email_benvenuto_data
-        ? new Date(c.email_benvenuto_data).toLocaleDateString('it-CH')
-        : '';
+    const ultimo = ultimoMessaggioBenvenuto(c.user_id);
+    if (ultimo) {
+      const data = ultimo.created_at ? new Date(ultimo.created_at).toLocaleDateString('it-CH') : '';
       el.textContent = '✅ Inviata' + (data ? ' il ' + data : '');
     } else {
       el.textContent = '⚪ Non ancora inviata';
     }
   }
 
-  async function inviaBenvenutoManuale() {
+  function renderCronologiaComunicazioni(userId) {
+    const list = document.getElementById('com-cronologia');
+    const messaggi = (window.messaggiCache || [])
+      .filter(m => m.user_id === userId)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    if (messaggi.length === 0) {
+      list.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessuna comunicazione ancora per questo cliente.</p>';
+      return;
+    }
+
+    list.innerHTML = messaggi.map(m => {
+      const data = m.created_at ? new Date(m.created_at).toLocaleDateString('it-CH', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+      return `
+        <div style="border:1px solid rgba(0,0,0,0.08); border-radius:8px; padding:0.85rem; margin-bottom:0.6rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
+            ${badgeMessaggio(m.tipo)}
+            <span style="font-size:0.7rem; color:var(--grey);">${data}</span>
+          </div>
+          <div style="font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">${m.oggetto || ''}</div>
+          <div style="font-size:0.8rem; white-space:pre-line; color:var(--grey);">${(m.contenuto || '').slice(0, 300)}${(m.contenuto || '').length > 300 ? '…' : ''}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function cambiaTipoComunicazione() {
+    const tipo = document.getElementById('com-tipo').value;
+    document.getElementById('com-blocco-notifica').style.display = tipo === 'notifica' ? 'block' : 'none';
+    document.getElementById('com-blocco-benvenuto').style.display = tipo === 'benvenuto' ? 'block' : 'none';
+    document.getElementById('com-blocco-libera').style.display = tipo === 'libera' ? 'block' : 'none';
+
+    if (tipo === 'benvenuto') {
+      const userId = document.getElementById('c-userid').value;
+      const c = clientiCache.find(x => x.user_id === userId);
+      const nome = c ? c.nome : '';
+      const email = c ? (c.email_accesso || '') : '';
+      document.getElementById('pan-benvenuto-oggetto').value = 'Benvenuto/a nella tua Area Clienti VISIBIL';
+      document.getElementById('pan-benvenuto-corpo').value =
+        `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n\nSe non ricordi la password, usa "Password dimenticata" nella pagina di accesso.\n\nA presto,\nGianluca di VISIBIL\n\nPer qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83`;
+    } else if (tipo === 'libera') {
+      document.getElementById('com-libera-oggetto').value = '';
+      document.getElementById('com-libera-corpo').value = '';
+    }
+  }
+
+  async function confermaInvioBenvenutoManuale() {
     const userId = document.getElementById('c-userid').value;
     if (!userId) return;
 
-    const btn = document.getElementById('btn-invia-benvenuto');
-    btn.disabled = true;
-    btn.textContent = 'Invio in corso...';
+    const oggetto = document.getElementById('pan-benvenuto-oggetto').value;
+    const corpo = document.getElementById('pan-benvenuto-corpo').value;
+    const msg = document.getElementById('benvenuto-msg');
+    msg.textContent = 'Invio in corso...';
+    msg.className = 'msg';
 
     const { data: sessionData } = await client.auth.getSession();
     const token = sessionData.session ? sessionData.session.access_token : null;
@@ -1734,21 +1883,72 @@ Gianluca — VISIBIL</textarea>
       const res = await fetch('/api/invia-benvenuto', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ user_id: userId })
+        body: JSON.stringify({ user_id: userId, oggetto, corpo })
       });
       const result = await res.json();
       if (!res.ok) {
-        alert('Errore: ' + (result.error || 'sconosciuto'));
+        msg.textContent = 'Errore: ' + (result.error || 'sconosciuto');
+        msg.className = 'msg err';
         return;
       }
-      await caricaClienti();
+      msg.textContent = 'Email inviata.';
+      msg.className = 'msg ok';
+      await caricaMessaggi();
       const c = clientiCache.find(x => x.user_id === userId);
       if (c) aggiornaStatoEmailBenvenuto(c);
+      renderCronologiaComunicazioni(userId);
     } catch (err) {
-      alert('Errore di connessione.');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Invia mail di benvenuto';
+      msg.textContent = 'Errore di connessione.';
+      msg.className = 'msg err';
+    }
+  }
+
+  async function inviaComunicazioneLibera() {
+    const userId = document.getElementById('c-userid').value;
+    const msg = document.getElementById('libera-msg');
+    if (!window.clienteAttivoEmail) {
+      msg.textContent = 'Nessuna email salvata per questo cliente.';
+      msg.className = 'msg err';
+      return;
+    }
+
+    const oggetto = document.getElementById('com-libera-oggetto').value;
+    const corpo = document.getElementById('com-libera-corpo').value;
+
+    msg.textContent = 'Invio in corso...';
+    msg.className = 'msg';
+
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      const token = sessionData.session.access_token;
+      const res = await fetch('/api/notifica-cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          email: window.clienteAttivoEmail,
+          oggetto,
+          incipit: corpo,
+          nota: '',
+          saluti: '',
+          tipo: 'libera',
+          user_id: userId
+        })
+      });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        msg.textContent = 'Email inviata.';
+        msg.className = 'msg ok';
+        document.getElementById('com-libera-oggetto').value = '';
+        document.getElementById('com-libera-corpo').value = '';
+        await caricaMessaggi();
+        renderCronologiaComunicazioni(userId);
+      } else {
+        msg.textContent = 'Errore invio: ' + (result.error || '');
+        msg.className = 'msg err';
+      }
+    } catch (err) {
+      msg.textContent = 'Errore di connessione.';
+      msg.className = 'msg err';
     }
   }
 

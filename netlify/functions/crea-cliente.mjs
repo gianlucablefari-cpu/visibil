@@ -36,7 +36,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { nome, email, password, invia_email } = payload;
+  const { nome, email, password, invia_email, oggetto, corpo } = payload;
   if (!nome || !email || !password) {
     return new Response(JSON.stringify({ error: "Nome, email e password sono obbligatori." }), { status: 400 });
   }
@@ -93,8 +93,20 @@ export default async (req) => {
   // 5. Invia email di benvenuto personalizzata (Resend) — solo se richiesto esplicitamente
   const RESEND_API_KEY = Netlify.env.get("RESEND_API_KEY");
   let emailInviata = false;
+  const subjectFinale = (oggetto && oggetto.trim())
+    ? oggetto.trim()
+    : `Benvenuto/a nella tua Area Clienti VISIBIL`;
+  const corpoTesto = (corpo && corpo.trim())
+    ? corpo.trim()
+    : `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n🔑 Password provvisoria: ${password}\n\nTi consigliamo di cambiarla al primo accesso, dalla sezione "Dati personali".\n\nA presto,\nGianluca di VISIBIL\n\nPer qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83`;
+
   if (invia_email && RESEND_API_KEY) {
     try {
+      const corpoHtml = corpoTesto
+        .split("\n")
+        .map(riga => riga.trim() === "" ? "<br>" : `<p style="margin:0 0 0.8em;">${riga}</p>`)
+        .join("");
+
       const emailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -104,21 +116,8 @@ export default async (req) => {
         body: JSON.stringify({
           from: "VISIBIL <benvenuto@vsbl.ch>",
           to: [email],
-          subject: `Benvenuto/a nella tua Area Clienti VISIBIL`,
-          html: `
-            <div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">
-              <p>Ciao ${nome}!</p>
-              <p>Il tuo accesso all'Area Clienti VISIBIL è pronto.</p>
-              <p>
-                🔗 <a href="https://vsbl.ch/area-cliente.html">vsbl.ch/area-cliente.html</a><br>
-                📧 Email: ${email}<br>
-                🔑 Password provvisoria: ${password}
-              </p>
-              <p>Ti consigliamo di cambiarla al primo accesso, dalla sezione "Dati personali".</p>
-              <p>A presto,<br>Gianluca di VISIBIL</p>
-              <p style="color:#8A8A8A; font-size:0.9em;">Per qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83</p>
-            </div>
-          `
+          subject: subjectFinale,
+          html: `<div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">${corpoHtml}</div>`
         })
       });
       emailInviata = emailRes.ok;
@@ -127,18 +126,21 @@ export default async (req) => {
     }
   }
 
-  // 6. Se la mail è stata inviata, traccia stato e data su Supabase
+  // 6. Se la mail è stata inviata, traccia lo storico comunicazioni
   if (emailInviata) {
-    await fetch(`${SUPABASE_URL}/rest/v1/clienti?user_id=eq.${newUserId}`, {
-      method: "PATCH",
+    await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
+      method: "POST",
       headers: {
         apikey: SERVICE_KEY,
         Authorization: `Bearer ${SERVICE_KEY}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
       },
       body: JSON.stringify({
-        email_benvenuto_inviata: true,
-        email_benvenuto_data: new Date().toISOString()
+        user_id: newUserId,
+        tipo: "benvenuto",
+        oggetto: subjectFinale,
+        contenuto: corpoTesto
       })
     }).catch(() => {});
   }

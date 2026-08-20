@@ -36,7 +36,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { user_id } = payload;
+  const { user_id, oggetto, corpo } = payload;
   if (!user_id) {
     return new Response(JSON.stringify({ error: "user_id obbligatorio." }), { status: 400 });
   }
@@ -63,7 +63,19 @@ export default async (req) => {
   }
 
   let emailInviata = false;
+  let subjectFinale = (oggetto && oggetto.trim())
+    ? oggetto.trim()
+    : `Benvenuto/a nella tua Area Clienti VISIBIL`;
+  let corpoTesto = (corpo && corpo.trim())
+    ? corpo.trim()
+    : `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n\nSe non ricordi la password, usa "Password dimenticata" nella pagina di accesso.\n\nA presto,\nGianluca di VISIBIL\n\nPer qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83`;
+
   try {
+    const corpoHtml = corpoTesto
+      .split("\n")
+      .map(riga => riga.trim() === "" ? "<br>" : `<p style="margin:0 0 0.8em;">${riga}</p>`)
+      .join("");
+
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -73,20 +85,8 @@ export default async (req) => {
       body: JSON.stringify({
         from: "VISIBIL <benvenuto@vsbl.ch>",
         to: [email],
-        subject: `Benvenuto/a nella tua Area Clienti VISIBIL`,
-        html: `
-          <div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">
-            <p>Ciao ${nome}!</p>
-            <p>Il tuo accesso all'Area Clienti VISIBIL è pronto.</p>
-            <p>
-              🔗 <a href="https://vsbl.ch/area-cliente.html">vsbl.ch/area-cliente.html</a><br>
-              📧 Email: ${email}
-            </p>
-            <p>Se non ricordi la password, usa "Password dimenticata" nella pagina di accesso.</p>
-            <p>A presto,<br>Gianluca di VISIBIL</p>
-            <p style="color:#8A8A8A; font-size:0.9em;">Per qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83</p>
-          </div>
-        `
+        subject: subjectFinale,
+        html: `<div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">${corpoHtml}</div>`
       })
     });
     emailInviata = emailRes.ok;
@@ -98,17 +98,20 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Errore invio email: " + e.message }), { status: 500 });
   }
 
-  // 5. Traccia stato e data su Supabase
-  await fetch(`${SUPABASE_URL}/rest/v1/clienti?user_id=eq.${user_id}`, {
-    method: "PATCH",
+  // 5. Traccia l'invio nello storico comunicazioni
+  await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
+    method: "POST",
     headers: {
       apikey: SERVICE_KEY,
       Authorization: `Bearer ${SERVICE_KEY}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      Prefer: "return=minimal"
     },
     body: JSON.stringify({
-      email_benvenuto_inviata: true,
-      email_benvenuto_data: new Date().toISOString()
+      user_id,
+      tipo: "benvenuto",
+      oggetto: subjectFinale,
+      contenuto: corpoTesto
     })
   }).catch(() => {});
 

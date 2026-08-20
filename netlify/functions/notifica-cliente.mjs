@@ -34,7 +34,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { email, oggetto, incipit, nota, saluti, user_id } = payload;
+  const { email, oggetto, incipit, nota, saluti, user_id, tipo } = payload;
   if (!email) {
     return new Response(JSON.stringify({ error: "Email obbligatoria." }), { status: 400 });
   }
@@ -103,7 +103,7 @@ export default async (req) => {
           },
           body: JSON.stringify({
             user_id,
-            tipo: "notifica",
+            tipo: tipo || "notifica",
             oggetto,
             contenuto: contenutoLog
           })
