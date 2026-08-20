@@ -1,6 +1,8 @@
 // Funzione server-side: avvisa il cliente via email quando le sue "Note" vengono aggiornate.
 // Richiede l'autorizzazione del titolare (token della sessione admin.html).
 
+import { markdownLeggero } from "./_lib/formato.mjs";
+
 const SUPABASE_URL = "https://zmdnuplqgpznryxfooez.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_WcYUr4o4yMN5nGBmPxW59A__100gU9L";
 const OWNER_ID = "45d74677-8f95-4d75-86a0-c7d9c586d68a";
@@ -34,7 +36,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { email, oggetto, incipit, nota, saluti, user_id, tipo } = payload;
+  const { email, oggetto, incipit, nota, saluti, user_id, tipo, allegato } = payload;
   if (!email) {
     return new Response(JSON.stringify({ error: "Email obbligatoria." }), { status: 400 });
   }
@@ -46,43 +48,53 @@ export default async (req) => {
 
   const notaHtml = nota
     ? `<div style="background:#F5F6FF; border-left:3px solid #1A1AE6; padding:1em 1.25em; margin:0 0 1.5em;">
-        <div style="font-size:0.95em; white-space:pre-line;">${nota}</div>
+        <div style="font-size:0.95em; white-space:pre-line;">${markdownLeggero(nota)}</div>
       </div>`
     : '';
 
-  const incipitHtml = incipit ? `<p style="margin:0 0 1.5em; white-space:pre-line;">${incipit}</p>` : '';
-  const salutiHtml = saluti ? `<p style="margin:1.5em 0 0; white-space:pre-line;">${saluti}</p>` : '';
+  const incipitHtml = incipit ? `<p style="margin:0 0 1.5em; white-space:pre-line;">${markdownLeggero(incipit)}</p>` : '';
+  const salutiHtml = saluti ? `<p style="margin:1.5em 0 0; white-space:pre-line;">${markdownLeggero(saluti)}</p>` : '';
 
+  const emailHtml = `
+    <div style="font-family: 'Inter', Arial, sans-serif; color:#0F0F0F; line-height:1.6; max-width:480px; margin:0 auto;">
+      <div style="font-weight:900; font-size:0.9em; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:2em;">VISIBIL</div>
+
+      ${incipitHtml}
+      ${notaHtml}
+
+      <a href="https://vsbl.ch/area-cliente.html" style="display:inline-block; background:#0F0F0F; color:#FFFFFF; text-decoration:none; font-size:0.75em; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.9em 1.75em; border-radius:5px; margin-bottom:1em;">Vai all'Area Clienti</a>
+
+      ${salutiHtml}
+    </div>
+  `;
+
+  let resendId = null;
   try {
+    const emailBody = {
+      from: "VISIBIL <benvenuto@vsbl.ch>",
+      to: [email],
+      subject: oggetto || "Aggiornamento sul tuo progetto — VISIBIL",
+      html: emailHtml
+    };
+    if (allegato && allegato.filename && allegato.content) {
+      emailBody.attachments = [{ filename: allegato.filename, content: allegato.content }];
+    }
+
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        from: "VISIBIL <benvenuto@vsbl.ch>",
-        to: [email],
-        subject: oggetto || "Aggiornamento sul tuo progetto — VISIBIL",
-        html: `
-          <div style="font-family: 'Inter', Arial, sans-serif; color:#0F0F0F; line-height:1.6; max-width:480px; margin:0 auto;">
-            <div style="font-weight:900; font-size:0.9em; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:2em;">VISIBIL</div>
-
-            ${incipitHtml}
-            ${notaHtml}
-
-            <a href="https://vsbl.ch/area-cliente.html" style="display:inline-block; background:#0F0F0F; color:#FFFFFF; text-decoration:none; font-size:0.75em; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:0.9em 1.75em; border-radius:5px; margin-bottom:1em;">Vai all'Area Clienti</a>
-
-            ${salutiHtml}
-          </div>
-        `
-      })
+      body: JSON.stringify(emailBody)
     });
 
     if (!emailRes.ok) {
       const errText = await emailRes.text().catch(() => "");
       return new Response(JSON.stringify({ error: "Errore invio email: " + errText }), { status: 500 });
     }
+    const emailData = await emailRes.json().catch(() => ({}));
+    resendId = emailData.id || null;
   } catch (e) {
     return new Response(JSON.stringify({ error: "Errore di connessione al servizio email." }), { status: 500 });
   }
@@ -93,7 +105,7 @@ export default async (req) => {
     const SERVICE_KEY = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (SERVICE_KEY) {
       try {
-        const contenutoLog = [incipit, nota, saluti].filter(Boolean).join('\n\n');
+        const contenutoLog = emailHtml + (allegato && allegato.filename ? `<p style="font-size:0.85em; color:#8A8A8A; margin-top:1em;">📎 Allegato: ${allegato.filename}</p>` : '');
 
         const logRes = await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
           method: "POST",
@@ -107,7 +119,9 @@ export default async (req) => {
             user_id,
             tipo: tipo || "notifica",
             oggetto,
-            contenuto: contenutoLog
+            contenuto: contenutoLog,
+            resend_id: resendId,
+            stato_consegna: "inviata"
           })
         });
         logOk = logRes.ok;

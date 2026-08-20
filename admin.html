@@ -192,6 +192,7 @@
         <div class="card">
           <h2>Messaggi</h2>
           <p class="desc">Messaggi ricevuti dai clienti e notifiche che hai inviato.</p>
+          <input type="text" id="messaggi-ricerca" placeholder="Cerca per cliente, oggetto o testo..." oninput="renderMessaggi(true)" style="margin-bottom:0.75rem;">
           <div id="messaggi-lista"></div>
           <button class="secondary" id="messaggi-toggle" style="display:none; width:100%; margin-top:0.75rem;" onclick="toggleMessaggi()">Visualizza tutti</button>
         </div>
@@ -208,6 +209,13 @@
           </div>
           <button class="secondary btn-small" onclick="cambiaPasswordAdmin()" style="margin-top:0.75rem;">Cambia password</button>
           <div class="msg" id="admin-password-msg"></div>
+
+          <div class="account-field" style="margin-top:1rem;">
+            <label for="admin-firma">Firma email di default</label>
+            <textarea id="admin-firma" rows="3" placeholder="A presto,&#10;Gianluca — VISIBIL"></textarea>
+          </div>
+          <button class="secondary btn-small" onclick="salvaFirmaDefault()" style="margin-top:0.5rem;">Salva firma</button>
+          <div class="msg" id="admin-firma-msg"></div>
         </div>
       </div>
 
@@ -313,6 +321,7 @@
     <div class="card">
       <h2>Comunicazioni</h2>
       <p class="desc">Storico e invio di email per: <strong id="com-cliente-nome">—</strong></p>
+      <div id="com-avviso-preferenze"></div>
 
       <div class="section-label" style="margin-top:0;">Nuova comunicazione</div>
 
@@ -325,6 +334,10 @@
 
       <p class="desc" style="margin-top:0;">A: <strong id="email-destinatario" style="color:var(--black); background:#FFF4DE; padding:0.2rem 0.5rem; border-radius:4px;">— nessun cliente caricato —</strong></p>
 
+      <label for="com-allegato">Allegato (opzionale, max 4 MB)</label>
+      <input type="file" id="com-allegato" onchange="gestisciSelezioneAllegato()">
+      <div id="com-allegato-info" style="font-size:0.75rem; color:var(--grey); margin-top:0.3rem;"></div>
+
       <!-- Aggiornamento progetto -->
       <div id="com-blocco-notifica">
         <label for="email-oggetto">Oggetto</label>
@@ -332,12 +345,12 @@
 
         <label for="email-incipit">Incipit</label>
         <textarea id="email-incipit" style="min-height:80px;">Ciao, ecco il prossimo passo per il tuo progetto:</textarea>
+        <p class="desc" style="margin-top:0.3rem; margin-bottom:0.75rem;">Formattazione: **grassetto**, *corsivo*, [testo](https://link)</p>
 
         <p class="desc" style="margin-top:0.5rem;">Le "Note" della Panoramica vengono incluse automaticamente nell'email.</p>
 
         <label for="email-saluti">Saluti</label>
-        <textarea id="email-saluti" style="min-height:100px;">A presto,
-Gianluca — VISIBIL</textarea>
+        <textarea id="email-saluti" style="min-height:100px;"></textarea>
 
         <button onclick="inviaNotificaEmail()">Invia email</button>
         <div class="msg" id="notifica-msg"></div>
@@ -350,6 +363,7 @@ Gianluca — VISIBIL</textarea>
 
         <label for="pan-benvenuto-corpo">Testo email</label>
         <textarea id="pan-benvenuto-corpo" rows="8"></textarea>
+        <p class="desc" style="margin-top:0.3rem; margin-bottom:0.75rem;">Formattazione: **grassetto**, *corsivo*, [testo](https://link)</p>
 
         <button onclick="confermaInvioBenvenutoManuale()">Invia email</button>
         <div class="msg" id="benvenuto-msg"></div>
@@ -357,18 +371,45 @@ Gianluca — VISIBIL</textarea>
 
       <!-- Libera -->
       <div id="com-blocco-libera" style="display:none;">
+        <label for="com-template-select">Template salvato</label>
+        <select id="com-template-select" onchange="caricaTemplateSelezionato()">
+          <option value="">— nessuno, scrivi da zero —</option>
+        </select>
+
         <label for="com-libera-oggetto">Oggetto</label>
         <input type="text" id="com-libera-oggetto">
 
         <label for="com-libera-corpo">Testo email</label>
         <textarea id="com-libera-corpo" rows="8"></textarea>
+        <p class="desc" style="margin-top:0.3rem; margin-bottom:0.75rem;">Formattazione: **grassetto**, *corsivo*, [testo](https://link)</p>
 
-        <button onclick="inviaComunicazioneLibera()">Invia email</button>
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+          <button onclick="inviaComunicazioneLibera()">Invia email</button>
+          <button class="secondary" onclick="salvaTemplateCorrente()">Salva come template</button>
+          <button class="secondary" id="btn-elimina-template" onclick="eliminaTemplateSelezionato()" style="display:none;">Elimina template</button>
+        </div>
         <div class="msg" id="libera-msg"></div>
       </div>
 
       <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 2rem; padding-top: 1.5rem;">
-        <div class="section-label" style="margin-top:0;">Cronologia</div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div class="section-label" style="margin-top:0;">Cronologia</div>
+          <button class="secondary btn-small" onclick="toggleRegistraRisposta()">+ Registra una risposta</button>
+        </div>
+        <p class="desc" style="margin-top:0;">Se rispondi a un cliente dalla tua inbox normale, registrala qui per tenere la cronologia completa.</p>
+
+        <div id="registra-risposta-wrap" style="display:none; margin-bottom:1rem;">
+          <label for="risposta-oggetto">Oggetto</label>
+          <input type="text" id="risposta-oggetto">
+          <label for="risposta-testo">Testo della risposta</label>
+          <textarea id="risposta-testo" rows="5"></textarea>
+          <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+            <button onclick="salvaRispostaManuale()">Salva</button>
+            <button class="secondary" onclick="toggleRegistraRisposta()">Annulla</button>
+          </div>
+          <div class="msg" id="risposta-msg"></div>
+        </div>
+
         <div id="com-cronologia"><p style="font-size:0.85rem; color:var(--grey);">Nessun cliente caricato.</p></div>
       </div>
     </div>
@@ -407,6 +448,27 @@ Gianluca — VISIBIL</textarea>
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
         <div class="section-label" style="margin-top:0;">Messaggi recenti</div>
         <div id="home-messaggi-recenti"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
+      </div>
+
+      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
+        <div class="section-label" style="margin-top:0;">Comunicazione broadcast</div>
+        <p class="desc" style="margin-top:0;">Manda la stessa email a più clienti insieme.</p>
+
+        <label>Destinatari</label>
+        <div id="broadcast-clienti-lista" style="max-height:200px; overflow-y:auto; border:1px solid rgba(0,0,0,0.1); border-radius:6px; padding:0.6rem; margin-bottom:0.75rem;"></div>
+
+        <label for="broadcast-oggetto">Oggetto</label>
+        <input type="text" id="broadcast-oggetto">
+
+        <label for="broadcast-corpo">Testo email</label>
+        <textarea id="broadcast-corpo" rows="8"></textarea>
+        <p class="desc" style="margin-top:0.3rem; margin-bottom:0.75rem;">Formattazione: **grassetto**, *corsivo*, [testo](https://link)</p>
+
+        <label for="broadcast-allegato">Allegato (opzionale, max 4 MB)</label>
+        <input type="file" id="broadcast-allegato">
+
+        <button onclick="inviaBroadcast()" style="margin-top:0.75rem;">Invia a tutti i selezionati</button>
+        <div class="msg" id="broadcast-msg"></div>
       </div>
 
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
@@ -764,16 +826,27 @@ Gianluca — VISIBIL</textarea>
   function renderMessaggi(mostraTutti) {
     const list = document.getElementById('messaggi-lista');
     const toggleBtn = document.getElementById('messaggi-toggle');
-    const messaggi = window.messaggiCache || [];
+    const ricercaEl = document.getElementById('messaggi-ricerca');
+    const query = ricercaEl ? ricercaEl.value.trim().toLowerCase() : '';
+    let messaggi = window.messaggiCache || [];
+
+    if (query) {
+      messaggi = messaggi.filter(m => {
+        const nome = nomeClienteById(m.user_id).toLowerCase();
+        const testoPuro = (m.contenuto || '').replace(/<[^>]*>/g, ' ').toLowerCase();
+        return nome.includes(query) || (m.oggetto || '').toLowerCase().includes(query) || testoPuro.includes(query);
+      });
+    }
+
     list.innerHTML = '';
 
     if (messaggi.length === 0) {
-      list.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun messaggio ancora.</p>';
+      list.innerHTML = `<p style="font-size:0.85rem; color:var(--grey);">${query ? 'Nessun messaggio corrisponde alla ricerca.' : 'Nessun messaggio ancora.'}</p>`;
       toggleBtn.style.display = 'none';
       return;
     }
 
-    const daMostrare = mostraTutti ? messaggi : messaggi.slice(0, 5);
+    const daMostrare = (mostraTutti || query) ? messaggi : messaggi.slice(0, 5);
 
     daMostrare.forEach(m => {
       const data = m.created_at ? new Date(m.created_at).toLocaleDateString('it-CH', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
@@ -790,7 +863,7 @@ Gianluca — VISIBIL</textarea>
         </div>`;
     });
 
-    if (messaggi.length > 5) {
+    if (!query && messaggi.length > 5) {
       toggleBtn.style.display = 'block';
       toggleBtn.textContent = mostraTutti ? 'Mostra meno' : 'Visualizza tutti';
     } else {
@@ -814,6 +887,8 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('admin-email').textContent = user.email;
     await caricaClienti();
     await caricaMessaggi();
+    await caricaFirmaDefault();
+    await caricaTemplateList();
     caricaStatistiche();
 
     setInterval(async () => {
@@ -912,6 +987,27 @@ Gianluca — VISIBIL</textarea>
     cambiaPasswordAdmin('home-admin-password', 'home-admin-password-msg');
   }
 
+  async function caricaFirmaDefault() {
+    const { data, error } = await client.from('impostazioni').select('firma_email').eq('id', 'default').maybeSingle();
+    if (error || !data) return;
+    window.firmaEmailDefault = data.firma_email || '';
+    document.getElementById('admin-firma').value = window.firmaEmailDefault;
+  }
+
+  async function salvaFirmaDefault() {
+    const msg = document.getElementById('admin-firma-msg');
+    const firma = document.getElementById('admin-firma').value;
+    const { error } = await client.from('impostazioni').update({ firma_email: firma }).eq('id', 'default');
+    if (error) {
+      msg.textContent = 'Errore: ' + error.message;
+      msg.className = 'msg err';
+      return;
+    }
+    window.firmaEmailDefault = firma;
+    msg.textContent = 'Firma salvata.';
+    msg.className = 'msg ok';
+  }
+
   async function salvaCliente() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('cliente-msg', 'Serve lo User ID.', false); return; }
@@ -982,6 +1078,7 @@ Gianluca — VISIBIL</textarea>
     notificaMsg.className = 'msg';
 
     try {
+      const allegato = await leggiAllegatoSelezionato();
       const { data: sessionData } = await client.auth.getSession();
       const token = sessionData.session.access_token;
 
@@ -994,6 +1091,7 @@ Gianluca — VISIBIL</textarea>
           incipit,
           nota,
           saluti,
+          allegato,
           user_id: document.getElementById('c-userid').value.trim()
         })
       });
@@ -1003,6 +1101,7 @@ Gianluca — VISIBIL</textarea>
         notificaMsg.textContent = result.log_ok === false ? ('Email inviata, ma errore nel salvare lo storico: ' + (result.log_error || '')) : 'Email inviata.';
         notificaMsg.className = result.log_ok === false ? 'msg err' : 'msg ok';
         clearAutosave(EMAIL_FIELDS, document.getElementById('c-userid').value.trim());
+        svuotaAllegatoSelezionato();
         await caricaMessaggi();
         renderCronologiaComunicazioni(document.getElementById('c-userid').value.trim());
       } else {
@@ -1027,6 +1126,104 @@ Gianluca — VISIBIL</textarea>
     const quickSelect = document.getElementById('quick-select-cliente');
     quickSelect.innerHTML = '<option value="">Cambia cliente...</option>' +
       clientiCache.map(c => `<option value="${c.user_id}">${c.nome || c.user_id}</option>`).join('');
+
+    renderBroadcastLista();
+  }
+
+  function renderBroadcastLista() {
+    const box = document.getElementById('broadcast-clienti-lista');
+    if (!box) return;
+    if (clientiCache.length === 0) {
+      box.innerHTML = '<p style="font-size:0.8rem; color:var(--grey);">Nessun cliente.</p>';
+      return;
+    }
+    box.innerHTML = clientiCache.filter(c => c.email_contatto).map(c => `
+      <label style="display:flex; align-items:center; gap:0.5rem; font-weight:400; font-size:0.82rem; padding:0.3rem 0;">
+        <input type="checkbox" class="broadcast-check" value="${c.user_id}" style="width:auto;">
+        ${c.nome || c.user_id}
+      </label>
+    `).join('');
+  }
+
+  async function inviaBroadcast() {
+    const msg = document.getElementById('broadcast-msg');
+    const selezionati = Array.from(document.querySelectorAll('.broadcast-check:checked')).map(el => el.value);
+    if (selezionati.length === 0) {
+      msg.textContent = 'Seleziona almeno un destinatario.';
+      msg.className = 'msg err';
+      return;
+    }
+    const oggetto = document.getElementById('broadcast-oggetto').value;
+    const corpo = document.getElementById('broadcast-corpo').value;
+    if (!oggetto && !corpo) {
+      msg.textContent = 'Scrivi oggetto o testo prima di inviare.';
+      msg.className = 'msg err';
+      return;
+    }
+
+    if (!confirm(`Inviare questa email a ${selezionati.length} client${selezionati.length === 1 ? 'e' : 'i'}?`)) return;
+
+    const fileInput = document.getElementById('broadcast-allegato');
+    let allegato = null;
+    if (fileInput.files[0]) {
+      const file = fileInput.files[0];
+      if (file.size > ALLEGATO_LIMITE_BYTES) {
+        msg.textContent = `Allegato troppo grande (${(file.size / 1024 / 1024).toFixed(1)} MB) — massimo 4 MB.`;
+        msg.className = 'msg err';
+        return;
+      }
+      allegato = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ filename: file.name, content: reader.result.split(',')[1] });
+        reader.onerror = () => reject(new Error('Errore lettura file'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    msg.textContent = `Invio in corso a 0/${selezionati.length}...`;
+    msg.className = 'msg';
+
+    const { data: sessionData } = await client.auth.getSession();
+    const token = sessionData.session.access_token;
+
+    let ok = 0, falliti = [];
+    for (let i = 0; i < selezionati.length; i++) {
+      const userId = selezionati[i];
+      const c = clientiCache.find(x => x.user_id === userId);
+      if (!c || !c.email_contatto) { falliti.push(c ? c.nome : userId); continue; }
+      try {
+        const res = await fetch('/api/notifica-cliente', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            email: c.email_contatto,
+            oggetto,
+            incipit: corpo,
+            nota: '',
+            saluti: '',
+            tipo: 'broadcast',
+            allegato,
+            user_id: userId
+          })
+        });
+        const result = await res.json();
+        if (res.ok && result.success) ok++; else falliti.push(c.nome);
+      } catch (e) {
+        falliti.push(c.nome);
+      }
+      msg.textContent = `Invio in corso a ${i + 1}/${selezionati.length}...`;
+    }
+
+    msg.textContent = falliti.length === 0
+      ? `Inviata a tutti e ${ok} i destinatari.`
+      : `Inviata a ${ok}, falliti: ${falliti.join(', ')}`;
+    msg.className = falliti.length === 0 ? 'msg ok' : 'msg err';
+
+    document.getElementById('broadcast-oggetto').value = '';
+    document.getElementById('broadcast-corpo').value = '';
+    fileInput.value = '';
+    document.querySelectorAll('.broadcast-check:checked').forEach(el => el.checked = false);
+    await caricaMessaggi();
   }
 
   function rigaClienteHtml(c, archiviato) {
@@ -1291,6 +1488,7 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('com-cliente-nome').textContent = window.clienteAttivoNome;
     document.getElementById('com-tipo').value = 'notifica';
     cambiaTipoComunicazione();
+    aggiornaAvvisoPreferenze(c);
     renderCronologiaComunicazioni(c.user_id);
     caricaPagamentiEsistenti(user_id);
     resetFormPagamento();
@@ -1574,7 +1772,7 @@ Gianluca — VISIBIL</textarea>
           oggetto: 'Un pagamento da saldare — VISIBIL',
           incipit: `Ciao, ecco un pagamento da saldare per il tuo progetto:`,
           nota,
-          saluti: 'A presto,\nGianluca — VISIBIL',
+          saluti: window.firmaEmailDefault || 'A presto,\nGianluca — VISIBIL',
           tipo: 'pagamento',
           user_id: document.getElementById('c-userid').value.trim()
         })
@@ -1732,7 +1930,8 @@ Gianluca — VISIBIL</textarea>
     const nome = document.getElementById('nc-nome').value.trim() || '[nome cliente]';
     const email = document.getElementById('nc-email').value.trim() || '[email]';
     const password = document.getElementById('nc-password').value || '[password]';
-    return `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n🔑 Password provvisoria: ${password}\n\nTi consigliamo di cambiarla al primo accesso, dalla sezione "Dati personali".\n\nA presto,\nGianluca di VISIBIL\n\nPer qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83`;
+    const firma = window.firmaEmailDefault || 'A presto,\nGianluca — VISIBIL';
+    return `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n🔑 Password provvisoria: ${password}\n\nTi consigliamo di cambiarla al primo accesso, dalla sezione "Dati personali".\n\n${firma}`;
   }
 
   function toggleTestoEmailNuovoCliente() {
@@ -1792,13 +1991,63 @@ Gianluca — VISIBIL</textarea>
     }
   }
 
+  function toggleRegistraRisposta() {
+    const wrap = document.getElementById('registra-risposta-wrap');
+    const apri = wrap.style.display === 'none';
+    wrap.style.display = apri ? 'block' : 'none';
+    if (apri) {
+      document.getElementById('risposta-oggetto').value = '';
+      document.getElementById('risposta-testo').value = '';
+      document.getElementById('risposta-msg').textContent = '';
+    }
+  }
+
+  async function salvaRispostaManuale() {
+    const userId = document.getElementById('c-userid').value;
+    const msg = document.getElementById('risposta-msg');
+    if (!userId) {
+      msg.textContent = 'Nessun cliente caricato.';
+      msg.className = 'msg err';
+      return;
+    }
+    const oggetto = document.getElementById('risposta-oggetto').value;
+    const testo = document.getElementById('risposta-testo').value;
+    if (!testo.trim()) {
+      msg.textContent = 'Scrivi il testo della risposta.';
+      msg.className = 'msg err';
+      return;
+    }
+
+    const { error } = await client.from('messaggi').insert({
+      user_id: userId,
+      tipo: 'nota_manuale',
+      oggetto: oggetto || 'Risposta registrata manualmente',
+      contenuto: testo.replace(/\n/g, '<br>')
+    });
+
+    if (error) {
+      msg.textContent = 'Errore: ' + error.message;
+      msg.className = 'msg err';
+      return;
+    }
+
+    msg.textContent = 'Risposta registrata.';
+    msg.className = 'msg ok';
+    await caricaMessaggi();
+    renderCronologiaComunicazioni(userId);
+    setTimeout(() => toggleRegistraRisposta(), 800);
+  }
+
   function badgeMessaggio(tipo) {
     const stili = {
       contatto: { bg: '#E3F3E8', fg: '#1E6B3C', label: 'Dal cliente' },
       benvenuto: { bg: '#F5F6FF', fg: '#1A1AE6', label: 'Benvenuto' },
       notifica: { bg: '#F5F6FF', fg: '#1A1AE6', label: 'Aggiornamento' },
       libera: { bg: '#F5F6FF', fg: '#1A1AE6', label: 'Libera' },
-      pagamento: { bg: '#FFF4DE', fg: '#8A5A00', label: 'Pagamento' }
+      pagamento: { bg: '#FFF4DE', fg: '#8A5A00', label: 'Pagamento' },
+      broadcast: { bg: '#F0E6FF', fg: '#6B2FBF', label: 'Broadcast' },
+      promemoria: { bg: '#FFE8E8', fg: '#B3261E', label: 'Promemoria' },
+      nota_manuale: { bg: '#EFEFEF', fg: '#555555', label: 'Risposta registrata' }
     };
     const s = stili[tipo] || { bg: '#F5F6FF', fg: '#1A1AE6', label: 'Inviata da te' };
     return `<span style="font-size:0.6rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; background:${s.bg}; color:${s.fg}; padding:0.25rem 0.5rem; border-radius:100px;">${s.label}</span>`;
@@ -1822,20 +2071,39 @@ Gianluca — VISIBIL</textarea>
   }
 
   let contatoreTestiTruncati = 0;
-  function testoConLeggiDiPiu(testo, limite) {
-    testo = testo || '';
-    if (testo.length <= limite) {
-      return `<div style="font-size:0.8rem; white-space:pre-line; color:var(--grey);">${testo}</div>`;
+  function testoConLeggiDiPiu(html, limite) {
+    html = html || '';
+    const solaTesto = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+    if (solaTesto.length <= limite) {
+      return `<div style="font-size:0.8rem; color:var(--grey); background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:6px; padding:0.75rem;">${html}</div>`;
     }
+
     const id = 'testo-trunc-' + (contatoreTestiTruncati++);
-    const corto = testo.slice(0, limite);
+    const corto = solaTesto.slice(0, limite);
     return `
-      <div style="font-size:0.8rem; white-space:pre-line; color:var(--grey);" id="${id}-corto">${corto}…
+      <div style="font-size:0.8rem; color:var(--grey);" id="${id}-corto">${corto}…
         <a href="javascript:void(0)" onclick="document.getElementById('${id}-corto').style.display='none'; document.getElementById('${id}-lungo').style.display='block';" style="color:var(--blu); white-space:nowrap;">Leggi di più</a>
       </div>
-      <div style="font-size:0.8rem; white-space:pre-line; color:var(--grey); display:none;" id="${id}-lungo">${testo}
-        <a href="javascript:void(0)" onclick="document.getElementById('${id}-lungo').style.display='none'; document.getElementById('${id}-corto').style.display='block';" style="color:var(--blu); white-space:nowrap;">Mostra meno</a>
+      <div style="display:none;" id="${id}-lungo">
+        <div style="font-size:0.8rem; color:var(--grey); background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:6px; padding:0.75rem;">${html}</div>
+        <a href="javascript:void(0)" onclick="document.getElementById('${id}-lungo').style.display='none'; document.getElementById('${id}-corto').style.display='block';" style="color:var(--blu); white-space:nowrap; font-size:0.8rem;">Mostra meno</a>
       </div>`;
+  }
+
+  function iconaStatoConsegna(stato) {
+    const mappa = {
+      'inviata': '✓ Inviata',
+      'consegnata': '✓✓ Consegnata',
+      'aperta': '👁️ Aperta',
+      'cliccata': '👆 Cliccata',
+      'in ritardo': '⏳ In ritardo',
+      'rimbalzata': '⚠️ Rimbalzata',
+      'segnalata come spam': '🚫 Segnalata come spam'
+    };
+    if (!stato || !mappa[stato]) return '';
+    const colore = (stato === 'rimbalzata' || stato === 'segnalata come spam') ? '#B3261E' : 'var(--grey)';
+    return `<span style="font-size:0.7rem; color:${colore};">${mappa[stato]}</span>`;
   }
 
   function renderCronologiaComunicazioni(userId) {
@@ -1859,27 +2127,149 @@ Gianluca — VISIBIL</textarea>
           </div>
           <div style="font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">${m.oggetto || ''}</div>
           ${testoConLeggiDiPiu(m.contenuto, 300)}
+          ${m.stato_consegna ? `<div style="margin-top:0.4rem;">${iconaStatoConsegna(m.stato_consegna)}</div>` : ''}
         </div>`;
     }).join('');
   }
 
+  const ALLEGATO_LIMITE_BYTES = 4 * 1024 * 1024;
+
+  function gestisciSelezioneAllegato() {
+    const input = document.getElementById('com-allegato');
+    const info = document.getElementById('com-allegato-info');
+    const file = input.files[0];
+    if (!file) { info.textContent = ''; return; }
+    if (file.size > ALLEGATO_LIMITE_BYTES) {
+      info.textContent = `File troppo grande (${(file.size / 1024 / 1024).toFixed(1)} MB) — massimo 4 MB.`;
+      info.style.color = '#B3261E';
+      input.value = '';
+      return;
+    }
+    info.textContent = `${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+    info.style.color = 'var(--grey)';
+  }
+
+  function leggiAllegatoSelezionato() {
+    return new Promise((resolve, reject) => {
+      const input = document.getElementById('com-allegato');
+      const file = input.files[0];
+      if (!file) { resolve(null); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result.split(',')[1];
+        resolve({ filename: file.name, content: base64 });
+      };
+      reader.onerror = () => reject(new Error('Errore nella lettura del file.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function svuotaAllegatoSelezionato() {
+    document.getElementById('com-allegato').value = '';
+    document.getElementById('com-allegato-info').textContent = '';
+  }
+
+  async function caricaTemplateList() {
+    const { data, error } = await client.from('template_email').select('*').order('nome');
+    if (error) { console.error('Errore template:', error); return; }
+    window.templateCache = data || [];
+    const select = document.getElementById('com-template-select');
+    if (!select) return;
+    select.innerHTML = '<option value="">— nessuno, scrivi da zero —</option>' +
+      window.templateCache.map(t => `<option value="${t.id}">${t.nome}</option>`).join('');
+  }
+
+  function caricaTemplateSelezionato() {
+    const id = document.getElementById('com-template-select').value;
+    const btnElimina = document.getElementById('btn-elimina-template');
+    if (!id) {
+      btnElimina.style.display = 'none';
+      return;
+    }
+    const t = (window.templateCache || []).find(x => x.id === id);
+    if (!t) return;
+    document.getElementById('com-libera-oggetto').value = t.oggetto || '';
+    document.getElementById('com-libera-corpo').value = t.corpo || '';
+    btnElimina.style.display = 'inline-block';
+  }
+
+  async function salvaTemplateCorrente() {
+    const msg = document.getElementById('libera-msg');
+    const oggetto = document.getElementById('com-libera-oggetto').value;
+    const corpo = document.getElementById('com-libera-corpo').value;
+    if (!oggetto && !corpo) {
+      msg.textContent = 'Scrivi prima oggetto o testo da salvare come template.';
+      msg.className = 'msg err';
+      return;
+    }
+    const nome = prompt('Nome del template (es. "Promemoria scadenza"):');
+    if (!nome) return;
+
+    const { error } = await client.from('template_email').insert({ nome, oggetto, corpo });
+    if (error) {
+      msg.textContent = 'Errore nel salvare il template: ' + error.message;
+      msg.className = 'msg err';
+      return;
+    }
+    msg.textContent = 'Template salvato.';
+    msg.className = 'msg ok';
+    await caricaTemplateList();
+  }
+
+  async function eliminaTemplateSelezionato() {
+    const id = document.getElementById('com-template-select').value;
+    if (!id) return;
+    const t = (window.templateCache || []).find(x => x.id === id);
+    if (!confirm(`Eliminare il template "${t ? t.nome : ''}"? Non si può annullare.`)) return;
+
+    const { error } = await client.from('template_email').delete().eq('id', id);
+    const msg = document.getElementById('libera-msg');
+    if (error) {
+      msg.textContent = 'Errore: ' + error.message;
+      msg.className = 'msg err';
+      return;
+    }
+    msg.textContent = 'Template eliminato.';
+    msg.className = 'msg ok';
+    document.getElementById('com-template-select').value = '';
+    document.getElementById('btn-elimina-template').style.display = 'none';
+    await caricaTemplateList();
+  }
+
+  function aggiornaAvvisoPreferenze(c) {
+    const box = document.getElementById('com-avviso-preferenze');
+    if (c.pref_email || (!c.pref_whatsapp && !c.pref_telefono)) {
+      box.innerHTML = '';
+      return;
+    }
+    const canali = [];
+    if (c.pref_whatsapp) canali.push('WhatsApp');
+    if (c.pref_telefono) canali.push('telefono');
+    box.innerHTML = `<p style="font-size:0.8rem; background:#FFF4DE; color:#8A5A00; padding:0.6rem 0.85rem; border-radius:6px; margin:0 0 1rem;">⚠️ Questo cliente ha indicato di preferire ${canali.join(' o ')} invece dell'email.</p>`;
+  }
+
   function cambiaTipoComunicazione() {
     const tipo = document.getElementById('com-tipo').value;
+    const firma = window.firmaEmailDefault || 'A presto,\nGianluca — VISIBIL';
     document.getElementById('com-blocco-notifica').style.display = tipo === 'notifica' ? 'block' : 'none';
     document.getElementById('com-blocco-benvenuto').style.display = tipo === 'benvenuto' ? 'block' : 'none';
     document.getElementById('com-blocco-libera').style.display = tipo === 'libera' ? 'block' : 'none';
 
-    if (tipo === 'benvenuto') {
+    if (tipo === 'notifica') {
+      document.getElementById('email-saluti').value = firma;
+    } else if (tipo === 'benvenuto') {
       const userId = document.getElementById('c-userid').value;
       const c = clientiCache.find(x => x.user_id === userId);
       const nome = c ? c.nome : '';
       const email = c ? (c.email_accesso || '') : '';
       document.getElementById('pan-benvenuto-oggetto').value = 'Benvenuto/a nella tua Area Clienti VISIBIL';
       document.getElementById('pan-benvenuto-corpo').value =
-        `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n\nSe non ricordi la password, usa "Password dimenticata" nella pagina di accesso.\n\nA presto,\nGianluca di VISIBIL\n\nPer qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83`;
+        `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n\nSe non ricordi la password, usa "Password dimenticata" nella pagina di accesso.\n\n${firma}`;
     } else if (tipo === 'libera') {
       document.getElementById('com-libera-oggetto').value = '';
-      document.getElementById('com-libera-corpo').value = '';
+      document.getElementById('com-libera-corpo').value = firma ? `\n\n${firma}` : '';
+      document.getElementById('com-template-select').value = '';
+      document.getElementById('btn-elimina-template').style.display = 'none';
     }
   }
 
@@ -1897,10 +2287,11 @@ Gianluca — VISIBIL</textarea>
     const token = sessionData.session ? sessionData.session.access_token : null;
 
     try {
+      const allegato = await leggiAllegatoSelezionato();
       const res = await fetch('/api/invia-benvenuto', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ user_id: userId, oggetto, corpo })
+        body: JSON.stringify({ user_id: userId, oggetto, corpo, allegato })
       });
       const result = await res.json();
       if (!res.ok) {
@@ -1910,6 +2301,7 @@ Gianluca — VISIBIL</textarea>
       }
       msg.textContent = result.log_ok === false ? ('Email inviata, ma errore nel salvare lo storico: ' + (result.log_error || '')) : 'Email inviata.';
       msg.className = result.log_ok === false ? 'msg err' : 'msg ok';
+      svuotaAllegatoSelezionato();
       await caricaMessaggi();
       const c = clientiCache.find(x => x.user_id === userId);
       if (c) aggiornaStatoEmailBenvenuto(c);
@@ -1936,6 +2328,7 @@ Gianluca — VISIBIL</textarea>
     msg.className = 'msg';
 
     try {
+      const allegato = await leggiAllegatoSelezionato();
       const { data: sessionData } = await client.auth.getSession();
       const token = sessionData.session.access_token;
       const res = await fetch('/api/notifica-cliente', {
@@ -1948,6 +2341,7 @@ Gianluca — VISIBIL</textarea>
           nota: '',
           saluti: '',
           tipo: 'libera',
+          allegato,
           user_id: userId
         })
       });
@@ -1957,6 +2351,7 @@ Gianluca — VISIBIL</textarea>
         msg.className = result.log_ok === false ? 'msg err' : 'msg ok';
         document.getElementById('com-libera-oggetto').value = '';
         document.getElementById('com-libera-corpo').value = '';
+        svuotaAllegatoSelezionato();
         await caricaMessaggi();
         renderCronologiaComunicazioni(userId);
       } else {

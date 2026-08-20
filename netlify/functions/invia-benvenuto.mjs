@@ -1,6 +1,8 @@
 // Funzione server-side: invia (o re-invia) la mail di benvenuto a un cliente già esistente.
 // Richiamata dal bottone "Invia mail di benvenuto" nella scheda cliente di admin.html.
 
+import { markdownLeggero } from "./_lib/formato.mjs";
+
 const SUPABASE_URL = "https://zmdnuplqgpznryxfooez.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_WcYUr4o4yMN5nGBmPxW59A__100gU9L";
 const OWNER_ID = "45d74677-8f95-4d75-86a0-c7d9c586d68a";
@@ -36,7 +38,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { user_id, oggetto, corpo } = payload;
+  const { user_id, oggetto, corpo, allegato } = payload;
   if (!user_id) {
     return new Response(JSON.stringify({ error: "user_id obbligatorio." }), { status: 400 });
   }
@@ -69,12 +71,25 @@ export default async (req) => {
   let corpoTesto = (corpo && corpo.trim())
     ? corpo.trim()
     : `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n\nSe non ricordi la password, usa "Password dimenticata" nella pagina di accesso.\n\nA presto,\nGianluca di VISIBIL\n\nPer qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83`;
+  let emailHtmlFinale = '';
+  let resendId = null;
 
   try {
     const corpoHtml = corpoTesto
       .split("\n")
-      .map(riga => riga.trim() === "" ? "<br>" : `<p style="margin:0 0 0.8em;">${riga}</p>`)
+      .map(riga => riga.trim() === "" ? "<br>" : `<p style="margin:0 0 0.8em;">${markdownLeggero(riga)}</p>`)
       .join("");
+    emailHtmlFinale = `<div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">${corpoHtml}</div>`;
+
+    const emailBody = {
+      from: "VISIBIL <benvenuto@vsbl.ch>",
+      to: [email],
+      subject: subjectFinale,
+      html: emailHtmlFinale
+    };
+    if (allegato && allegato.filename && allegato.content) {
+      emailBody.attachments = [{ filename: allegato.filename, content: allegato.content }];
+    }
 
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -82,18 +97,15 @@ export default async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        from: "VISIBIL <benvenuto@vsbl.ch>",
-        to: [email],
-        subject: subjectFinale,
-        html: `<div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">${corpoHtml}</div>`
-      })
+      body: JSON.stringify(emailBody)
     });
     emailInviata = emailRes.ok;
     if (!emailRes.ok) {
       const errData = await emailRes.json().catch(() => ({}));
       return new Response(JSON.stringify({ error: "Errore invio Resend: " + JSON.stringify(errData) }), { status: 500 });
     }
+    const emailData = await emailRes.json().catch(() => ({}));
+    resendId = emailData.id || null;
   } catch (e) {
     return new Response(JSON.stringify({ error: "Errore invio email: " + e.message }), { status: 500 });
   }
@@ -114,7 +126,9 @@ export default async (req) => {
         user_id,
         tipo: "benvenuto",
         oggetto: subjectFinale,
-        contenuto: corpoTesto
+        contenuto: emailHtmlFinale + (allegato && allegato.filename ? `<p style="font-size:0.85em; color:#8A8A8A; margin-top:1em;">📎 Allegato: ${allegato.filename}</p>` : ''),
+        resend_id: resendId,
+        stato_consegna: "inviata"
       })
     });
     logOk = logRes.ok;

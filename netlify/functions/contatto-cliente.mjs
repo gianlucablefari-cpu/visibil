@@ -27,6 +27,14 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Configurazione email mancante." }), { status: 500 });
   }
 
+  const emailHtml = `
+    <div style="font-family: 'Inter', Arial, sans-serif; color:#0F0F0F; line-height:1.6; max-width:480px; margin:0 auto;">
+      <div style="font-weight:900; font-size:0.9em; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:2em;">VISIBIL</div>
+      <p style="margin:0 0 0.5em;"><strong>${from_name || 'Cliente'}</strong>${from_email ? ` (${from_email})` : ''}</p>
+      <div style="background:#F7F7F7; border-left:3px solid #1A1AE6; padding:1em 1.25em; white-space:pre-line;">${message}</div>
+    </div>
+  `;
+
   try {
     const emailRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -39,13 +47,7 @@ export default async (req) => {
         to: ["gianluca.blefari@outlook.com"],
         reply_to: from_email || undefined,
         subject: subject || "Messaggio dall'Area Clienti",
-        html: `
-          <div style="font-family: 'Inter', Arial, sans-serif; color:#0F0F0F; line-height:1.6; max-width:480px; margin:0 auto;">
-            <div style="font-weight:900; font-size:0.9em; letter-spacing:0.22em; text-transform:uppercase; margin-bottom:2em;">VISIBIL</div>
-            <p style="margin:0 0 0.5em;"><strong>${from_name || 'Cliente'}</strong>${from_email ? ` (${from_email})` : ''}</p>
-            <div style="background:#F7F7F7; border-left:3px solid #1A1AE6; padding:1em 1.25em; white-space:pre-line;">${message}</div>
-          </div>
-        `
+        html: emailHtml
       })
     });
 
@@ -76,7 +78,7 @@ export default async (req) => {
             user_id,
             tipo: "contatto",
             oggetto: subject || "Messaggio dall'Area Clienti",
-            contenuto: message
+            contenuto: emailHtml
           })
         });
         logOk = logRes.ok;

@@ -1,6 +1,8 @@
 // Funzione server-side: crea un utente Supabase Auth + riga base in "clienti".
 // La service_role key vive SOLO qui (variabile d'ambiente Netlify), mai nel frontend.
 
+import { markdownLeggero } from "./_lib/formato.mjs";
+
 const SUPABASE_URL = "https://zmdnuplqgpznryxfooez.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_WcYUr4o4yMN5nGBmPxW59A__100gU9L";
 const OWNER_ID = "45d74677-8f95-4d75-86a0-c7d9c586d68a";
@@ -99,13 +101,16 @@ export default async (req) => {
   const corpoTesto = (corpo && corpo.trim())
     ? corpo.trim()
     : `Ciao ${nome}!\nIl tuo accesso all'Area Clienti VISIBIL è pronto.\n\n🔗 vsbl.ch/area-cliente.html\n📧 Email: ${email}\n🔑 Password provvisoria: ${password}\n\nTi consigliamo di cambiarla al primo accesso, dalla sezione "Dati personali".\n\nA presto,\nGianluca di VISIBIL\n\nPer qualsiasi dubbio, scrivimi o chiamami: +41 79 644 56 83`;
+  let emailHtmlFinale = '';
+  let resendId = null;
 
   if (invia_email && RESEND_API_KEY) {
     try {
       const corpoHtml = corpoTesto
         .split("\n")
-        .map(riga => riga.trim() === "" ? "<br>" : `<p style="margin:0 0 0.8em;">${riga}</p>`)
+        .map(riga => riga.trim() === "" ? "<br>" : `<p style="margin:0 0 0.8em;">${markdownLeggero(riga)}</p>`)
         .join("");
+      emailHtmlFinale = `<div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">${corpoHtml}</div>`;
 
       const emailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -117,10 +122,14 @@ export default async (req) => {
           from: "VISIBIL <benvenuto@vsbl.ch>",
           to: [email],
           subject: subjectFinale,
-          html: `<div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">${corpoHtml}</div>`
+          html: emailHtmlFinale
         })
       });
       emailInviata = emailRes.ok;
+      if (emailRes.ok) {
+        const emailData = await emailRes.json().catch(() => ({}));
+        resendId = emailData.id || null;
+      }
     } catch (e) {
       emailInviata = false;
     }
@@ -143,7 +152,9 @@ export default async (req) => {
           user_id: newUserId,
           tipo: "benvenuto",
           oggetto: subjectFinale,
-          contenuto: corpoTesto
+          contenuto: emailHtmlFinale,
+          resend_id: resendId,
+          stato_consegna: "inviata"
         })
       });
       logOk = logRes.ok;
