@@ -244,6 +244,11 @@
       <label for="nc-password">Password provvisoria</label>
       <input type="text" id="nc-password" placeholder="minimo 6 caratteri">
 
+      <label style="display:flex; align-items:center; gap:0.5rem; font-weight:400; margin-top:0.75rem;">
+        <input type="checkbox" id="nc-invia-email" style="width:auto;">
+        Invia subito la mail di benvenuto
+      </label>
+
       <button onclick="creaClienteRapido()">Crea cliente</button>
       <div class="msg" id="nc-msg"></div>
     </div>
@@ -274,6 +279,9 @@
           <span style="color:var(--grey);">Tel:</span> <span id="pan-s-telefono">—</span> ·
           <span style="color:var(--grey);">Email:</span> <span id="pan-s-email">—</span> ·
           <span style="color:var(--grey);">Indirizzo:</span> <span id="pan-s-indirizzo">—</span>
+          <br>
+          <span style="color:var(--grey);">Mail benvenuto:</span> <span id="pan-s-email-benvenuto">—</span>
+          <button class="secondary btn-small" id="btn-invia-benvenuto" onclick="inviaBenvenutoManuale()" style="margin-left:0.5rem;">Invia mail di benvenuto</button>
         </div>
         <button class="secondary btn-small" onclick="showTab('impostazioni')" style="flex-shrink:0; white-space:nowrap;">Modifica dati →</button>
       </div>
@@ -1168,6 +1176,7 @@ Gianluca — VISIBIL</textarea>
     document.getElementById('pan-s-telefono').textContent = c.telefono || '—';
     document.getElementById('pan-s-email').textContent = c.email_contatto || '—';
     document.getElementById('pan-s-indirizzo').textContent = c.indirizzo || '—';
+    aggiornaStatoEmailBenvenuto(c);
 
     document.getElementById('c-userid').value = c.user_id;
     document.getElementById('c-userid-display').textContent = c.user_id;
@@ -1660,6 +1669,7 @@ Gianluca — VISIBIL</textarea>
     const nome = document.getElementById('nc-nome').value.trim();
     const email = document.getElementById('nc-email').value.trim();
     const password = document.getElementById('nc-password').value;
+    const inviaEmail = document.getElementById('nc-invia-email').checked;
 
     if (!nome || !email || !password) {
       showMsg('nc-msg', 'Compila nome, email e password.', false);
@@ -1679,7 +1689,7 @@ Gianluca — VISIBIL</textarea>
       const res = await fetch('/api/crea-cliente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ nome, email, password })
+        body: JSON.stringify({ nome, email, password, invia_email: inviaEmail })
       });
       const result = await res.json();
       if (!res.ok) {
@@ -1690,9 +1700,55 @@ Gianluca — VISIBIL</textarea>
       document.getElementById('nc-nome').value = '';
       document.getElementById('nc-email').value = '';
       document.getElementById('nc-password').value = '';
+      document.getElementById('nc-invia-email').checked = false;
       caricaClienti();
     } catch (err) {
       showMsg('nc-msg', 'Errore di connessione.', false);
+    }
+  }
+
+  function aggiornaStatoEmailBenvenuto(c) {
+    const el = document.getElementById('pan-s-email-benvenuto');
+    if (c.email_benvenuto_inviata) {
+      const data = c.email_benvenuto_data
+        ? new Date(c.email_benvenuto_data).toLocaleDateString('it-CH')
+        : '';
+      el.textContent = '✅ Inviata' + (data ? ' il ' + data : '');
+    } else {
+      el.textContent = '⚪ Non ancora inviata';
+    }
+  }
+
+  async function inviaBenvenutoManuale() {
+    const userId = document.getElementById('c-userid').value;
+    if (!userId) return;
+
+    const btn = document.getElementById('btn-invia-benvenuto');
+    btn.disabled = true;
+    btn.textContent = 'Invio in corso...';
+
+    const { data: sessionData } = await client.auth.getSession();
+    const token = sessionData.session ? sessionData.session.access_token : null;
+
+    try {
+      const res = await fetch('/api/invia-benvenuto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ user_id: userId })
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        alert('Errore: ' + (result.error || 'sconosciuto'));
+        return;
+      }
+      await caricaClienti();
+      const c = clientiCache.find(x => x.user_id === userId);
+      if (c) aggiornaStatoEmailBenvenuto(c);
+    } catch (err) {
+      alert('Errore di connessione.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Invia mail di benvenuto';
     }
   }
 

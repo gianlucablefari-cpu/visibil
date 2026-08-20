@@ -36,7 +36,7 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Corpo richiesta non valido." }), { status: 400 });
   }
 
-  const { nome, email, password } = payload;
+  const { nome, email, password, invia_email } = payload;
   if (!nome || !email || !password) {
     return new Response(JSON.stringify({ error: "Nome, email e password sono obbligatori." }), { status: 400 });
   }
@@ -90,10 +90,10 @@ export default async (req) => {
     );
   }
 
-  // 5. Invia email di benvenuto personalizzata (Resend)
+  // 5. Invia email di benvenuto personalizzata (Resend) — solo se richiesto esplicitamente
   const RESEND_API_KEY = Netlify.env.get("RESEND_API_KEY");
   let emailInviata = false;
-  if (RESEND_API_KEY) {
+  if (invia_email && RESEND_API_KEY) {
     try {
       const emailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -125,6 +125,22 @@ export default async (req) => {
     } catch (e) {
       emailInviata = false;
     }
+  }
+
+  // 6. Se la mail è stata inviata, traccia stato e data su Supabase
+  if (emailInviata) {
+    await fetch(`${SUPABASE_URL}/rest/v1/clienti?user_id=eq.${newUserId}`, {
+      method: "PATCH",
+      headers: {
+        apikey: SERVICE_KEY,
+        Authorization: `Bearer ${SERVICE_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email_benvenuto_inviata: true,
+        email_benvenuto_data: new Date().toISOString()
+      })
+    }).catch(() => {});
   }
 
   return new Response(
