@@ -127,26 +127,35 @@ export default async (req) => {
   }
 
   // 6. Se la mail è stata inviata, traccia lo storico comunicazioni
+  let logOk = null;
+  let logError = null;
   if (emailInviata) {
-    await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
-      method: "POST",
-      headers: {
-        apikey: SERVICE_KEY,
-        Authorization: `Bearer ${SERVICE_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal"
-      },
-      body: JSON.stringify({
-        user_id: newUserId,
-        tipo: "benvenuto",
-        oggetto: subjectFinale,
-        contenuto: corpoTesto
-      })
-    }).catch(() => {});
+    try {
+      const logRes = await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
+        method: "POST",
+        headers: {
+          apikey: SERVICE_KEY,
+          Authorization: `Bearer ${SERVICE_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify({
+          user_id: newUserId,
+          tipo: "benvenuto",
+          oggetto: subjectFinale,
+          contenuto: corpoTesto
+        })
+      });
+      logOk = logRes.ok;
+      if (!logOk) logError = await logRes.text().catch(() => "");
+    } catch (e) {
+      logOk = false;
+      logError = e.message;
+    }
   }
 
   return new Response(
-    JSON.stringify({ success: true, user_id: newUserId, email_inviata: emailInviata }),
+    JSON.stringify({ success: true, user_id: newUserId, email_inviata: emailInviata, log_ok: logOk, log_error: logError }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );
 };

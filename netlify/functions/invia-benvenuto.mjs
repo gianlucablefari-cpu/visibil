@@ -99,24 +99,33 @@ export default async (req) => {
   }
 
   // 5. Traccia l'invio nello storico comunicazioni
-  await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
-    method: "POST",
-    headers: {
-      apikey: SERVICE_KEY,
-      Authorization: `Bearer ${SERVICE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=minimal"
-    },
-    body: JSON.stringify({
-      user_id,
-      tipo: "benvenuto",
-      oggetto: subjectFinale,
-      contenuto: corpoTesto
-    })
-  }).catch(() => {});
+  let logOk = true;
+  let logError = null;
+  try {
+    const logRes = await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
+      method: "POST",
+      headers: {
+        apikey: SERVICE_KEY,
+        Authorization: `Bearer ${SERVICE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        user_id,
+        tipo: "benvenuto",
+        oggetto: subjectFinale,
+        contenuto: corpoTesto
+      })
+    });
+    logOk = logRes.ok;
+    if (!logOk) logError = await logRes.text().catch(() => "");
+  } catch (e) {
+    logOk = false;
+    logError = e.message;
+  }
 
   return new Response(
-    JSON.stringify({ success: true, email_inviata: emailInviata }),
+    JSON.stringify({ success: true, email_inviata: emailInviata, log_ok: logOk, log_error: logError }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );
 };

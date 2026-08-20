@@ -87,13 +87,15 @@ export default async (req) => {
     return new Response(JSON.stringify({ error: "Errore di connessione al servizio email." }), { status: 500 });
   }
 
+  let logOk = null;
+  let logError = null;
   if (user_id) {
     const SERVICE_KEY = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (SERVICE_KEY) {
       try {
         const contenutoLog = [incipit, nota, saluti].filter(Boolean).join('\n\n');
 
-        await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
+        const logRes = await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
           method: "POST",
           headers: {
             apikey: SERVICE_KEY,
@@ -108,13 +110,19 @@ export default async (req) => {
             contenuto: contenutoLog
           })
         });
+        logOk = logRes.ok;
+        if (!logOk) logError = await logRes.text().catch(() => "");
       } catch (e) {
-        // non blocca l'invio se il log fallisce
+        logOk = false;
+        logError = e.message;
       }
+    } else {
+      logOk = false;
+      logError = "SUPABASE_SERVICE_ROLE_KEY mancante";
     }
   }
 
-  return new Response(JSON.stringify({ success: true }), {
+  return new Response(JSON.stringify({ success: true, log_ok: logOk, log_error: logError }), {
     status: 200,
     headers: { "Content-Type": "application/json" }
   });

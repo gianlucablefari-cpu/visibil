@@ -308,68 +308,68 @@
     </div>
     </div><!-- /tab-panel -->
 
-    <!-- COMUNICAZIONI (cronologia + invio unificato per il cliente attivo) -->
+    <!-- COMUNICAZIONI (invio unificato + cronologia per il cliente attivo) -->
     <div class="tab-panel" id="panel-comunicazioni">
     <div class="card">
       <h2>Comunicazioni</h2>
       <p class="desc">Storico e invio di email per: <strong id="com-cliente-nome">—</strong></p>
 
-      <div class="section-label" style="margin-top:0;">Cronologia</div>
-      <div id="com-cronologia"><p style="font-size:0.85rem; color:var(--grey);">Nessun cliente caricato.</p></div>
+      <div class="section-label" style="margin-top:0;">Nuova comunicazione</div>
 
-      <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 2rem; padding-top: 1.5rem;">
-        <div class="section-label" style="margin-top:0;">Nuova comunicazione</div>
+      <label for="com-tipo">Tipo</label>
+      <select id="com-tipo" onchange="cambiaTipoComunicazione()">
+        <option value="notifica">Aggiornamento progetto</option>
+        <option value="benvenuto">Benvenuto</option>
+        <option value="libera">Libera</option>
+      </select>
 
-        <label for="com-tipo">Tipo</label>
-        <select id="com-tipo" onchange="cambiaTipoComunicazione()">
-          <option value="notifica">Aggiornamento progetto</option>
-          <option value="benvenuto">Benvenuto</option>
-          <option value="libera">Libera</option>
-        </select>
+      <p class="desc" style="margin-top:0;">A: <strong id="email-destinatario" style="color:var(--black); background:#FFF4DE; padding:0.2rem 0.5rem; border-radius:4px;">— nessun cliente caricato —</strong></p>
 
-        <p class="desc" style="margin-top:0;">A: <strong id="email-destinatario" style="color:var(--black); background:#FFF4DE; padding:0.2rem 0.5rem; border-radius:4px;">— nessun cliente caricato —</strong></p>
+      <!-- Aggiornamento progetto -->
+      <div id="com-blocco-notifica">
+        <label for="email-oggetto">Oggetto</label>
+        <input type="text" id="email-oggetto" value="La lista delle cose da fare si è aggiornata">
 
-        <!-- Aggiornamento progetto -->
-        <div id="com-blocco-notifica">
-          <label for="email-oggetto">Oggetto</label>
-          <input type="text" id="email-oggetto" value="La lista delle cose da fare si è aggiornata">
+        <label for="email-incipit">Incipit</label>
+        <textarea id="email-incipit" style="min-height:80px;">Ciao, ecco il prossimo passo per il tuo progetto:</textarea>
 
-          <label for="email-incipit">Incipit</label>
-          <textarea id="email-incipit" style="min-height:80px;">Ciao, ecco il prossimo passo per il tuo progetto:</textarea>
+        <p class="desc" style="margin-top:0.5rem;">Le "Note" della Panoramica vengono incluse automaticamente nell'email.</p>
 
-          <p class="desc" style="margin-top:0.5rem;">Le "Note" della Panoramica vengono incluse automaticamente nell'email.</p>
-
-          <label for="email-saluti">Saluti</label>
-          <textarea id="email-saluti" style="min-height:100px;">A presto,
+        <label for="email-saluti">Saluti</label>
+        <textarea id="email-saluti" style="min-height:100px;">A presto,
 Gianluca — VISIBIL</textarea>
 
-          <button onclick="inviaNotificaEmail()">Invia email</button>
-          <div class="msg" id="notifica-msg"></div>
-        </div>
+        <button onclick="inviaNotificaEmail()">Invia email</button>
+        <div class="msg" id="notifica-msg"></div>
+      </div>
 
-        <!-- Benvenuto -->
-        <div id="com-blocco-benvenuto" style="display:none;">
-          <label for="pan-benvenuto-oggetto">Oggetto</label>
-          <input type="text" id="pan-benvenuto-oggetto">
+      <!-- Benvenuto -->
+      <div id="com-blocco-benvenuto" style="display:none;">
+        <label for="pan-benvenuto-oggetto">Oggetto</label>
+        <input type="text" id="pan-benvenuto-oggetto">
 
-          <label for="pan-benvenuto-corpo">Testo email</label>
-          <textarea id="pan-benvenuto-corpo" rows="8"></textarea>
+        <label for="pan-benvenuto-corpo">Testo email</label>
+        <textarea id="pan-benvenuto-corpo" rows="8"></textarea>
 
-          <button onclick="confermaInvioBenvenutoManuale()">Invia email</button>
-          <div class="msg" id="benvenuto-msg"></div>
-        </div>
+        <button onclick="confermaInvioBenvenutoManuale()">Invia email</button>
+        <div class="msg" id="benvenuto-msg"></div>
+      </div>
 
-        <!-- Libera -->
-        <div id="com-blocco-libera" style="display:none;">
-          <label for="com-libera-oggetto">Oggetto</label>
-          <input type="text" id="com-libera-oggetto">
+      <!-- Libera -->
+      <div id="com-blocco-libera" style="display:none;">
+        <label for="com-libera-oggetto">Oggetto</label>
+        <input type="text" id="com-libera-oggetto">
 
-          <label for="com-libera-corpo">Testo email</label>
-          <textarea id="com-libera-corpo" rows="8"></textarea>
+        <label for="com-libera-corpo">Testo email</label>
+        <textarea id="com-libera-corpo" rows="8"></textarea>
 
-          <button onclick="inviaComunicazioneLibera()">Invia email</button>
-          <div class="msg" id="libera-msg"></div>
-        </div>
+        <button onclick="inviaComunicazioneLibera()">Invia email</button>
+        <div class="msg" id="libera-msg"></div>
+      </div>
+
+      <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 2rem; padding-top: 1.5rem;">
+        <div class="section-label" style="margin-top:0;">Cronologia</div>
+        <div id="com-cronologia"><p style="font-size:0.85rem; color:var(--grey);">Nessun cliente caricato.</p></div>
       </div>
     </div>
     </div><!-- /tab-panel -->
@@ -1000,8 +1000,8 @@ Gianluca — VISIBIL</textarea>
       const result = await res.json();
 
       if (res.ok && result.success) {
-        notificaMsg.textContent = 'Email inviata.';
-        notificaMsg.className = 'msg ok';
+        notificaMsg.textContent = result.log_ok === false ? ('Email inviata, ma errore nel salvare lo storico: ' + (result.log_error || '')) : 'Email inviata.';
+        notificaMsg.className = result.log_ok === false ? 'msg err' : 'msg ok';
         clearAutosave(EMAIL_FIELDS, document.getElementById('c-userid').value.trim());
         await caricaMessaggi();
         renderCronologiaComunicazioni(document.getElementById('c-userid').value.trim());
@@ -1581,8 +1581,8 @@ Gianluca — VISIBIL</textarea>
       });
       const result = await res.json();
       if (res.ok && result.success) {
-        msg.textContent = 'Email inviata.';
-        msg.className = 'msg ok';
+        msg.textContent = result.log_ok === false ? ('Email inviata, ma errore nel salvare lo storico: ' + (result.log_error || '')) : 'Email inviata.';
+        msg.className = result.log_ok === false ? 'msg err' : 'msg ok';
         await caricaMessaggi();
         renderCronologiaComunicazioni(document.getElementById('c-userid').value.trim());
       } else {
@@ -1891,8 +1891,8 @@ Gianluca — VISIBIL</textarea>
         msg.className = 'msg err';
         return;
       }
-      msg.textContent = 'Email inviata.';
-      msg.className = 'msg ok';
+      msg.textContent = result.log_ok === false ? ('Email inviata, ma errore nel salvare lo storico: ' + (result.log_error || '')) : 'Email inviata.';
+      msg.className = result.log_ok === false ? 'msg err' : 'msg ok';
       await caricaMessaggi();
       const c = clientiCache.find(x => x.user_id === userId);
       if (c) aggiornaStatoEmailBenvenuto(c);
@@ -1936,8 +1936,8 @@ Gianluca — VISIBIL</textarea>
       });
       const result = await res.json();
       if (res.ok && result.success) {
-        msg.textContent = 'Email inviata.';
-        msg.className = 'msg ok';
+        msg.textContent = result.log_ok === false ? ('Email inviata, ma errore nel salvare lo storico: ' + (result.log_error || '')) : 'Email inviata.';
+        msg.className = result.log_ok === false ? 'msg err' : 'msg ok';
         document.getElementById('com-libera-oggetto').value = '';
         document.getElementById('com-libera-corpo').value = '';
         await caricaMessaggi();
