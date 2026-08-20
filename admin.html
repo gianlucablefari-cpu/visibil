@@ -786,7 +786,7 @@ Gianluca — VISIBIL</textarea>
             ${badge}
           </div>
           <div style="font-size:0.7rem; color:var(--grey); margin-bottom:0.4rem;">${data}${m.oggetto ? ' · ' + m.oggetto : ''}</div>
-          <div style="font-size:0.8rem; white-space:pre-line;">${(m.contenuto || '').slice(0, 300)}${(m.contenuto || '').length > 300 ? '…' : ''}</div>
+          ${testoConLeggiDiPiu(m.contenuto, 300)}
         </div>`;
     });
 
@@ -1821,6 +1821,23 @@ Gianluca — VISIBIL</textarea>
     }
   }
 
+  let contatoreTestiTruncati = 0;
+  function testoConLeggiDiPiu(testo, limite) {
+    testo = testo || '';
+    if (testo.length <= limite) {
+      return `<div style="font-size:0.8rem; white-space:pre-line; color:var(--grey);">${testo}</div>`;
+    }
+    const id = 'testo-trunc-' + (contatoreTestiTruncati++);
+    const corto = testo.slice(0, limite);
+    return `
+      <div style="font-size:0.8rem; white-space:pre-line; color:var(--grey);" id="${id}-corto">${corto}…
+        <a href="javascript:void(0)" onclick="document.getElementById('${id}-corto').style.display='none'; document.getElementById('${id}-lungo').style.display='block';" style="color:var(--blu); white-space:nowrap;">Leggi di più</a>
+      </div>
+      <div style="font-size:0.8rem; white-space:pre-line; color:var(--grey); display:none;" id="${id}-lungo">${testo}
+        <a href="javascript:void(0)" onclick="document.getElementById('${id}-lungo').style.display='none'; document.getElementById('${id}-corto').style.display='block';" style="color:var(--blu); white-space:nowrap;">Mostra meno</a>
+      </div>`;
+  }
+
   function renderCronologiaComunicazioni(userId) {
     const list = document.getElementById('com-cronologia');
     const messaggi = (window.messaggiCache || [])
@@ -1841,7 +1858,7 @@ Gianluca — VISIBIL</textarea>
             <span style="font-size:0.7rem; color:var(--grey);">${data}</span>
           </div>
           <div style="font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">${m.oggetto || ''}</div>
-          <div style="font-size:0.8rem; white-space:pre-line; color:var(--grey);">${(m.contenuto || '').slice(0, 300)}${(m.contenuto || '').length > 300 ? '…' : ''}</div>
+          ${testoConLeggiDiPiu(m.contenuto, 300)}
         </div>`;
     }).join('');
   }
