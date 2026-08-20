@@ -279,7 +279,7 @@
       <div id="pan-link-lavoro" style="display:none; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.25rem;"></div>
 
     <div class="acc-item" id="acc-link-abbonamento">
-      <div class="acc-header" onclick="toggleAcc(this)">
+      <div class="acc-header" onclick="toggleAcc(this)" style="display:none;">
         <span>Gestisci link</span>
         <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </div>
@@ -293,17 +293,32 @@
       </div>
     </div>
 
+      <div style="padding-bottom:1.25rem; margin-bottom:1.25rem; border-bottom:1px solid rgba(0,0,0,0.08);">
+        <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+          <div style="flex:1; min-width:140px;">
+            <label for="pan-telefono" style="font-size:0.65rem; margin-bottom:0.2rem;">Telefono</label>
+            <input type="text" id="pan-telefono" style="font-size:0.85rem; padding:0.5rem 0.6rem;">
+          </div>
+          <div style="flex:1; min-width:180px;">
+            <label for="pan-email" style="font-size:0.65rem; margin-bottom:0.2rem;">Email</label>
+            <input type="email" id="pan-email" style="font-size:0.85rem; padding:0.5rem 0.6rem;">
+          </div>
+          <div style="flex:1; min-width:180px;">
+            <label for="pan-indirizzo" style="font-size:0.65rem; margin-bottom:0.2rem;">Indirizzo</label>
+            <input type="text" id="pan-indirizzo" style="font-size:0.85rem; padding:0.5rem 0.6rem;">
+          </div>
+        </div>
+        <button onclick="salvaContattoPanoramica()" style="margin-top:0.75rem;">Salva</button>
+        <div class="msg" id="pan-contatto-msg"></div>
 
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; padding-bottom:1.25rem; margin-bottom:1.25rem; border-bottom:1px solid rgba(0,0,0,0.08); font-size:0.82rem; line-height:1.8;">
-        <div>
-          <span style="color:var(--grey);">Tel:</span> <span id="pan-s-telefono">—</span> ·
-          <span style="color:var(--grey);">Email:</span> <span id="pan-s-email">—</span> ·
-          <span style="color:var(--grey);">Indirizzo:</span> <span id="pan-s-indirizzo">—</span>
-          <br>
+        <div style="font-size:0.82rem; margin-top:0.75rem;">
           <span style="color:var(--grey);">Mail benvenuto:</span> <span id="pan-s-email-benvenuto">—</span>
           <a href="javascript:void(0)" onclick="showTab('comunicazioni')" style="margin-left:0.4rem; color:var(--blu);">Vai a Comunicazioni →</a>
         </div>
-        <button class="secondary btn-small" onclick="showTab('impostazioni')" style="flex-shrink:0; white-space:nowrap;">Modifica dati →</button>
+
+        <div style="text-align:center; margin-top:1rem;">
+          <button class="secondary btn-small" onclick="showTab('impostazioni')">Modifica dati →</button>
+        </div>
       </div>
 
       <p class="desc">Note libere sul cliente — visibili anche nel compositore email della sezione Comunicazioni.</p>
@@ -1008,6 +1023,21 @@
     msg.className = 'msg ok';
   }
 
+  async function salvaContattoPanoramica() {
+    document.getElementById('c-telefono').value = document.getElementById('pan-telefono').value;
+    document.getElementById('c-email-contatto').value = document.getElementById('pan-email').value;
+    document.getElementById('c-indirizzo').value = document.getElementById('pan-indirizzo').value;
+
+    const msg = document.getElementById('pan-contatto-msg');
+    msg.textContent = 'Salvataggio...';
+    msg.className = 'msg';
+
+    await salvaCliente();
+
+    msg.textContent = 'Salvato.';
+    msg.className = 'msg ok';
+  }
+
   async function salvaCliente() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('cliente-msg', 'Serve lo User ID.', false); return; }
@@ -1427,9 +1457,9 @@
     updateDatiPersonaliSummary(c);
     tornaAlRiepilogoDatiPersonali();
 
-    document.getElementById('pan-s-telefono').textContent = c.telefono || '—';
-    document.getElementById('pan-s-email').textContent = c.email_contatto || '—';
-    document.getElementById('pan-s-indirizzo').textContent = c.indirizzo || '—';
+    document.getElementById('pan-telefono').value = c.telefono || '';
+    document.getElementById('pan-email').value = c.email_contatto || '';
+    document.getElementById('pan-indirizzo').value = c.indirizzo || '';
     aggiornaStatoEmailBenvenuto(c);
 
     document.getElementById('c-userid').value = c.user_id;
@@ -1558,17 +1588,17 @@
     if (dropboxUrl) tutti.push({ nome: '📁 Dropbox', url: dropboxUrl });
     (link || []).forEach(l => tutti.push(l));
 
-    if (tutti.length === 0) {
-      container.style.display = 'none';
-      container.innerHTML = '';
-      return;
-    }
     container.style.display = 'flex';
+    const pillStyle = 'font-size:0.8rem; font-weight:600; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none; display:flex; align-items:center; gap:0.4rem; cursor:pointer; background:var(--white); font-family:var(--sans);';
     container.innerHTML = tutti.map(l => `
-      <a href="${l.url}" target="_blank" style="font-size:0.8rem; font-weight:600; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
+      <a href="${l.url}" target="_blank" style="${pillStyle}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
         ${l.nome}
-      </a>`).join('');
+      </a>`).join('')
+      + `<button type="button" onclick="document.getElementById('acc-link-abbonamento').classList.toggle('open')" style="${pillStyle}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Gestisci link
+      </button>`;
   }
 
   function aggiungiVoce(desc, importo) {
