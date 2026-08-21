@@ -761,6 +761,7 @@
 
         <label for="doc-documento" style="margin-top:1rem;">Link PDF</label>
         <input type="text" id="doc-documento">
+        <input type="hidden" id="doc-dropbox-path">
 
         <button onclick="salvaDocumento()" id="doc-salva-btn">Aggiungi documento</button>
         <div class="msg" id="documento-msg"></div>
@@ -1973,6 +1974,7 @@
 
       if (res.ok && result.url) {
         document.getElementById('doc-documento').value = result.url;
+        document.getElementById('doc-dropbox-path').value = result.path || '';
         msg.textContent = 'Caricato su Dropbox, link inserito qui sotto.';
         msg.className = 'msg ok';
       } else {
@@ -2021,6 +2023,7 @@
     document.getElementById('doc-stato').value = d.stato || 'Da firmare';
     document.getElementById('doc-data').value = d.data || '';
     document.getElementById('doc-documento').value = d.documento_url || '';
+    document.getElementById('doc-dropbox-path').value = d.dropbox_path || '';
 
     window.scrollTo({ top: document.getElementById('subpanel-documento').offsetTop, behavior: 'smooth' });
   }
@@ -2033,14 +2036,37 @@
     document.getElementById('doc-stato').value = 'Da firmare';
     document.getElementById('doc-data').value = '';
     document.getElementById('doc-documento').value = '';
+    document.getElementById('doc-dropbox-path').value = '';
     document.getElementById('documento-msg').textContent = '';
   }
 
   async function eliminaDocumento(id, titolo) {
-    const conferma = confirm(`Eliminare il documento "${titolo}"?\n\nQuesto rimuove solo il riferimento in VISIBIL — il file resta su Dropbox se ce l'hai caricato.`);
+    const doc = (window.documentiCache || []).find(x => x.id === id);
+    const haFileDropbox = doc && doc.dropbox_path;
+
+    const messaggioConferma = haFileDropbox
+      ? `Eliminare il documento "${titolo}"?\n\nQuesto rimuove anche il file vero e proprio da Dropbox (cartella "Da Gianluca"), non solo il riferimento in VISIBIL.`
+      : `Eliminare il documento "${titolo}"?`;
+    const conferma = confirm(messaggioConferma);
     if (!conferma) return;
+
     const { error } = await client.from('documenti').delete().eq('id', id);
     if (error) { alert('Errore: ' + error.message); return; }
+
+    if (haFileDropbox) {
+      try {
+        const { data: sessionData } = await client.auth.getSession();
+        const token = sessionData.session.access_token;
+        await fetch('/api/elimina-file-dropbox', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ dropboxPath: doc.dropbox_path })
+        });
+      } catch (e) {
+        alert('Il riferimento è stato eliminato, ma non sono riuscito a eliminare il file da Dropbox. Rimuovilo a mano se necessario.');
+      }
+    }
+
     const user_id = document.getElementById('c-userid').value.trim();
     caricaDocumentiEsistenti(user_id);
     caricaStatistiche();
@@ -2059,7 +2085,8 @@
       titolo: document.getElementById('doc-titolo').value,
       stato: document.getElementById('doc-stato').value,
       data: document.getElementById('doc-data').value || new Date().toISOString().slice(0,10),
-      documento_url: document.getElementById('doc-documento').value || null
+      documento_url: document.getElementById('doc-documento').value || null,
+      dropbox_path: document.getElementById('doc-dropbox-path').value || null
     };
 
     let error;
