@@ -728,14 +728,14 @@
         <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:2rem;">
           <div class="section-label" style="margin-top:0;">📋 Pagamenti esistenti di questo cliente</div>
           <div id="pg-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
-          <button type="button" class="secondary" onclick="resetFormPagamento()" style="width:100%; margin-top:0.75rem;">+ Nuovo pagamento</button>
+          <button type="button" id="pg-nuovo-btn" class="secondary" onclick="resetFormPagamento()" style="width:100%; margin-top:0.75rem; display:none;">+ Nuovo pagamento</button>
         </div>
       </div>
 
       <div class="sub-doc-panel" id="subpanel-documento" style="display:none;">
         <div class="section-label" style="margin-top:0;">Documenti esistenti</div>
         <div id="doc-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
-        <button type="button" class="secondary" onclick="resetFormDocumento()" style="width:100%; margin-top:0.5rem; margin-bottom:1.5rem;">+ Nuovo documento</button>
+        <button type="button" id="doc-nuovo-btn" class="secondary" onclick="resetFormDocumento()" style="width:100%; margin-top:0.5rem; margin-bottom:1.5rem; display:none;">+ Nuovo documento</button>
 
         <div style="border-top:1px solid rgba(0,0,0,0.08); padding-top:1.25rem;">
         <div id="doc-form-titolo-label" class="section-label" style="margin-top:0;">Nuovo documento</div>
@@ -1754,6 +1754,8 @@
     const p = (window.pagamentiCache || []).find(x => x.id === id);
     if (!p) return;
 
+    document.getElementById('pg-nuovo-btn').style.display = 'block';
+
     document.getElementById('pg-editing-id').value = p.id;
     document.getElementById('pg-form-titolo').textContent = 'Modifica pagamento';
     document.getElementById('pg-salva-btn').textContent = 'Salva modifiche';
@@ -1776,6 +1778,7 @@
   }
 
   function resetFormPagamento() {
+    document.getElementById('pg-nuovo-btn').style.display = 'none';
     document.getElementById('pg-editing-id').value = '';
     document.getElementById('pg-form-titolo').textContent = 'Nuovo pagamento';
     document.getElementById('pg-salva-btn').textContent = 'Aggiungi pagamento';
@@ -2016,6 +2019,8 @@
     const d = (window.documentiCache || []).find(x => x.id === id);
     if (!d) return;
 
+    document.getElementById('doc-nuovo-btn').style.display = 'block';
+
     document.getElementById('doc-editing-id').value = d.id;
     document.getElementById('doc-form-titolo-label').textContent = 'Modifica documento';
     document.getElementById('doc-salva-btn').textContent = 'Salva modifiche';
@@ -2029,6 +2034,7 @@
   }
 
   function resetFormDocumento() {
+    document.getElementById('doc-nuovo-btn').style.display = 'none';
     document.getElementById('doc-editing-id').value = '';
     document.getElementById('doc-form-titolo-label').textContent = 'Nuovo documento';
     document.getElementById('doc-salva-btn').textContent = 'Aggiungi documento';
