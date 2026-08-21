@@ -733,6 +733,14 @@
       </div>
 
       <div class="sub-doc-panel" id="subpanel-documento" style="display:none;">
+        <div class="section-label" style="margin-top:0;">Documenti esistenti</div>
+        <div id="doc-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
+        <button type="button" class="secondary" onclick="resetFormDocumento()" style="width:100%; margin-top:0.5rem; margin-bottom:1.5rem;">+ Nuovo documento</button>
+
+        <div style="border-top:1px solid rgba(0,0,0,0.08); padding-top:1.25rem;">
+        <div id="doc-form-titolo-label" class="section-label" style="margin-top:0;">Nuovo documento</div>
+        <input type="hidden" id="doc-editing-id">
+
         <label for="doc-titolo">Titolo</label>
         <input type="text" id="doc-titolo" placeholder="es. Contratto gestione mensile">
 
@@ -754,8 +762,9 @@
         <label for="doc-documento" style="margin-top:1rem;">Link PDF</label>
         <input type="text" id="doc-documento">
 
-        <button onclick="salvaDocumento()">Aggiungi documento</button>
+        <button onclick="salvaDocumento()" id="doc-salva-btn">Aggiungi documento</button>
         <div class="msg" id="documento-msg"></div>
+        </div>
       </div>
 
       <div class="sub-doc-panel" id="subpanel-report" style="display:none;">
@@ -1525,6 +1534,8 @@
     renderCronologiaComunicazioni(c.user_id);
     caricaPagamentiEsistenti(user_id);
     resetFormPagamento();
+    caricaDocumentiEsistenti(user_id);
+    resetFormDocumento();
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -1974,9 +1985,74 @@
     }
   }
 
+  async function caricaDocumentiEsistenti(user_id) {
+    const container = document.getElementById('doc-lista-esistenti');
+    if (!user_id) {
+      container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p>';
+      return;
+    }
+    const { data, error } = await client.from('documenti').select('*').eq('user_id', user_id).order('data', { ascending: false });
+    if (error) { container.innerHTML = '<p style="font-size:0.85rem; color:#c0392b;">Errore nel caricamento.</p>'; return; }
+    window.documentiCache = data || [];
+    if (window.documentiCache.length === 0) {
+      container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun documento ancora.</p>';
+      return;
+    }
+    const coloreStato = s => s === 'Firmato' ? '#1E6B3C' : s === 'In revisione' ? '#1A1AE6' : '#7A4E00';
+    container.innerHTML = window.documentiCache.map(d => `
+      <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+        <span onclick="caricaDocumentoNelForm('${d.id}')" style="cursor:pointer; flex:1;">${d.titolo || '(senza titolo)'}
+          <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(d.stato)}; margin-top:0.2rem;">${d.stato || ''}</span>
+        </span>
+        <button type="button" onclick="eliminaDocumento('${d.id}', '${(d.titolo || '').replace(/'/g, "\\'")}')" title="Elimina" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+      </div>`).join('');
+  }
+
+  function caricaDocumentoNelForm(id) {
+    const d = (window.documentiCache || []).find(x => x.id === id);
+    if (!d) return;
+
+    document.getElementById('doc-editing-id').value = d.id;
+    document.getElementById('doc-form-titolo-label').textContent = 'Modifica documento';
+    document.getElementById('doc-salva-btn').textContent = 'Salva modifiche';
+    document.getElementById('doc-titolo').value = d.titolo || '';
+    document.getElementById('doc-stato').value = d.stato || 'Da firmare';
+    document.getElementById('doc-data').value = d.data || '';
+    document.getElementById('doc-documento').value = d.documento_url || '';
+
+    window.scrollTo({ top: document.getElementById('subpanel-documento').offsetTop, behavior: 'smooth' });
+  }
+
+  function resetFormDocumento() {
+    document.getElementById('doc-editing-id').value = '';
+    document.getElementById('doc-form-titolo-label').textContent = 'Nuovo documento';
+    document.getElementById('doc-salva-btn').textContent = 'Aggiungi documento';
+    document.getElementById('doc-titolo').value = '';
+    document.getElementById('doc-stato').value = 'Da firmare';
+    document.getElementById('doc-data').value = '';
+    document.getElementById('doc-documento').value = '';
+    document.getElementById('documento-msg').textContent = '';
+  }
+
+  async function eliminaDocumento(id, titolo) {
+    const conferma = confirm(`Eliminare il documento "${titolo}"?\n\nQuesto rimuove solo il riferimento in VISIBIL — il file resta su Dropbox se ce l'hai caricato.`);
+    if (!conferma) return;
+    const { error } = await client.from('documenti').delete().eq('id', id);
+    if (error) { alert('Errore: ' + error.message); return; }
+    const user_id = document.getElementById('c-userid').value.trim();
+    caricaDocumentiEsistenti(user_id);
+    caricaStatistiche();
+    resetFormDocumento();
+  }
+
   async function salvaDocumento() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('documento-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
+
+    const editingId = document.getElementById('doc-editing-id').value.trim();
+    const isEditing = !!editingId;
 
     const payload = {
       user_id,
@@ -1986,12 +2062,18 @@
       documento_url: document.getElementById('doc-documento').value || null
     };
 
-    const { error } = await client.from('documenti').insert(payload);
+    let error;
+    if (isEditing) {
+      ({ error } = await client.from('documenti').update(payload).eq('id', editingId));
+    } else {
+      ({ error } = await client.from('documenti').insert(payload));
+    }
     if (error) { showMsg('documento-msg', 'Errore: ' + error.message, false); return; }
-    showMsg('documento-msg', 'Documento aggiunto.', true);
+
+    showMsg('documento-msg', isEditing ? 'Documento aggiornato.' : 'Documento aggiunto.', true);
     caricaStatistiche();
-    document.getElementById('doc-titolo').value = '';
-    document.getElementById('doc-documento').value = '';
+    caricaDocumentiEsistenti(user_id);
+    if (!isEditing) resetFormDocumento();
   }
 
   async function eliminaCliente(userId, nome) {
