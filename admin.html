@@ -746,7 +746,12 @@
         <label for="doc-data">Data</label>
         <input type="date" id="doc-data">
 
-        <label for="doc-documento">Link PDF</label>
+        <label for="doc-file">Carica file (va nella cartella "Da Gianluca" del cliente)</label>
+        <input type="file" id="doc-file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+        <button type="button" class="secondary" onclick="caricaFileSuDropbox()" style="width:100%; margin-top:0.5rem;">📤 Carica su Dropbox</button>
+        <div class="msg" id="doc-upload-msg"></div>
+
+        <label for="doc-documento" style="margin-top:1rem;">Link PDF</label>
         <input type="text" id="doc-documento">
 
         <button onclick="salvaDocumento()">Aggiungi documento</button>
@@ -1912,6 +1917,61 @@
     caricaStatistiche();
     document.getElementById('r-titolo').value = '';
     document.getElementById('r-documento').value = '';
+  }
+
+  async function caricaFileSuDropbox() {
+    const msg = document.getElementById('doc-upload-msg');
+    const fileInput = document.getElementById('doc-file');
+    const file = fileInput.files[0];
+
+    if (!file) {
+      msg.textContent = 'Scegli prima un file.';
+      msg.className = 'msg err';
+      return;
+    }
+    if (!window.clienteAttivoNome) {
+      msg.textContent = 'Nessun cliente caricato.';
+      msg.className = 'msg err';
+      return;
+    }
+
+    msg.textContent = 'Caricamento in corso...';
+    msg.className = 'msg';
+
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { data: sessionData } = await client.auth.getSession();
+      const token = sessionData.session.access_token;
+
+      const res = await fetch('/api/upload-documento-dropbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          nomeCliente: window.clienteAttivoNome,
+          nomeFile: file.name,
+          contenutoBase64: base64
+        })
+      });
+      const result = await res.json();
+
+      if (res.ok && result.url) {
+        document.getElementById('doc-documento').value = result.url;
+        msg.textContent = 'Caricato su Dropbox, link inserito qui sotto.';
+        msg.className = 'msg ok';
+      } else {
+        msg.textContent = 'Errore: ' + (result.error || '');
+        msg.className = 'msg err';
+      }
+    } catch (e) {
+      msg.textContent = 'Errore durante il caricamento.';
+      msg.className = 'msg err';
+    }
   }
 
   async function salvaDocumento() {
