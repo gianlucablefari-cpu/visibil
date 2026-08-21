@@ -854,13 +854,17 @@
     const daMostrare = mostraTutti ? documenti : documenti.slice(0, 2);
 
     daMostrare.forEach(d => {
-      const daFirmare = d.stato === 'Da firmare';
-      const badge = daFirmare
-        ? `<span style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; background:#FFF4DE; color:#7A4E00; padding:0.3rem 0.6rem; border-radius:100px;">
+      let badge;
+      if (d.stato === 'Da firmare') {
+        badge = `<span style="display:inline-flex; align-items:center; gap:0.3rem; font-size:0.65rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; background:#FFF4DE; color:#7A4E00; padding:0.3rem 0.6rem; border-radius:100px;">
              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:11px; height:11px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
              Da firmare
-           </span>`
-        : `<span style="font-size:0.65rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; background:#E3F3E8; color:#1E6B3C; padding:0.3rem 0.6rem; border-radius:100px;">Firmato</span>`;
+           </span>`;
+      } else if (d.stato === 'In revisione') {
+        badge = `<span style="font-size:0.65rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; background:#F5F6FF; color:#1A1AE6; padding:0.3rem 0.6rem; border-radius:100px;">In revisione</span>`;
+      } else {
+        badge = `<span style="font-size:0.65rem; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; background:#E3F3E8; color:#1E6B3C; padding:0.3rem 0.6rem; border-radius:100px;">Firmato</span>`;
+      }
 
       list.innerHTML += `
         <div class="row-card" style="flex-direction:column; align-items:stretch; gap:0.6rem;">
