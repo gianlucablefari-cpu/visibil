@@ -519,6 +519,13 @@
     </div>
     <input type="hidden" id="c-userid">
 
+    <div style="padding:0 1rem 1rem;">
+      <label for="reset-pw-cliente" style="margin-top:0;">Reimposta password cliente</label>
+      <input type="text" id="reset-pw-cliente" placeholder="minimo 6 caratteri">
+      <button class="secondary btn-small" onclick="resetPasswordCliente()" style="margin-top:0.5rem;">Reimposta password</button>
+      <div class="msg" id="reset-pw-msg"></div>
+    </div>
+
     <div class="acc-item" id="acc-dati-personali">
       <div class="acc-header" onclick="toggleAcc(this)">
         <span>Dati personali</span>
@@ -1015,6 +1022,49 @@
     cambiaPasswordAdmin('home-admin-password', 'home-admin-password-msg');
   }
 
+  async function resetPasswordCliente() {
+    const msg = document.getElementById('reset-pw-msg');
+    const userId = document.getElementById('c-userid').value.trim();
+    const nuovaPassword = document.getElementById('reset-pw-cliente').value;
+
+    if (!userId) {
+      msg.textContent = 'Nessun cliente caricato.';
+      msg.className = 'msg err';
+      return;
+    }
+    if (nuovaPassword.length < 6) {
+      msg.textContent = 'Minimo 6 caratteri.';
+      msg.className = 'msg err';
+      return;
+    }
+
+    msg.textContent = 'Aggiornamento in corso...';
+    msg.className = 'msg';
+
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      const token = sessionData.session.access_token;
+      const res = await fetch('/api/reset-password-cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ user_id: userId, nuova_password: nuovaPassword })
+      });
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        msg.textContent = 'Password aggiornata.';
+        msg.className = 'msg ok';
+        document.getElementById('reset-pw-cliente').value = '';
+      } else {
+        msg.textContent = 'Errore: ' + (result.error || '');
+        msg.className = 'msg err';
+      }
+    } catch (e) {
+      msg.textContent = 'Errore di connessione.';
+      msg.className = 'msg err';
+    }
+  }
+
   async function caricaFirmaDefault() {
     const { data, error } = await client.from('impostazioni').select('firma_email').eq('id', 'default').maybeSingle();
     if (error || !data) return;
@@ -1477,6 +1527,8 @@
 
     document.getElementById('c-userid').value = c.user_id;
     document.getElementById('c-userid-display').textContent = c.user_id;
+    document.getElementById('reset-pw-cliente').value = '';
+    document.getElementById('reset-pw-msg').textContent = '';
     document.getElementById('c-nome').value = c.nome || '';
     document.getElementById('c-telefono').value = c.telefono || '';
     document.getElementById('c-email-contatto').value = c.email_contatto || '';
