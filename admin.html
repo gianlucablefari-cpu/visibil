@@ -1507,9 +1507,18 @@
     if (btn) btn.classList.add('active');
   }
 
-  function caricaNelForm(user_id) {
-    const c = clientiCache.find(x => x.user_id === user_id);
+  async function caricaNelForm(user_id) {
+    let c = clientiCache.find(x => x.user_id === user_id);
     if (!c) return;
+
+    // Ricarica sempre i dati freschi da Supabase, per evitare di sovrascrivere
+    // modifiche fatte fuori dal browser (es. link Dropbox aggiornati via chat).
+    const { data: freschi, error: erroreFresco } = await client.from('clienti').select('*').eq('user_id', user_id).single();
+    if (!erroreFresco && freschi) {
+      c = freschi;
+      const idx = clientiCache.findIndex(x => x.user_id === user_id);
+      if (idx !== -1) clientiCache[idx] = freschi;
+    }
 
     document.getElementById('cerca-cliente').value = '';
     renderClientiLista();
