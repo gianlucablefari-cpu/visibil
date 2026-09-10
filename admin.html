@@ -2210,7 +2210,10 @@
     const password = document.getElementById('nc-password').value;
     const inviaEmail = document.getElementById('nc-invia-email').checked;
     const oggetto = document.getElementById('nc-oggetto').value;
-    const corpo = document.getElementById('nc-corpo').value;
+    let corpo = document.getElementById('nc-corpo').value;
+    if (corpo) {
+      corpo = corpo.split('[email]').join(email).split('[password]').join(password).split('[nome cliente]').join(nome);
+    }
 
     if (!nome || !email || !password) {
       showMsg('nc-msg', 'Compila nome, email e password.', false);
