@@ -86,9 +86,65 @@
 
   /* DASHBOARD */
   #dashboard { display: none; }
-  .dash-layout { display: grid; grid-template-columns: 280px 1fr; gap: 3rem; align-items: start; }
-  .profile-col { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.5rem; }
+  body.app-mode > nav { display: none; }
+  body.app-mode main { max-width: none; margin: 0; padding: 0; }
+
+  /* APP SHELL */
+  .app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+  .app-topbar { display: none; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid rgba(0,0,0,0.06); background: var(--white); position: sticky; top: 0; z-index: 90; }
+  .app-topbar-logo { font-weight: 900; font-size: 0.9rem; letter-spacing: 0.2em; color: var(--black); }
+  .app-topbar-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 1px solid rgba(0,0,0,0.08); color: var(--black); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; text-decoration: none; }
+  .app-body { display: flex; flex: 1; align-items: flex-start; }
+  .app-sidebar { display: none; }
+  .app-content { flex: 1; min-width: 0; padding: 1.5rem 1.25rem 6.5rem; max-width: 720px; margin: 0 auto; width: 100%; }
+
+  .sidebar-profile { display: flex; align-items: center; gap: 0.85rem; padding: 0 0.25rem 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 1.25rem; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
+  .sidebar-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.85rem; border-radius: 8px; color: var(--grey); font-size: 0.85rem; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; width: 100%; position: relative; transition: background 0.15s, color 0.15s; }
+  .sidebar-nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .sidebar-nav-item:hover { background: var(--surface); color: var(--black); }
+  .sidebar-nav-item.active { background: rgba(26,26,230,0.06); color: var(--ink); }
+  .nav-dot { position: absolute; top: 0.55rem; left: 1.7rem; width: 8px; height: 8px; border-radius: 50%; background: #A32D2D; display: none; }
+  .sidebar-nav-item .nav-dot { left: auto; right: 0.7rem; }
+  .nav-dot.show { display: block; }
+
+  .bottom-nav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; background: var(--white); border-top: 1px solid rgba(0,0,0,0.08); padding: 0.4rem 0.25rem calc(0.4rem + env(safe-area-inset-bottom)); z-index: 140; }
+  .bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.35rem 0.2rem; background: none; border: none; color: var(--grey); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; position: relative; }
+  .bottom-nav-item svg { width: 21px; height: 21px; }
+  .bottom-nav-item.active { color: var(--ink); }
+  .bottom-nav-item .nav-dot { top: 0; right: 24%; left: auto; }
+
+  .fab-contact { position: fixed; right: 1.25rem; bottom: calc(4.6rem + env(safe-area-inset-bottom)); width: 52px; height: 52px; padding: 0; border-radius: 50%; background: var(--black); color: var(--white); border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 18px rgba(0,0,0,0.22); cursor: pointer; z-index: 150; transition: background 0.2s, transform 0.15s; }
+  .fab-contact:hover { background: var(--ink); }
+  .fab-contact:active { transform: scale(0.94); }
+  .fab-contact svg { width: 22px; height: 22px; }
+
+  .contact-sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 199; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .contact-sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+  .contact-sheet { position: fixed; left: 0; right: 0; bottom: 0; background: var(--white); border-radius: 16px 16px 0 0; padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom)); z-index: 200; transform: translateY(100%); transition: transform 0.25s ease; max-height: 85vh; overflow-y: auto; }
+  .contact-sheet.open { transform: translateY(0); }
+  .contact-sheet-handle { width: 36px; height: 4px; background: rgba(0,0,0,0.15); border-radius: 100px; margin: 0 auto 1.25rem; }
+  .contact-sheet-close { position: absolute; top: 1.1rem; right: 1.25rem; background: none; border: none; color: var(--grey); cursor: pointer; padding: 0.25rem; }
+  .contact-sheet-close svg { width: 18px; height: 18px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .tab-panel-title { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem; }
+  .tab-panel-title svg { width: 22px; height: 22px; color: var(--ink); flex-shrink: 0; }
+
+  @media (min-width: 769px) {
+    .app-topbar { display: none !important; }
+    .bottom-nav { display: none !important; }
+    .app-sidebar { display: flex; flex-direction: column; width: 250px; flex-shrink: 0; min-height: 100vh; padding: 2rem 1.25rem; border-right: 1px solid rgba(0,0,0,0.06); position: sticky; top: 0; }
+    .app-content { padding: 3rem 3.5rem; max-width: 760px; margin: 0; }
+    .fab-contact { bottom: 2rem; }
+  }
+  @media (max-width: 768px) {
+    .app-topbar { display: flex; }
+  }
+
   .avatar { width: 120px; height: 120px; border-radius: 50%; background: var(--surface); border: 1px solid rgba(0,0,0,0.08); color: var(--black); display: flex; align-items: center; justify-content: center; font-size: 2.1rem; font-weight: 700; }
+  .avatar.avatar-sm { width: 46px; height: 46px; font-size: 1rem; }
   .profile-name { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; margin-top: 0.25rem; }
   .profile-tag { font-size: 0.7rem; color: var(--grey); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.15rem; }
   .folder-card { text-decoration:none; color: var(--black); border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; transition: border-color 0.2s; width: 100%; text-align: center; }
@@ -113,9 +169,8 @@
   .account-msg { font-size: 0.72rem; }
   .account-msg.ok { color: #1E6B3C; }
   .account-msg.err { color: #A32D2D; }
-  .content-col { min-width: 0; }
-  .cliente-tag { font-size: 0.75rem; font-weight: 500; color: var(--grey); text-transform: uppercase; letter-spacing: 0.08em; }
-  footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 3rem; border-top: 1px solid rgba(0,0,0,0.06); max-width: 1100px; margin: 0 auto; }
+  footer { display: none; }
+  body:not(.app-mode) footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 3rem; border-top: 1px solid rgba(0,0,0,0.06); max-width: 1100px; margin: 0 auto; }
   .footer-brand { font-weight: 900; font-size: 0.85rem; letter-spacing: 0.22em; text-transform: uppercase; }
   .footer-note { font-size: 0.65rem; color: var(--grey); letter-spacing: 0.1em; }
   .footer-admin { color: rgba(0,0,0,0.15); text-decoration: none; margin-left: 0.6rem; transition: color 0.2s; }
@@ -135,17 +190,10 @@
   .step-card .step-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.3rem; }
 
   @media (max-width: 640px) {
-    .dash-layout { grid-template-columns: 1fr; }
-    .profile-col { flex-direction: column; align-items: stretch; }
-    .profile-header { display: flex; align-items: center; gap: 1rem; text-align: left; margin-bottom: 1.5rem; }
-    .profile-header .avatar { width: 72px; height: 72px; font-size: 1.4rem; flex-shrink: 0; }
-    .account-card.align-left { margin-top: 1.5rem; }
     .folder-card { width: 100%; }
     .links-top-grid { grid-template-columns: 1fr !important; }
-    main { padding: 6rem 1.5rem 3rem; }
     .page-eyebrow { margin-bottom: 1.5rem !important; }
     #avanzamento-card { margin-bottom: 1.5rem !important; }
-    .content-col > h2:first-of-type { margin-top: 0; }
   }
   .rinnovo-card { display:flex; align-items:center; justify-content:space-between; background: rgba(26,26,230,0.04); border: 1.5px solid rgba(26,26,230,0.15); border-radius: 8px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; }
   .row-card { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1.1rem 1.5rem; margin-bottom: 0.75rem; display:flex; align-items:center; justify-content:space-between; }
@@ -158,13 +206,6 @@
   .section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--black); margin-bottom: 1rem; }
   .btn-logout { background: none; color: var(--black); border: 1px solid rgba(0,0,0,0.12); font-size: 0.7rem; padding: 0.5rem 1rem; }
   .btn-logout:hover { background: var(--surface); }
-  .quick-nav { display: none; position: relative; }
-  .quick-nav-toggle { background: none; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; padding: 0.5rem 0.65rem; color: var(--black); cursor: pointer; margin-bottom: 2.5rem; }
-  .quick-nav-menu { display: none; position: absolute; top: 100%; right: 0; background: var(--white); border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 0.5rem; min-width: 200px; z-index: 50; }
-  .quick-nav-menu.open { display: flex; flex-direction: column; }
-  .quick-nav-menu a { padding: 0.6rem 0.75rem; font-size: 0.85rem; color: var(--black); text-decoration: none; border-radius: 5px; }
-  .quick-nav-menu a:hover { background: var(--surface); }
-  @media (max-width: 640px) { .quick-nav { display: block; } }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -198,37 +239,169 @@
     <div id="msg"></div>
   </div>
 
-  <div id="dashboard">
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-      <span class="page-eyebrow" style="display:block; margin-bottom: 2.5rem;">Area Clienti</span>
+  <div id="dashboard" class="app-shell">
 
-      <div class="quick-nav">
-        <button class="quick-nav-toggle" onclick="toggleQuickNav()" aria-label="Menu rapido">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px; height:18px; display:block;"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        </button>
-        <div class="quick-nav-menu" id="quick-nav-menu">
-          <a href="#pannello-controllo" onclick="closeQuickNav()">Pannello di controllo</a>
-          <a href="#pagamenti" onclick="closeQuickNav()">Pagamenti</a>
-          <a href="#dati-personali" onclick="closeQuickNav()">Dati personali</a>
-        </div>
-      </div>
-    </div>
+    <header class="app-topbar">
+      <span class="app-topbar-logo">VISIBIL</span>
+      <a href="#" class="app-topbar-avatar" id="topbar-avatar" onclick="return showTab('account', event)"></a>
+    </header>
 
-    <div class="dash-layout">
+    <div class="app-body">
 
-      <div class="profile-col">
-        <div class="profile-header">
-          <div class="avatar" id="avatar-iniziali"></div>
+      <aside class="app-sidebar">
+        <div class="sidebar-profile">
+          <div class="avatar avatar-sm" id="avatar-iniziali-sidebar"></div>
           <div>
-            <div class="profile-name" id="cliente-nome"></div>
+            <div class="profile-name" id="cliente-nome-sidebar" style="font-size:0.9rem;"></div>
             <div class="profile-tag">Cliente VISIBIL</div>
           </div>
         </div>
 
-        <div class="account-card align-left" id="dati-personali" style="scroll-margin-top: 6rem;">
-          <h3>Dati personali</h3>
+        <div class="sidebar-nav">
+          <button class="sidebar-nav-item active" data-tab="home" onclick="return showTab('home', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Pannello di controllo
+          </button>
+          <button class="sidebar-nav-item" data-tab="documenti" onclick="return showTab('documenti', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+            Documenti
+          </button>
+          <button class="sidebar-nav-item" data-tab="fatture" onclick="return showTab('fatture', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            Fatture
+            <span class="nav-dot" id="dot-fatture-sidebar"></span>
+          </button>
+          <button class="sidebar-nav-item" data-tab="account" onclick="return showTab('account', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Dati personali
+          </button>
+        </div>
 
-          <div style="width:100%; border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1.5rem; margin-top:1rem;">
+        <button class="btn-logout" onclick="logout()" style="margin-top:1rem;">Esci</button>
+      </aside>
+
+      <div class="app-content">
+
+        <section class="tab-panel active" id="tab-home">
+          <div class="tab-panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Pannello di controllo
+          </div>
+
+          <div class="links-card" id="links-card" style="display:none;">
+            <div id="avanzamento-card" style="display:none; margin-bottom: 1.5rem;">
+              <div class="section-label" style="margin-bottom: 0.5rem;">Da fare</div>
+              <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+            </div>
+
+            <div style="display:none;">
+              <div class="section-label" style="margin-bottom: 0.5rem;">Progetti</div>
+              <div class="row-card" id="link-sito" style="display:none;">
+                <div>
+                  <a href="#" id="link-sito-url" target="_blank">Sito web</a>
+                  <span class="site-status" id="link-sito-stato"></span>
+                  <div style="font-size:0.75rem; color:var(--grey); margin-top:0.15rem; word-break:break-all;" id="link-sito-display"></div>
+                  <div class="site-password" id="link-sito-password" style="display:none;"></div>
+                </div>
+              </div>
+              <div class="row-card" id="link-instagram" style="display:none;">
+                <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
+              </div>
+              <p id="canali-empty" style="display:none; font-size:0.85rem; color:var(--grey); text-align:center; margin-bottom:0.75rem;">Ancora nessun progetto.</p>
+              <div style="text-align:center; margin-top: 0.5rem;">
+                <a href="#" onclick="return toggleProjectWidget(event)" style="display:inline-flex; flex-direction:column; align-items:center; gap:0.35rem; color:var(--ink); text-decoration:none; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">
+                  <span style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border:1.5px solid var(--ink); border-radius:50%; font-size:1.1rem; line-height:1;">+</span>
+                  Aggiungi
+                </a>
+              </div>
+              <div id="project-widget-mount" class="stacked-cfg" style="display:none; margin-top: 1.5rem;"></div>
+            </div>
+
+            <div id="strumenti-section" style="display:none;">
+              <div class="section-label" style="margin-top: 1.25rem; margin-bottom: 0.5rem;">Strumenti</div>
+              <div id="strumenti-lista" style="display:flex; flex-wrap:wrap; gap:0.6rem;"></div>
+            </div>
+
+            <div class="section-label" style="margin-top: 1.25rem; margin-bottom: 0.5rem;">Materiali</div>
+            <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+              <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
+                <div class="folder-icon">📁</div>
+                <div>
+                  <div class="folder-card-title">Cartella</div>
+                  <div class="folder-card-desc" id="onedrive-desc">Foto, video e progetti grafici</div>
+                </div>
+              </a>
+
+              <a class="folder-card" id="link-upload" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
+                <div class="folder-icon" style="color: var(--ink);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </div>
+                <div>
+                  <div class="folder-card-title">Invia qui</div>
+                  <div class="folder-card-desc" id="upload-desc">Carica i tuoi file per questo progetto</div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-documenti">
+          <div class="tab-panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+            Documenti
+          </div>
+
+          <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 0.25rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Archivio documenti</div>
+            <div id="documenti-list"></div>
+            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
+          </div>
+
+          <div style="margin-top: 1.75rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
+            <div id="report-list"></div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-fatture">
+          <div class="tab-panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            Fatture
+          </div>
+
+          <div class="rinnovo-card" id="rinnovo-card" style="display:none; flex-direction: column; align-items: flex-start;">
+            <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink);">Abbonamento attivo</div>
+            <div style="font-size:1.05rem; font-weight:600; margin-top:0.4rem;" id="rinnovo-piano"></div>
+            <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;" id="rinnovo-dettagli"></div>
+            <button class="btn-logout btn-small" style="color:#A32D2D; border-color:rgba(163,45,45,0.25); margin-top: 0.75rem;" onclick="richiediDisdetta()">Annulla abbonamento</button>
+            <div class="account-msg" id="disdetta-msg" style="margin-top:0.4rem;"></div>
+          </div>
+
+          <div class="step-card" id="pagamenti-dovuti-card" style="display:none; background: rgba(163,45,45,0.05); border-color: rgba(163,45,45,0.2);">
+            <div>
+              <div class="step-label" style="color:#A32D2D;">Pagamenti dovuti</div>
+              <div style="font-size: 0.9rem;" id="pagamenti-dovuti-testo"></div>
+            </div>
+          </div>
+
+          <div class="section-label">Preventivi</div>
+          <div id="preventivi-list"></div>
+
+          <div style="margin-top: 2.5rem;">
+            <div class="section-label">Storico pagamenti</div>
+            <div id="pagamenti-list"></div>
+            <button class="btn-logout btn-small" id="pagamenti-toggle" style="display:none; margin-top:0.75rem;" onclick="toggleStoricoPagamenti()">Visualizza tutti</button>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-account">
+          <div class="tab-panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            Dati personali
+          </div>
+
+          <div class="account-card align-left" id="dati-personali">
+          <div style="width:100%; border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1.5rem; margin-top:0;">
             <div class="section-label" style="text-align:left; margin-top:0; display:flex; align-items:center; gap:0.4rem;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; opacity:0.6; flex-shrink:0;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
               Dati di contatto
@@ -316,138 +489,67 @@
             <button class="btn-logout btn-small" onclick="richiediEliminazioneAccount()" style="color:#A32D2D; border-color:rgba(163,45,45,0.25);">Elimina account</button>
             <div class="account-msg" id="elimina-msg" style="margin-top:0.5rem; text-align:center;"></div>
           </div>
-        </div>
 
-        <button class="btn-logout" onclick="logout()">Esci</button>
+          <button class="btn-logout" onclick="logout()" id="logout-mobile" style="width:100%; margin-top:1.5rem;">Esci</button>
+        </div>
+        </section>
+
       </div>
-
-      <div class="content-col">
-        <h2 id="pannello-controllo" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; scroll-margin-top: 6rem;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-          Pannello di controllo
-        </h2>
-
-        <div class="links-card" id="links-card" style="display:none;">
-          <div id="avanzamento-card" style="display:none; margin-bottom: 1.5rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Da fare</div>
-            <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
-          </div>
-
-          <div style="display:none;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Progetti</div>
-            <div class="row-card" id="link-sito" style="display:none;">
-              <div>
-                <a href="#" id="link-sito-url" target="_blank">Sito web</a>
-                <span class="site-status" id="link-sito-stato"></span>
-                <div style="font-size:0.75rem; color:var(--grey); margin-top:0.15rem; word-break:break-all;" id="link-sito-display"></div>
-                <div class="site-password" id="link-sito-password" style="display:none;"></div>
-              </div>
-            </div>
-            <div class="row-card" id="link-instagram" style="display:none;">
-              <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
-            </div>
-            <p id="canali-empty" style="display:none; font-size:0.85rem; color:var(--grey); text-align:center; margin-bottom:0.75rem;">Ancora nessun progetto.</p>
-            <div style="text-align:center; margin-top: 0.5rem;">
-              <a href="#" onclick="return toggleProjectWidget(event)" style="display:inline-flex; flex-direction:column; align-items:center; gap:0.35rem; color:var(--ink); text-decoration:none; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">
-                <span style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border:1.5px solid var(--ink); border-radius:50%; font-size:1.1rem; line-height:1;">+</span>
-                Aggiungi
-              </a>
-            </div>
-            <div id="project-widget-mount" class="stacked-cfg" style="display:none; margin-top: 1.5rem;"></div>
-          </div>
-
-          <div id="strumenti-section" style="display:none;">
-            <div class="section-label" style="margin-top: 1.25rem; margin-bottom: 0.5rem;">Strumenti</div>
-            <div id="strumenti-lista" style="display:flex; flex-wrap:wrap; gap:0.6rem;"></div>
-          </div>
-
-          <div class="section-label" style="margin-top: 1.25rem; margin-bottom: 0.5rem;">Materiali</div>
-          <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
-            <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
-              <div class="folder-icon">📁</div>
-              <div>
-                <div class="folder-card-title">Cartella</div>
-                <div class="folder-card-desc" id="onedrive-desc">Foto, video e progetti grafici</div>
-              </div>
-            </a>
-
-            <a class="folder-card" id="link-upload" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
-              <div class="folder-icon" style="color: var(--ink);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-              </div>
-              <div>
-                <div class="folder-card-title">Invia qui</div>
-                <div class="folder-card-desc" id="upload-desc">Carica i tuoi file per questo progetto</div>
-              </div>
-            </a>
-          </div>
-
-          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Archivio documenti</div>
-            <div id="documenti-list"></div>
-            <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
-          </div>
-
-          <div style="margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Report</div>
-            <div id="report-list"></div>
-          </div>
-
-          <div class="account-card" id="contatti" style="scroll-margin-top: 6rem; margin-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.06); border-left:none; border-right:none; border-bottom:none; border-radius:0; padding: 1.25rem 0 0; align-items: flex-start; text-align: left;">
-            <div class="section-label" style="margin-bottom: 0.75rem;">Contattami <span style="font-weight:400; text-transform:none; letter-spacing:normal;">(rispondo entro 24h)</span></div>
-
-            <form id="contact-form">
-              <div class="account-field" style="margin-bottom: 0.75rem;">
-                <textarea name="messaggio" id="contact-messaggio" placeholder="Scrivi il tuo messaggio..." required style="width:100%; min-height:80px; padding:0.6rem 0.75rem; font-family:var(--sans); font-size:0.85rem; border:1px solid rgba(0,0,0,0.1); border-radius:3px; resize:vertical;"></textarea>
-              </div>
-              <button type="submit" class="btn-logout btn-small">Invia messaggio</button>
-              <div class="account-msg" id="contact-msg" style="margin-top:0.5rem;"></div>
-            </form>
-
-            <div style="display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0.9rem; font-size:0.72rem; color:var(--grey); margin-top: 1rem;">
-              <a href="tel:+41796445683" style="color:var(--grey); text-decoration:none;">📞 +41 79 644 56 83</a>
-              <a href="mailto:gianluca.blefari@outlook.com" style="color:var(--grey); text-decoration:none;">✉️ gianluca.blefari@outlook.com</a>
-              <a href="https://wa.me/41796445683" target="_blank" style="color:var(--grey); text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem;">
-                <svg viewBox="0 0 24 24" fill="currentColor" style="width:12px; height:12px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
-                WhatsApp
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div style="border-top: 1px solid rgba(0,0,0,0.08); margin-top: 3rem; padding-top: 1.5rem;">
-          <h2 id="pagamenti" style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem; display:flex; align-items:center; gap:0.5rem; color:#4A4A4A; scroll-margin-top: 6rem;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#4A4A4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-            Pagamenti
-          </h2>
-
-          <div class="step-card" id="pagamenti-dovuti-card" style="display:none; background: rgba(163,45,45,0.05); border-color: rgba(163,45,45,0.2);">
-            <div>
-              <div class="step-label" style="color:#A32D2D;">Pagamenti dovuti</div>
-              <div style="font-size: 0.9rem;" id="pagamenti-dovuti-testo"></div>
-            </div>
-          </div>
-
-          <div class="section-label">Preventivi</div>
-          <div id="preventivi-list"></div>
-
-          <div style="margin-top: 2.5rem;">
-            <div class="section-label">Storico pagamenti</div>
-            <div id="pagamenti-list"></div>
-            <button class="btn-logout btn-small" id="pagamenti-toggle" style="display:none; margin-top:0.75rem;" onclick="toggleStoricoPagamenti()">Visualizza tutti</button>
-          </div>
-        </div>
-
-        <div class="rinnovo-card" id="rinnovo-card" style="display:none; margin-top: 2.5rem; flex-direction: column; align-items: flex-start;">
-          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink);">Abbonamento attivo</div>
-          <div style="font-size:1.05rem; font-weight:600; margin-top:0.4rem;" id="rinnovo-piano"></div>
-          <div style="font-size:0.8rem; color:var(--grey); margin-top:0.2rem;" id="rinnovo-dettagli"></div>
-          <button class="btn-logout btn-small" style="color:#A32D2D; border-color:rgba(163,45,45,0.25); margin-top: 0.75rem;" onclick="richiediDisdetta()">Annulla abbonamento</button>
-          <div class="account-msg" id="disdetta-msg" style="margin-top:0.4rem;"></div>
-        </div>
-      </div>
-
     </div>
+
+    <div class="bottom-nav">
+      <button class="bottom-nav-item active" data-tab="home" onclick="return showTab('home', event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        Pannello
+      </button>
+      <button class="bottom-nav-item" data-tab="documenti" onclick="return showTab('documenti', event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+        Documenti
+      </button>
+      <button class="bottom-nav-item" data-tab="fatture" onclick="return showTab('fatture', event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+        Fatture
+        <span class="nav-dot" id="dot-fatture-bottom"></span>
+      </button>
+      <button class="bottom-nav-item" data-tab="account" onclick="return showTab('account', event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        Dati
+      </button>
+    </div>
+
+    <button class="fab-contact" id="fab-contact" onclick="openContactSheet()" aria-label="Scrivimi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+    </button>
+
+    <div class="contact-sheet-backdrop" id="contact-sheet-backdrop" onclick="closeContactSheet()"></div>
+    <div class="contact-sheet" id="contact-sheet">
+      <div class="contact-sheet-handle"></div>
+      <button class="contact-sheet-close" onclick="closeContactSheet()" aria-label="Chiudi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+
+      <div class="account-card" id="contatti" style="align-items: flex-start; text-align: left; border:none; padding:0;">
+        <div class="section-label" style="margin-bottom: 0.75rem;">Contattami <span style="font-weight:400; text-transform:none; letter-spacing:normal;">(rispondo entro 24h)</span></div>
+
+        <form id="contact-form">
+          <div class="account-field" style="margin-bottom: 0.75rem;">
+            <textarea name="messaggio" id="contact-messaggio" placeholder="Scrivi il tuo messaggio..." required style="width:100%; min-height:80px; padding:0.6rem 0.75rem; font-family:var(--sans); font-size:0.85rem; border:1px solid rgba(0,0,0,0.1); border-radius:3px; resize:vertical;"></textarea>
+          </div>
+          <button type="submit" class="btn-logout btn-small">Invia messaggio</button>
+          <div class="account-msg" id="contact-msg" style="margin-top:0.5rem;"></div>
+        </form>
+
+        <div style="display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:0.9rem; font-size:0.72rem; color:var(--grey); margin-top: 1rem; width:100%;">
+          <a href="tel:+41796445683" style="color:var(--grey); text-decoration:none;">📞 +41 79 644 56 83</a>
+          <a href="mailto:gianluca.blefari@outlook.com" style="color:var(--grey); text-decoration:none;">✉️ gianluca.blefari@outlook.com</a>
+          <a href="https://wa.me/41796445683" target="_blank" style="color:var(--grey); text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem;">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:12px; height:12px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
+            WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 </main>
@@ -522,7 +624,7 @@
       clienteItemsHtml += `
         <div style="background: #FFF4DE; border: 1px solid rgba(122,78,0,0.2); border-radius: 8px; padding: 1rem; text-align:center; margin-top:0.6rem;">
           <div style="font-size:0.88rem; margin-bottom:0.75rem;"><strong style="color:#7A4E00;">Preventivo da approvare:</strong> ${p.titolo || ''}${importo}</div>
-          <a href="${p.link_approvazione || '#pagamenti'}" target="_blank" style="display:inline-block; background:#7A4E00; color:#fff; font-size:0.78rem; font-weight:600; padding:0.5rem 1.25rem; border-radius:4px; text-decoration:none;">Visualizza e approva</a>
+          <a href="${p.link_approvazione || '#'}" ${p.link_approvazione ? 'target="_blank"' : `onclick="showTab('fatture'); return false;"`} style="display:inline-block; background:#7A4E00; color:#fff; font-size:0.78rem; font-weight:600; padding:0.5rem 1.25rem; border-radius:4px; text-decoration:none;">Visualizza e approva</a>
         </div>`;
     });
 
@@ -539,6 +641,7 @@
   async function loadDashboard(user) {
     document.getElementById('login-box').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
+    document.body.classList.add('app-mode');
 
     const params = new URLSearchParams(window.location.search);
     const previewId = params.get('preview');
@@ -551,7 +654,7 @@
       banner.style.cssText = 'background:#0F0F0F; color:#fff; text-align:center; padding:0.6rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; position:fixed; top:0; left:0; right:0; z-index:200;';
       banner.textContent = '🔍 Anteprima (sola lettura) — stai vedendo la vista di un cliente';
       document.body.prepend(banner);
-      document.querySelector('main').style.marginTop = '2.5rem';
+      document.getElementById('dashboard').style.marginTop = '2.5rem';
     }
 
     const { data: clienti, error: errClienti } = await client.from('clienti').select('*').eq('user_id', targetUserId);
@@ -559,9 +662,11 @@
     const cliente = clienti && clienti[0];
 
     if (cliente) {
-      document.getElementById('cliente-nome').textContent = cliente.nome;
+      window.clienteNome = cliente.nome || null;
+      document.getElementById('cliente-nome-sidebar').textContent = cliente.nome;
       const iniziali = cliente.nome.replace(/[^a-zA-Z\s]/g, '').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
-      document.getElementById('avatar-iniziali').textContent = iniziali;
+      document.getElementById('avatar-iniziali-sidebar').textContent = iniziali;
+      document.getElementById('topbar-avatar').textContent = iniziali;
 
       if (cliente.rinnovo_piano) {
         document.getElementById('rinnovo-card').style.display = 'flex';
@@ -592,7 +697,6 @@
             ${l.nome}
           </a>`).join('');
       }
-      window.clienteNome = cliente.nome || null;
 
       document.getElementById('account-telefono').value = cliente.telefono || '';
       document.getElementById('account-indirizzo').value = cliente.indirizzo || '';
@@ -704,6 +808,10 @@
       document.getElementById('pagamenti-dovuti-testo').textContent = `${elenco} — totale CHF ${totale}.–`;
     }
 
+    const haNotificheFatture = dovuti.length > 0 || (window.preventiviPendenti || []).length > 0;
+    document.getElementById('dot-fatture-sidebar').classList.toggle('show', haNotificheFatture);
+    document.getElementById('dot-fatture-bottom').classList.toggle('show', haNotificheFatture);
+
     renderDaFare(dovuti, window.preventiviPendenti || []);
 
     if (isPreview) {
@@ -785,10 +893,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: window.isPreviewMode ? null : window.currentUserId,
-          from_name: document.getElementById('cliente-nome').textContent,
+          from_name: (window.clienteNome || ''),
           from_email: document.getElementById('account-email').textContent,
           subject: 'Richiesta eliminazione account — Area Clienti',
-          message: `Il cliente ${document.getElementById('cliente-nome').textContent} ha richiesto l'eliminazione del proprio account dall'Area Clienti.`
+          message: `Il cliente ${(window.clienteNome || '')} ha richiesto l'eliminazione del proprio account dall'Area Clienti.`
         })
       });
       const result = await res.json();
@@ -819,10 +927,10 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: window.isPreviewMode ? null : window.currentUserId,
-          from_name: document.getElementById('cliente-nome').textContent,
+          from_name: (window.clienteNome || ''),
           from_email: document.getElementById('account-email').textContent,
           subject: 'Richiesta disdetta abbonamento — Area Clienti',
-          message: `Il cliente ${document.getElementById('cliente-nome').textContent} ha richiesto la disdetta del proprio abbonamento dall'Area Clienti.`
+          message: `Il cliente ${(window.clienteNome || '')} ha richiesto la disdetta del proprio abbonamento dall'Area Clienti.`
         })
       });
       const result = await res.json();
@@ -940,35 +1048,30 @@
     renderPagamenti(mostraTutti);
   }
 
-  function layoutForViewport() {
-    const isMobile = window.matchMedia('(max-width: 640px)').matches;
-    const datiPersonali = document.getElementById('dati-personali');
-    const profileCol = document.querySelector('.profile-col');
-    const dashLayout = document.querySelector('.dash-layout');
-    if (!datiPersonali || !profileCol || !dashLayout) return;
-    const esciBtn = profileCol.querySelector('button.btn-logout');
+  function showTab(name, e) {
+    if (e) e.preventDefault();
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('tab-' + name);
+    if (panel) panel.classList.add('active');
 
-    if (isMobile) {
-      if (datiPersonali.parentNode !== dashLayout) {
-        dashLayout.appendChild(datiPersonali);
-        if (esciBtn) dashLayout.appendChild(esciBtn);
-      }
-    } else {
-      if (datiPersonali.parentNode !== profileCol) {
-        profileCol.appendChild(datiPersonali);
-        if (esciBtn) profileCol.appendChild(esciBtn);
-      }
-    }
-  }
-  window.addEventListener('resize', layoutForViewport);
-  layoutForViewport();
+    document.querySelectorAll('.sidebar-nav-item, .bottom-nav-item').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === name);
+    });
 
-  function toggleQuickNav() {
-    document.getElementById('quick-nav-menu').classList.toggle('open');
+    const content = document.querySelector('.app-content');
+    if (content) content.scrollTop = 0;
+    window.scrollTo(0, 0);
+    return false;
   }
 
-  function closeQuickNav() {
-    document.getElementById('quick-nav-menu').classList.remove('open');
+  function openContactSheet() {
+    document.getElementById('contact-sheet').classList.add('open');
+    document.getElementById('contact-sheet-backdrop').classList.add('open');
+  }
+
+  function closeContactSheet() {
+    document.getElementById('contact-sheet').classList.remove('open');
+    document.getElementById('contact-sheet-backdrop').classList.remove('open');
   }
 
   const hamburger = document.querySelector('.hamburger');
@@ -1008,6 +1111,9 @@
     await client.auth.signOut();
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('login-box').style.display = 'block';
+    document.body.classList.remove('app-mode');
+    closeContactSheet();
+    showTab('home');
     document.getElementById('email').value = '';
     document.getElementById('password').value = '';
   }
@@ -1036,7 +1142,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: window.isPreviewMode ? null : window.currentUserId,
-          from_name: document.getElementById('cliente-nome').textContent,
+          from_name: (window.clienteNome || ''),
           from_email: document.getElementById('account-email').textContent,
           subject: "Messaggio dall'Area Clienti",
           message: testoMessaggio
