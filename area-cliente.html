@@ -98,15 +98,20 @@
   .app-sidebar { display: none; }
   .app-content { flex: 1; min-width: 0; padding: 1.5rem 1.25rem 6.5rem; max-width: 720px; margin: 0 auto; width: 100%; }
 
+  .sidebar-logo { font-weight: 900; font-size: 0.9rem; letter-spacing: 0.22em; margin-bottom: 2rem; padding: 0 0.25rem; }
   .sidebar-profile { display: flex; align-items: center; gap: 0.85rem; padding: 0 0.25rem 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 1.25rem; }
-  .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
-  .sidebar-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.85rem; border-radius: 8px; color: var(--grey); font-size: 0.85rem; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; width: 100%; position: relative; transition: background 0.15s, color 0.15s; }
-  .sidebar-nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 0.3rem; }
+  .sidebar-nav-item { display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 0.9rem; border-radius: 8px; color: var(--grey); font-size: 0.88rem; font-weight: 600; background: none; border: none; text-align: left; cursor: pointer; width: 100%; position: relative; transition: background 0.15s, color 0.15s; }
+  .sidebar-nav-item svg { width: 19px; height: 19px; flex-shrink: 0; }
   .sidebar-nav-item:hover { background: var(--surface); color: var(--black); }
   .sidebar-nav-item.active { background: rgba(26,26,230,0.06); color: var(--ink); }
   .nav-dot { position: absolute; top: 0.55rem; left: 1.7rem; width: 8px; height: 8px; border-radius: 50%; background: #A32D2D; display: none; }
   .sidebar-nav-item .nav-dot { left: auto; right: 0.7rem; }
   .nav-dot.show { display: block; }
+  .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 0.85rem; padding-top: 1.5rem; }
+  .sidebar-plan { display: none; border: 1px solid rgba(26,26,230,0.15); background: rgba(26,26,230,0.04); border-radius: 8px; padding: 0.85rem 0.9rem; }
+  .sidebar-plan-label { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); font-weight: 700; margin-bottom: 0.3rem; }
+  .sidebar-plan-name { font-size: 0.82rem; font-weight: 600; }
 
   .bottom-nav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; background: var(--white); border-top: 1px solid rgba(0,0,0,0.08); padding: 0.4rem 0.25rem calc(0.4rem + env(safe-area-inset-bottom)); z-index: 140; }
   .bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.35rem 0.2rem; background: none; border: none; color: var(--grey); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.02em; cursor: pointer; position: relative; }
@@ -249,6 +254,8 @@
     <div class="app-body">
 
       <aside class="app-sidebar">
+        <div class="sidebar-logo">VISIBIL</div>
+
         <div class="sidebar-profile">
           <div class="avatar avatar-sm" id="avatar-iniziali-sidebar"></div>
           <div>
@@ -261,6 +268,10 @@
           <button class="sidebar-nav-item active" data-tab="home" onclick="return showTab('home', event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             Pannello di controllo
+          </button>
+          <button class="sidebar-nav-item" data-tab="progetti" onclick="return showTab('progetti', event)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            Progetti
           </button>
           <button class="sidebar-nav-item" data-tab="documenti" onclick="return showTab('documenti', event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
@@ -277,7 +288,13 @@
           </button>
         </div>
 
-        <button class="btn-logout" onclick="logout()" style="margin-top:1rem;">Esci</button>
+        <div class="sidebar-footer">
+          <div class="sidebar-plan" id="sidebar-plan">
+            <div class="sidebar-plan-label">Piano attivo</div>
+            <div class="sidebar-plan-name" id="sidebar-plan-name"></div>
+          </div>
+          <button class="btn-logout" onclick="logout()">Esci</button>
+        </div>
       </aside>
 
       <div class="app-content">
@@ -294,35 +311,7 @@
               <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
             </div>
 
-            <div style="display:none;">
-              <div class="section-label" style="margin-bottom: 0.5rem;">Progetti</div>
-              <div class="row-card" id="link-sito" style="display:none;">
-                <div>
-                  <a href="#" id="link-sito-url" target="_blank">Sito web</a>
-                  <span class="site-status" id="link-sito-stato"></span>
-                  <div style="font-size:0.75rem; color:var(--grey); margin-top:0.15rem; word-break:break-all;" id="link-sito-display"></div>
-                  <div class="site-password" id="link-sito-password" style="display:none;"></div>
-                </div>
-              </div>
-              <div class="row-card" id="link-instagram" style="display:none;">
-                <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
-              </div>
-              <p id="canali-empty" style="display:none; font-size:0.85rem; color:var(--grey); text-align:center; margin-bottom:0.75rem;">Ancora nessun progetto.</p>
-              <div style="text-align:center; margin-top: 0.5rem;">
-                <a href="#" onclick="return toggleProjectWidget(event)" style="display:inline-flex; flex-direction:column; align-items:center; gap:0.35rem; color:var(--ink); text-decoration:none; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">
-                  <span style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border:1.5px solid var(--ink); border-radius:50%; font-size:1.1rem; line-height:1;">+</span>
-                  Aggiungi
-                </a>
-              </div>
-              <div id="project-widget-mount" class="stacked-cfg" style="display:none; margin-top: 1.5rem;"></div>
-            </div>
-
-            <div id="strumenti-section" style="display:none;">
-              <div class="section-label" style="margin-top: 1.25rem; margin-bottom: 0.5rem;">Strumenti</div>
-              <div id="strumenti-lista" style="display:flex; flex-wrap:wrap; gap:0.6rem;"></div>
-            </div>
-
-            <div class="section-label" style="margin-top: 1.25rem; margin-bottom: 0.5rem;">Materiali</div>
+            <div class="section-label" style="margin-bottom: 0.5rem;">Materiali</div>
             <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
               <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
                 <div class="folder-icon">📁</div>
@@ -342,6 +331,38 @@
                 </div>
               </a>
             </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-progetti">
+          <div class="tab-panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            Progetti
+          </div>
+
+          <div class="row-card" id="link-sito" style="display:none;">
+            <div>
+              <a href="#" id="link-sito-url" target="_blank">Sito web</a>
+              <span class="site-status" id="link-sito-stato"></span>
+              <div style="font-size:0.75rem; color:var(--grey); margin-top:0.15rem; word-break:break-all;" id="link-sito-display"></div>
+              <div class="site-password" id="link-sito-password" style="display:none;"></div>
+            </div>
+          </div>
+          <div class="row-card" id="link-instagram" style="display:none;">
+            <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
+          </div>
+          <p id="canali-empty" style="display:none; font-size:0.85rem; color:var(--grey); text-align:center; margin-bottom:0.75rem;">Ancora nessun progetto.</p>
+          <div style="text-align:center; margin-top: 0.5rem;">
+            <a href="#" onclick="return toggleProjectWidget(event)" style="display:inline-flex; flex-direction:column; align-items:center; gap:0.35rem; color:var(--ink); text-decoration:none; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">
+              <span style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border:1.5px solid var(--ink); border-radius:50%; font-size:1.1rem; line-height:1;">+</span>
+              Aggiungi
+            </a>
+          </div>
+          <div id="project-widget-mount" class="stacked-cfg" style="display:none; margin-top: 1.5rem;"></div>
+
+          <div id="strumenti-section" style="display:none; margin-top: 2rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1.25rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Strumenti</div>
+            <div id="strumenti-lista" style="display:flex; flex-wrap:wrap; gap:0.6rem;"></div>
           </div>
         </section>
 
@@ -501,6 +522,10 @@
       <button class="bottom-nav-item active" data-tab="home" onclick="return showTab('home', event)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
         Pannello
+      </button>
+      <button class="bottom-nav-item" data-tab="progetti" onclick="return showTab('progetti', event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+        Progetti
       </button>
       <button class="bottom-nav-item" data-tab="documenti" onclick="return showTab('documenti', event)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
@@ -669,6 +694,8 @@
       document.getElementById('topbar-avatar').textContent = iniziali;
 
       if (cliente.rinnovo_piano) {
+        document.getElementById('sidebar-plan').style.display = 'block';
+        document.getElementById('sidebar-plan-name').textContent = cliente.rinnovo_piano;
         document.getElementById('rinnovo-card').style.display = 'flex';
         document.getElementById('rinnovo-piano').textContent = cliente.rinnovo_piano;
         const data = cliente.rinnovo_data ? new Date(cliente.rinnovo_data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '';
