@@ -350,15 +350,6 @@
           <div class="row-card" id="link-instagram" style="display:none;">
             <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
           </div>
-          <p id="canali-empty" style="display:none; font-size:0.85rem; color:var(--grey); text-align:center; margin-bottom:0.75rem;">Ancora nessun progetto.</p>
-          <div style="text-align:center; margin-top: 0.5rem;">
-            <a href="#" onclick="return toggleProjectWidget(event)" style="display:inline-flex; flex-direction:column; align-items:center; gap:0.35rem; color:var(--ink); text-decoration:none; font-size:0.7rem; font-weight:600; text-transform:uppercase; letter-spacing:0.06em;">
-              <span style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border:1.5px solid var(--ink); border-radius:50%; font-size:1.1rem; line-height:1;">+</span>
-              Aggiungi
-            </a>
-          </div>
-          <div id="project-widget-mount" class="stacked-cfg" style="display:none; margin-top: 1.5rem;"></div>
-
           <div id="strumenti-section" style="display:none; margin-top: 2rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1.25rem;">
             <div class="section-label" style="margin-bottom: 0.5rem;">Strumenti</div>
             <div id="strumenti-lista" style="display:flex; flex-wrap:wrap; gap:0.6rem;"></div>
@@ -618,25 +609,6 @@
     return 'attesa';
   }
 
-  let projectWidgetLoaded = false;
-  function toggleProjectWidget(e) {
-    e.preventDefault();
-    const mount = document.getElementById('project-widget-mount');
-    const isOpen = mount.style.display !== 'none';
-    if (isOpen) {
-      mount.style.display = 'none';
-      return false;
-    }
-    mount.style.display = 'block';
-    if (!projectWidgetLoaded) {
-      fetch('partials/prezzi-widget.html').then(r => r.text()).then(html => {
-        mount.innerHTML = html;
-        projectWidgetLoaded = true;
-      });
-    }
-    return false;
-  }
-
   function renderProgettiAvanzamento(progetti) {
     const section = document.getElementById('progetti-avanzamento-section');
     const list = document.getElementById('progetti-avanzamento-list');
@@ -810,10 +782,6 @@
       if (cliente.instagram_url) {
         document.getElementById('link-instagram').style.display = 'flex';
         document.getElementById('link-instagram-url').href = cliente.instagram_url;
-      }
-
-      if (!cliente.sito_url && !cliente.instagram_url) {
-        document.getElementById('canali-empty').style.display = 'block';
       }
 
       const uploadEl = document.getElementById('link-upload');
