@@ -646,10 +646,53 @@
       <p class="desc" style="margin-top:0; margin-bottom:1rem;">Cliente: <strong id="doctab-cliente-display">— nessuno caricato —</strong></p>
 
       <div class="subdoc-pills">
+        <button class="subdoc-pill" id="subdoc-progetto" onclick="showSubDoc('progetto')">Progetto</button>
         <button class="subdoc-pill active" id="subdoc-preventivo" onclick="showSubDoc('preventivo')">Preventivo</button>
         <button class="subdoc-pill" id="subdoc-pagamento" onclick="showSubDoc('pagamento')">Pagamento</button>
         <button class="subdoc-pill" id="subdoc-documento" onclick="showSubDoc('documento')">Documento</button>
         <button class="subdoc-pill" id="subdoc-report" onclick="showSubDoc('report')">Report</button>
+      </div>
+
+      <div class="sub-doc-panel" id="subpanel-progetto" style="display:none;">
+        <div id="pr-form-titolo" class="section-label" style="margin-top:0;">Nuovo progetto</div>
+        <input type="hidden" id="pr-editing-id">
+
+        <label for="pr-titolo">Titolo</label>
+        <input type="text" id="pr-titolo" placeholder="es. Mese 1 — Consulenza Instagram">
+
+        <div style="display:flex; gap:0.75rem;">
+          <div style="flex:1;">
+            <label for="pr-ore-stimate">Ore stimate</label>
+            <input type="number" id="pr-ore-stimate" min="0" step="0.5" placeholder="es. 20" oninput="aggiornaAnteprimaPercentuale()">
+          </div>
+          <div style="flex:1;">
+            <label for="pr-ore-fatte">Ore gia' fatte</label>
+            <input type="number" id="pr-ore-fatte" min="0" step="0.5" placeholder="es. 12" oninput="aggiornaAnteprimaPercentuale()">
+          </div>
+        </div>
+        <div id="pr-percentuale-anteprima" style="font-size:0.8rem; color:var(--grey); margin-top:0.4rem;"></div>
+
+        <label for="pr-stato">Stato</label>
+        <select id="pr-stato">
+          <option>In corso</option>
+          <option>Completato</option>
+          <option>In pausa</option>
+        </select>
+
+        <label for="pr-data">Data</label>
+        <input type="date" id="pr-data">
+
+        <label for="pr-note">Note (facoltativo, visibili al cliente)</label>
+        <textarea id="pr-note" rows="3" placeholder="es. cosa e' incluso in questa fase..." style="width:100%; padding:0.6rem 0.75rem; font-family:var(--sans); font-size:0.85rem; border:1px solid rgba(0,0,0,0.1); border-radius:5px; resize:vertical;"></textarea>
+
+        <button onclick="salvaProgetto()" id="pr-salva-btn">Aggiungi progetto</button>
+        <div class="msg" id="progetto-msg"></div>
+
+        <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:2rem;">
+          <div class="section-label" style="margin-top:0;">📋 Progetti/fasi di questo cliente</div>
+          <div id="pr-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
+          <button type="button" id="pr-nuovo-btn" class="secondary" onclick="resetFormProgetto()" style="width:100%; margin-top:0.75rem; display:none;">+ Nuovo progetto</button>
+        </div>
       </div>
 
       <div class="sub-doc-panel active" id="subpanel-preventivo">
@@ -1608,6 +1651,8 @@
     cambiaTipoComunicazione();
     aggiornaAvvisoPreferenze(c);
     renderCronologiaComunicazioni(c.user_id);
+    caricaProgettiEsistenti(user_id);
+    resetFormProgetto();
     caricaPreventiviEsistenti(user_id);
     resetFormPreventivo();
     caricaPagamentiEsistenti(user_id);
@@ -1644,7 +1689,123 @@
 
     showTab('documenti');
     showSubDoc(prefix === 'p' ? 'preventivo' : 'pagamento');
-  }  let vociCounter = 0;
+  }
+
+  function aggiornaAnteprimaPercentuale() {
+    const stimate = Number(document.getElementById('pr-ore-stimate').value) || 0;
+    const fatte = Number(document.getElementById('pr-ore-fatte').value) || 0;
+    const box = document.getElementById('pr-percentuale-anteprima');
+    if (stimate <= 0) { box.textContent = ''; return; }
+    const pct = Math.min(100, Math.round((fatte / stimate) * 100));
+    box.textContent = `${pct}% completato`;
+  }
+
+  async function caricaProgettiEsistenti(user_id) {
+    const container = document.getElementById('pr-lista-esistenti');
+    if (!user_id) {
+      container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p>';
+      return;
+    }
+    const { data, error } = await client.from('progetti').select('*').eq('user_id', user_id).order('data', { ascending: true });
+    if (error) { container.innerHTML = '<p style="font-size:0.85rem; color:#c0392b;">Errore nel caricamento.</p>'; return; }
+    window.progettiCache = data || [];
+    if (window.progettiCache.length === 0) {
+      container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun progetto ancora.</p>';
+      return;
+    }
+    const coloreStato = s => s === 'Completato' ? '#1E6B3C' : s === 'In pausa' ? '#7A4E00' : '#1A1AE6';
+    container.innerHTML = window.progettiCache.map(p => {
+      const pct = p.ore_stimate > 0 ? Math.min(100, Math.round((p.ore_fatte / p.ore_stimate) * 100)) : null;
+      return `
+      <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+        <span onclick="caricaProgettoNelForm('${p.id}')" style="cursor:pointer; flex:1;">${p.titolo || '(senza titolo)'}
+          <span style="display:block; font-size:0.7rem; color:var(--grey); margin-top:0.15rem;">${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%` : ''}</span>
+          <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}</span>
+        </span>
+        <button type="button" onclick="eliminaProgetto('${p.id}', '${(p.titolo || '').replace(/'/g, "\\'")}')"  title="Elimina" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+      </div>`;
+    }).join('');
+  }
+
+  function caricaProgettoNelForm(id) {
+    const p = (window.progettiCache || []).find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('pr-nuovo-btn').style.display = 'block';
+
+    document.getElementById('pr-editing-id').value = p.id;
+    document.getElementById('pr-form-titolo').textContent = 'Modifica progetto';
+    document.getElementById('pr-salva-btn').textContent = 'Salva modifiche';
+    document.getElementById('pr-titolo').value = p.titolo || '';
+    document.getElementById('pr-ore-stimate').value = p.ore_stimate || '';
+    document.getElementById('pr-ore-fatte').value = p.ore_fatte || '';
+    document.getElementById('pr-stato').value = p.stato || 'In corso';
+    document.getElementById('pr-data').value = p.data || '';
+    document.getElementById('pr-note').value = p.note || '';
+    aggiornaAnteprimaPercentuale();
+
+    window.scrollTo({ top: document.getElementById('subpanel-progetto').offsetTop, behavior: 'smooth' });
+  }
+
+  function resetFormProgetto() {
+    document.getElementById('pr-nuovo-btn').style.display = 'none';
+    document.getElementById('pr-editing-id').value = '';
+    document.getElementById('pr-form-titolo').textContent = 'Nuovo progetto';
+    document.getElementById('pr-salva-btn').textContent = 'Aggiungi progetto';
+    document.getElementById('pr-titolo').value = '';
+    document.getElementById('pr-ore-stimate').value = '';
+    document.getElementById('pr-ore-fatte').value = '';
+    document.getElementById('pr-stato').value = 'In corso';
+    document.getElementById('pr-data').value = '';
+    document.getElementById('pr-note').value = '';
+    document.getElementById('pr-percentuale-anteprima').textContent = '';
+    document.getElementById('progetto-msg').textContent = '';
+  }
+
+  async function eliminaProgetto(id, titolo) {
+    const conferma = confirm(`Eliminare il progetto "${titolo}"?`);
+    if (!conferma) return;
+
+    const { error } = await client.from('progetti').delete().eq('id', id);
+    if (error) { alert('Errore: ' + error.message); return; }
+
+    const user_id = document.getElementById('c-userid').value.trim();
+    caricaProgettiEsistenti(user_id);
+    resetFormProgetto();
+  }
+
+  async function salvaProgetto() {
+    const user_id = document.getElementById('c-userid').value.trim();
+    if (!user_id) { showMsg('progetto-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
+
+    const editingId = document.getElementById('pr-editing-id').value.trim();
+    const isEditing = !!editingId;
+
+    const payload = {
+      user_id,
+      titolo: document.getElementById('pr-titolo').value,
+      ore_stimate: Number(document.getElementById('pr-ore-stimate').value) || 0,
+      ore_fatte: Number(document.getElementById('pr-ore-fatte').value) || 0,
+      stato: document.getElementById('pr-stato').value,
+      data: document.getElementById('pr-data').value || new Date().toISOString().slice(0,10),
+      note: document.getElementById('pr-note').value || null
+    };
+
+    let error;
+    if (isEditing) {
+      ({ error } = await client.from('progetti').update(payload).eq('id', editingId));
+    } else {
+      ({ error } = await client.from('progetti').insert(payload));
+    }
+    if (error) { showMsg('progetto-msg', 'Errore: ' + error.message, false); return; }
+    showMsg('progetto-msg', isEditing ? 'Progetto aggiornato.' : 'Progetto aggiunto.', true);
+    caricaProgettiEsistenti(user_id);
+    if (!isEditing) resetFormProgetto();
+  }
+
+  let vociCounter = 0;
 
   let linkLavoroCounter = 0;
 
