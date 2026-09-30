@@ -672,6 +672,11 @@
         </div>
         <div id="pr-percentuale-anteprima" style="font-size:0.8rem; color:var(--grey); margin-top:0.4rem;"></div>
 
+        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:400; margin-top:0.75rem;">
+          <input type="checkbox" id="pr-extra-gratuito" style="width:auto;">
+          Le ore oltre la stima sono gratuite (non fatturate)
+        </label>
+
         <label for="pr-stato">Stato</label>
         <select id="pr-stato">
           <option>In corso</option>
@@ -1696,8 +1701,9 @@
     const fatte = Number(document.getElementById('pr-ore-fatte').value) || 0;
     const box = document.getElementById('pr-percentuale-anteprima');
     if (stimate <= 0) { box.textContent = ''; return; }
-    const pct = Math.min(100, Math.round((fatte / stimate) * 100));
+    const pct = Math.round((fatte / stimate) * 100);
     box.textContent = `${pct}% completato`;
+    box.style.color = pct > 100 ? '#A32D2D' : 'var(--grey)';
   }
 
   async function caricaProgettiEsistenti(user_id) {
@@ -1715,11 +1721,13 @@
     }
     const coloreStato = s => s === 'Completato' ? '#1E6B3C' : s === 'In pausa' ? '#7A4E00' : '#1A1AE6';
     container.innerHTML = window.progettiCache.map(p => {
-      const pct = p.ore_stimate > 0 ? Math.min(100, Math.round((p.ore_fatte / p.ore_stimate) * 100)) : null;
+      const pct = p.ore_stimate > 0 ? Math.round((p.ore_fatte / p.ore_stimate) * 100) : null;
+      const pctColore = pct !== null && pct > 100 ? '#A32D2D' : 'var(--grey)';
+      const extraTag = (pct !== null && pct > 100) ? (p.extra_gratuito ? ' · extra gratuito' : ' · extra da fatturare') : '';
       return `
       <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
         <span onclick="caricaProgettoNelForm('${p.id}')" style="cursor:pointer; flex:1;">${p.titolo || '(senza titolo)'}
-          <span style="display:block; font-size:0.7rem; color:var(--grey); margin-top:0.15rem;">${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%` : ''}</span>
+          <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%${extraTag}` : ''}</span>
           <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}</span>
         </span>
         <button type="button" onclick="eliminaProgetto('${p.id}', '${(p.titolo || '').replace(/'/g, "\\'")}')"  title="Elimina" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">
@@ -1744,6 +1752,7 @@
     document.getElementById('pr-stato').value = p.stato || 'In corso';
     document.getElementById('pr-data').value = p.data || '';
     document.getElementById('pr-note').value = p.note || '';
+    document.getElementById('pr-extra-gratuito').checked = !!p.extra_gratuito;
     aggiornaAnteprimaPercentuale();
 
     window.scrollTo({ top: document.getElementById('subpanel-progetto').offsetTop, behavior: 'smooth' });
@@ -1760,6 +1769,7 @@
     document.getElementById('pr-stato').value = 'In corso';
     document.getElementById('pr-data').value = '';
     document.getElementById('pr-note').value = '';
+    document.getElementById('pr-extra-gratuito').checked = false;
     document.getElementById('pr-percentuale-anteprima').textContent = '';
     document.getElementById('progetto-msg').textContent = '';
   }
@@ -1790,7 +1800,8 @@
       ore_fatte: Number(document.getElementById('pr-ore-fatte').value) || 0,
       stato: document.getElementById('pr-stato').value,
       data: document.getElementById('pr-data').value || new Date().toISOString().slice(0,10),
-      note: document.getElementById('pr-note').value || null
+      note: document.getElementById('pr-note').value || null,
+      extra_gratuito: document.getElementById('pr-extra-gratuito').checked
     };
 
     let error;

@@ -211,7 +211,12 @@
   .progetto-item.completato .progetto-bar-fill { background: #1E6B3C; }
   .progetto-item.completato .progetto-item-pct { color: #1E6B3C; }
   .progetto-item.in-pausa .progetto-bar-fill { background: var(--grey); }
+  .progetto-item.sforato .progetto-bar-fill { background: #A32D2D; }
+  .progetto-item.sforato .progetto-item-pct { color: #A32D2D; }
   .progetto-item-meta { font-size: 0.75rem; color: var(--grey); margin-top: 0.5rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
+  .progetto-item-extra { font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem; }
+  .progetto-item-extra-fatturato { color: #A32D2D; }
+  .progetto-item-extra-gratis { color: #1E6B3C; }
   .progetto-item-note { font-size: 0.8rem; color: var(--black); margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid rgba(0,0,0,0.06); white-space: pre-wrap; }
   .badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.35rem 0.75rem; border-radius: 100px; }
   .badge.attesa { background: #FFF4DE; color: #7A4E00; }
@@ -621,20 +626,27 @@
     list.innerHTML = progetti.map(p => {
       const stimate = Number(p.ore_stimate) || 0;
       const fatte = Number(p.ore_fatte) || 0;
-      const pct = stimate > 0 ? Math.min(100, Math.round((fatte / stimate) * 100)) : 0;
-      const statoClasse = p.stato === 'Completato' ? 'completato' : p.stato === 'In pausa' ? 'in-pausa' : '';
+      const pct = stimate > 0 ? Math.round((fatte / stimate) * 100) : 0;
+      const sforato = pct > 100;
+      const statoClasse = sforato ? 'sforato' : (p.stato === 'Completato' ? 'completato' : p.stato === 'In pausa' ? 'in-pausa' : '');
       const oreTesto = stimate > 0 ? `${fatte}h di ${stimate}h` : (fatte > 0 ? `${fatte}h svolte` : '');
+      const extraNota = sforato
+        ? (p.extra_gratuito
+            ? '<div class="progetto-item-extra progetto-item-extra-gratis">Ore extra incluse gratuitamente</div>'
+            : '<div class="progetto-item-extra progetto-item-extra-fatturato">Ore extra oltre la stima, da fatturare</div>')
+        : '';
       return `
         <div class="progetto-item ${statoClasse}">
           <div class="progetto-item-top">
             <div class="progetto-item-titolo">${p.titolo || '(senza titolo)'}</div>
             <div class="progetto-item-pct">${pct}%</div>
           </div>
-          <div class="progetto-bar-track"><div class="progetto-bar-fill" style="width:${pct}%;"></div></div>
+          <div class="progetto-bar-track"><div class="progetto-bar-fill" style="width:${Math.min(100, pct)}%;"></div></div>
           <div class="progetto-item-meta">
             <span>${oreTesto}</span>
             <span>${p.stato || ''}</span>
           </div>
+          ${extraNota}
           ${p.note ? `<div class="progetto-item-note">${p.note}</div>` : ''}
         </div>`;
     }).join('');
