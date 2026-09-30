@@ -1849,7 +1849,7 @@
   @media print {
     @page { size: A4; margin: 2cm; }
     body { background: #fff; }
-    .logo, .download-bar, .anteprima-banner { display: none !important; }
+    .logo, .download-bar, .anteprima-banner, #q-stato-row { display: none !important; }
     main { max-width: none; padding: 0; margin: 0; }
     .letterhead { display: flex; justify-content: space-between; margin-bottom: 2.5rem; font-size: 0.8rem; }
     .letterhead div { line-height: 1.6; }
@@ -1878,7 +1878,7 @@
     <div class="quote-row"><span>Cliente</span><span>${escapeHtmlAnteprima(clienteNome)}</span></div>
     <div class="quote-row"><span>Data</span><span>${escapeHtmlAnteprima(dataLbl)}</span></div>
     <div class="quote-row" style="font-weight:700;"><span>Totale</span><span>CHF ${escapeHtmlAnteprima(totale)}.–</span></div>
-    <div class="quote-row"><span>Stato</span><span class="badge ${badgeClass}">${escapeHtmlAnteprima(stato)}</span></div>
+    <div class="quote-row" id="q-stato-row"><span>Stato</span><span class="badge ${badgeClass}">${escapeHtmlAnteprima(stato)}</span></div>
     ${noteHtml}
   </div>
   <div class="signatures">
