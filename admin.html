@@ -653,6 +653,9 @@
       </div>
 
       <div class="sub-doc-panel active" id="subpanel-preventivo">
+        <div id="p-form-titolo" class="section-label" style="margin-top:0;">Nuovo preventivo</div>
+        <input type="hidden" id="p-editing-id">
+
         <label for="p-titolo">Titolo</label>
         <input type="text" id="p-titolo" placeholder="es. Sito Vetrina + lavoro extra">
 
@@ -666,6 +669,9 @@
           <span>Totale</span>
           <span>CHF <span id="p-totale">0</span></span>
         </div>
+
+        <label for="p-note">Note / dettagli (facoltativo, visibili al cliente sul preventivo)</label>
+        <textarea id="p-note" rows="4" placeholder="es. condizioni, tempistiche, cosa include o non include..." style="width:100%; padding:0.6rem 0.75rem; font-family:var(--sans); font-size:0.85rem; border:1px solid rgba(0,0,0,0.1); border-radius:5px; resize:vertical;"></textarea>
 
         <label style="display:flex; align-items:flex-start; gap:0.5rem; margin-top:1.25rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
           <input type="checkbox" id="p-scelta-piano" style="width:auto; margin-top:0.2rem;">
@@ -685,8 +691,14 @@
         <label for="p-documento">Link PDF (opzionale)</label>
         <input type="text" id="p-documento">
 
-        <button onclick="salvaPreventivo()">Aggiungi preventivo</button>
+        <button onclick="salvaPreventivo()" id="p-salva-btn">Aggiungi preventivo</button>
         <div class="msg" id="preventivo-msg"></div>
+
+        <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:2rem;">
+          <div class="section-label" style="margin-top:0;">📋 Preventivi esistenti di questo cliente</div>
+          <div id="p-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
+          <button type="button" id="p-nuovo-btn" class="secondary" onclick="resetFormPreventivo()" style="width:100%; margin-top:0.75rem; display:none;">+ Nuovo preventivo</button>
+        </div>
       </div>
 
       <div class="sub-doc-panel" id="subpanel-pagamento" style="display:none;">
@@ -1594,6 +1606,8 @@
     cambiaTipoComunicazione();
     aggiornaAvvisoPreferenze(c);
     renderCronologiaComunicazioni(c.user_id);
+    caricaPreventiviEsistenti(user_id);
+    resetFormPreventivo();
     caricaPagamentiEsistenti(user_id);
     resetFormPagamento();
     caricaDocumentiEsistenti(user_id);
@@ -1719,21 +1733,87 @@
 
   aggiungiVoce();
 
+  async function caricaPreventiviEsistenti(user_id) {
+    const container = document.getElementById('p-lista-esistenti');
+    if (!user_id) {
+      container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p>';
+      return;
+    }
+    const { data, error } = await client.from('preventivi').select('*').eq('user_id', user_id).order('data', { ascending: false });
+    if (error) { container.innerHTML = '<p style="font-size:0.85rem; color:#c0392b;">Errore nel caricamento.</p>'; return; }
+    window.preventiviCache = data || [];
+    if (window.preventiviCache.length === 0) {
+      container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun preventivo ancora.</p>';
+      return;
+    }
+    container.innerHTML = window.preventiviCache.map(p => `
+      <div onclick="caricaPreventivoNelForm('${p.id}')" style="cursor:pointer; border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+        <span>${p.titolo || '(senza titolo)'} — CHF ${p.importo || 0}</span>
+        <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${p.stato === 'Accettato' ? '#1E6B3C' : p.stato === 'Scaduto' ? '#c0392b' : '#7A4E00'};">${p.stato}</span>
+      </div>`).join('');
+  }
+
+  function caricaPreventivoNelForm(id) {
+    const p = (window.preventiviCache || []).find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('p-nuovo-btn').style.display = 'block';
+
+    document.getElementById('p-editing-id').value = p.id;
+    document.getElementById('p-form-titolo').textContent = 'Modifica preventivo';
+    document.getElementById('p-salva-btn').textContent = 'Salva modifiche';
+    document.getElementById('p-titolo').value = p.titolo || '';
+    document.getElementById('p-note').value = p.note || '';
+    document.getElementById('p-scelta-piano').checked = !!p.richiedi_scelta_piano;
+    document.getElementById('p-stato').value = p.stato || 'In attesa';
+    document.getElementById('p-data').value = p.data || '';
+    document.getElementById('p-documento').value = p.documento_url || '';
+
+    document.getElementById('p-voci-lista').innerHTML = '';
+    (p.voci || []).forEach(v => aggiungiVoce(v.descrizione, v.importo));
+    if (!p.voci || p.voci.length === 0) aggiungiVoce();
+    ricalcolaTotale();
+
+    window.preventivoAttivoLink = p.link_approvazione || null;
+    document.getElementById('preventivo-msg').textContent = '';
+
+    window.scrollTo({ top: document.getElementById('subpanel-preventivo').offsetTop, behavior: 'smooth' });
+  }
+
+  function resetFormPreventivo() {
+    document.getElementById('p-nuovo-btn').style.display = 'none';
+    document.getElementById('p-editing-id').value = '';
+    document.getElementById('p-form-titolo').textContent = 'Nuovo preventivo';
+    document.getElementById('p-salva-btn').textContent = 'Aggiungi preventivo';
+    document.getElementById('p-titolo').value = '';
+    document.getElementById('p-note').value = '';
+    document.getElementById('p-documento').value = '';
+    document.getElementById('p-scelta-piano').checked = false;
+    document.getElementById('p-stato').value = 'In attesa';
+    document.getElementById('p-data').value = '';
+    document.getElementById('p-voci-lista').innerHTML = '';
+    aggiungiVoce();
+    window.preventivoAttivoLink = null;
+    document.getElementById('preventivo-msg').textContent = '';
+  }
+
   async function salvaPreventivo() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('preventivo-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
 
-    const newId = crypto.randomUUID();
-    const linkApprovazione = `https://vsbl.ch/preventivo.html?id=${newId}`;
+    const editingId = document.getElementById('p-editing-id').value.trim();
+    const isEditing = !!editingId;
+    const idPreventivo = isEditing ? editingId : crypto.randomUUID();
+    const linkApprovazione = isEditing ? (window.preventivoAttivoLink || `https://vsbl.ch/preventivo.html?id=${idPreventivo}`) : `https://vsbl.ch/preventivo.html?id=${idPreventivo}`;
     const voci = raccogliVoci();
     const totale = voci.reduce((sum, v) => sum + (Number(v.importo) || 0), 0);
 
     const payload = {
-      id: newId,
       user_id,
       titolo: document.getElementById('p-titolo').value,
       importo: totale,
       voci: voci,
+      note: document.getElementById('p-note').value || null,
       richiedi_scelta_piano: document.getElementById('p-scelta-piano').checked,
       stato: document.getElementById('p-stato').value,
       data: document.getElementById('p-data').value || new Date().toISOString().slice(0,10),
@@ -1741,15 +1821,17 @@
       link_approvazione: linkApprovazione
     };
 
-    const { error } = await client.from('preventivi').insert(payload);
+    let error;
+    if (isEditing) {
+      ({ error } = await client.from('preventivi').update(payload).eq('id', idPreventivo));
+    } else {
+      ({ error } = await client.from('preventivi').insert({ id: idPreventivo, ...payload }));
+    }
     if (error) { showMsg('preventivo-msg', 'Errore: ' + error.message, false); return; }
-    showMsg('preventivo-msg', `Preventivo aggiunto. Link da mandare al cliente: ${linkApprovazione}`, true);
+    showMsg('preventivo-msg', isEditing ? 'Preventivo aggiornato.' : `Preventivo aggiunto. Link da mandare al cliente: ${linkApprovazione}`, true);
     caricaStatistiche();
-    document.getElementById('p-titolo').value = '';
-    document.getElementById('p-documento').value = '';
-    document.getElementById('p-scelta-piano').checked = false;
-    document.getElementById('p-voci-lista').innerHTML = '';
-    aggiungiVoce();
+    caricaPreventiviEsistenti(user_id);
+    if (!isEditing) resetFormPreventivo();
   }
 
   let vociPagamentoCounter = 0;

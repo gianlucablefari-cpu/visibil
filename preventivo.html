@@ -113,6 +113,7 @@
       <div class="quote-row"><span>Data</span><span id="q-data"></span></div>
       <div class="quote-row" style="font-weight:700;"><span>Totale</span><span id="q-importo"></span></div>
       <div class="quote-row"><span>Stato</span><span id="q-stato"></span></div>
+      <div id="q-note-box" style="display:none; margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.06); font-size:0.85rem; color:var(--black); white-space:pre-wrap; line-height:1.5;"></div>
     </div>
 
     <div class="signatures">
@@ -213,6 +214,12 @@
       (data.voci || []).forEach(v => {
         vociEl.innerHTML += `<div class="quote-row"><span>${v.descrizione || ''}</span><span>CHF ${v.importo}.–</span></div>`;
       });
+
+      if (data.note) {
+        const noteBox = document.getElementById('q-note-box');
+        noteBox.textContent = data.note;
+        noteBox.style.display = 'block';
+      }
 
       if (data.richiedi_scelta_piano && data.stato !== 'Accettato') {
         document.getElementById('piano-scelta-box').style.display = 'block';
