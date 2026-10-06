@@ -841,7 +841,7 @@
     document.getElementById('account-email').textContent = isPreview ? '(email non visibile in anteprima)' : user.email;
     window.currentUserId = targetUserId;
 
-    const { data: progetti } = await client.from('progetti').select('*').eq('user_id', targetUserId).order('data', { ascending: true });
+    const { data: progetti } = await client.from('progetti').select('*').eq('user_id', targetUserId).order('ordine', { ascending: true }).order('data', { ascending: true });
     renderProgettiAvanzamento(progetti || []);
 
     const { data: preventivi, error: errPrev } = await client.from('preventivi').select('*').eq('user_id', targetUserId).order('data', { ascending: false });

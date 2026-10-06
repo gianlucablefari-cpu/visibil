@@ -104,6 +104,8 @@
     .dash-layout { grid-template-columns: 1fr; }
     .side-col { position: static; }
   }
+.mv-btn{width:26px;height:22px;padding:0;margin:0;background:none;border:1px solid rgba(0,0,0,0.15);border-radius:4px;cursor:pointer;font-size:0.65rem;line-height:1;color:var(--ink);}
+  .mv-btn:disabled{opacity:0.25;cursor:default;}
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -1712,7 +1714,7 @@
       container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p>';
       return;
     }
-    const { data, error } = await client.from('progetti').select('*').eq('user_id', user_id).order('data', { ascending: true });
+    const { data, error } = await client.from('progetti').select('*').eq('user_id', user_id).order('ordine', { ascending: true }).order('data', { ascending: true });
     if (error) { container.innerHTML = '<p style="font-size:0.85rem; color:#c0392b;">Errore nel caricamento.</p>'; return; }
     window.progettiCache = data || [];
     if (window.progettiCache.length === 0) {
@@ -1720,12 +1722,13 @@
       return;
     }
     const coloreStato = s => s === 'Completato' ? '#1E6B3C' : s === 'In pausa' ? '#7A4E00' : '#1A1AE6';
-    container.innerHTML = window.progettiCache.map(p => {
+    container.innerHTML = window.progettiCache.map((p, idx) => {
       const pct = p.ore_stimate > 0 ? Math.round((p.ore_fatte / p.ore_stimate) * 100) : null;
       const pctColore = pct !== null && pct > 100 ? '#A32D2D' : 'var(--grey)';
       const extraTag = (pct !== null && pct > 100) ? (p.extra_gratuito ? ' · extra gratuito' : ' · extra da fatturare') : '';
       return `
       <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+        <span style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;"><button type="button" onclick="spostaProgetto('${p.id}', -1)" ${idx === 0 ? 'disabled' : ''} title="Sposta su" class="mv-btn">▲</button><button type="button" onclick="spostaProgetto('${p.id}', 1)" ${idx === window.progettiCache.length - 1 ? 'disabled' : ''} title="Sposta giù" class="mv-btn">▼</button></span>
         <span onclick="caricaProgettoNelForm('${p.id}')" style="cursor:pointer; flex:1;">${p.titolo || '(senza titolo)'}
           <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%${extraTag}` : ''}</span>
           <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}</span>
@@ -1774,6 +1777,20 @@
     document.getElementById('progetto-msg').textContent = '';
   }
 
+  async function spostaProgetto(id, dir) {
+    const list = (window.progettiCache || []).slice();
+    const i = list.findIndex(x => x.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    const updates = [];
+    list.forEach((p, k) => { if (p.ordine !== k + 1) updates.push(client.from('progetti').update({ ordine: k + 1 }).eq('id', p.id)); });
+    const results = await Promise.all(updates);
+    const err = results.find(r => r.error);
+    if (err) { showMsg('progetto-msg', 'Errore: ' + err.error.message, false); return; }
+    caricaProgettiEsistenti(document.getElementById('c-userid').value.trim());
+  }
+
   async function eliminaProgetto(id, titolo) {
     const conferma = confirm(`Eliminare il progetto "${titolo}"?`);
     if (!conferma) return;
@@ -1804,6 +1821,7 @@
       extra_gratuito: document.getElementById('pr-extra-gratuito').checked
     };
 
+    if (!isEditing) payload.ordine = Math.max(0, ...(window.progettiCache || []).map(x => x.ordine || 0)) + 1;
     let error;
     if (isEditing) {
       ({ error } = await client.from('progetti').update(payload).eq('id', editingId));
