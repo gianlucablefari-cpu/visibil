@@ -797,6 +797,7 @@
 
         <div id="pg-notifica-box" style="display:none; border-top:1px solid rgba(0,0,0,0.08); margin-top:1.5rem; padding-top:1.25rem;">
           <button class="secondary" onclick="inviaNotificaPagamento()">📧 Invia notifica email al cliente</button>
+          <button class="secondary" onclick="copiaLink(window.pagamentoAttivoLink, this)" style="margin-left:0.5rem;">🔗 Copia link pagamento</button>
           <div class="msg" id="pagamento-notifica-msg"></div>
         </div>
 
@@ -1055,6 +1056,24 @@
     document.getElementById('app').style.display = 'none';
     document.getElementById('denied').style.display = 'none';
     document.getElementById('login-box').style.display = 'block';
+  }
+
+  // Copia un link negli appunti e mostra conferma sul pulsante
+  async function copiaLink(url, btn) {
+    if (!url) { alert('Nessun link disponibile per questo elemento.'); return; }
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (e) {
+      const t = document.createElement('textarea');
+      t.value = url;
+      document.body.appendChild(t);
+      t.select();
+      document.execCommand('copy');
+      t.remove();
+    }
+    const etichetta = btn.textContent;
+    btn.textContent = 'Copiato ✓';
+    setTimeout(() => { btn.textContent = etichetta; }, 1500);
   }
 
   function showMsg(id, text, ok) {
@@ -2088,6 +2107,7 @@
       <div onclick="caricaPreventivoNelForm('${p.id}')" style="cursor:pointer; border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
         <span>${p.titolo || '(senza titolo)'} — CHF ${p.importo || 0}</span>
         <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${p.stato === 'Accettato' ? '#1E6B3C' : p.stato === 'Scaduto' ? '#c0392b' : '#7A4E00'};">${p.stato}</span>
+        <button type="button" class="secondary btn-small" onclick="event.stopPropagation(); copiaLink('${p.link_approvazione || ''}', this)" style="flex-shrink:0;">🔗 Copia link</button>
       </div>`).join('');
   }
 
@@ -2334,6 +2354,7 @@
       <div onclick="caricaPagamentoNelForm('${p.id}')" style="cursor:pointer; border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
         <span>${p.descrizione || '(senza descrizione)'} — CHF ${p.importo || 0}</span>
         <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${p.stato === 'Pagato' ? '#1E6B3C' : p.stato === 'Scaduto' ? '#c0392b' : '#7A4E00'};">${p.stato}</span>
+        <button type="button" class="secondary btn-small" onclick="event.stopPropagation(); copiaLink('${p.payment_link || ''}', this)" style="flex-shrink:0;">🔗 Copia link</button>
       </div>`).join('');
   }
 
