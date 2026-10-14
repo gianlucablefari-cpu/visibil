@@ -2161,7 +2161,7 @@
     const vociHtml = voci.map(v => v.tipo === 'tabella'
       ? tabellaHtmlAnteprima(v)
       : v.tipo === 'sconto'
-      ? `<div class="quote-row"><span>Sconto ${escapeHtmlAnteprima(v.percentuale)}%</span><span>CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
+      ? `<div class="quote-row" style="font-weight:700; color:var(--ink);"><span style="color:var(--ink);">Sconto ${escapeHtmlAnteprima(v.percentuale)}%</span><span>CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
       : `<div class="quote-row"><span>${escapeHtmlAnteprima(v.descrizione)}</span><span>${v.barrato ? `<s style="color:var(--grey);">CHF ${escapeHtmlAnteprima(v.barrato)}</s> ` : ''}CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
     ).join('');
     const badgeClass = stato === 'Accettato' ? 'accettato' : 'attesa';
