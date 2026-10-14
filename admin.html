@@ -2193,19 +2193,20 @@
   .download-bar button { font-family: var(--sans); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; width:auto; background:none; color:var(--black); border:1px solid rgba(0,0,0,0.15); border-radius:5px; padding:0.7rem 1.5rem; cursor:pointer; }
   .download-bar button:hover { background:var(--surface); }
   @media print {
-    @page { size: A4; margin: 2cm; }
+    @page { size: A4; margin: 1.5cm; }
     body { background: #fff; }
     .logo, .download-bar, .anteprima-banner, #q-stato-row { display: none !important; }
     main { max-width: none; padding: 0; margin: 0; }
-    .letterhead { display: flex; justify-content: space-between; margin-bottom: 2.5rem; font-size: 0.8rem; }
-    .letterhead div { line-height: 1.6; }
+    .letterhead { display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 0.8rem; }
+    .letterhead div { line-height: 1.5; }
     .letterhead .to { text-align: right; }
     .quote-card { border: none; padding: 0; margin-top: 0; }
-    .quote-title { font-size: 1.6rem; }
-    .signatures { display: flex; justify-content: space-between; margin-top: 4rem; gap: 2rem; }
+    .quote-title { font-size: 1.4rem; margin-bottom: 1rem; }
+    .quote-row { padding: 0.45rem 0; }
+    .signatures { display: flex; justify-content: space-between; margin-top: 2rem; gap: 2rem; break-inside: avoid; page-break-inside: avoid; }
     .signatures .sig-block { width: 45%; text-align: center; }
-    .signatures .sig-img { height: 55px; object-fit: contain; margin-bottom: 0.4rem; }
-    .signatures .sig-line { border-top: 1px solid var(--black); margin-top: 55px; padding-top: 0.4rem; }
+    .signatures .sig-img { height: 42px; object-fit: contain; margin-bottom: 0.3rem; }
+    .signatures .sig-line { border-top: 1px solid var(--black); margin-top: 40px; padding-top: 0.4rem; }
     .signatures .sig-label { font-size: 0.7rem; color: var(--grey); text-transform: uppercase; letter-spacing: 0.05em; }
   }
 </style></head>
@@ -2229,7 +2230,7 @@
   </div>
   <div class="signatures">
     <div class="sig-block"><img class="sig-img" src="https://vsbl.ch/assets/firma-gianluca.jpg" alt=""><div class="sig-line"></div><div class="sig-label">Gianluca Blefari — VISIBIL</div></div>
-    <div class="sig-block"><div class="sig-line" style="margin-top:55px;"></div><div class="sig-label">Firma del cliente</div></div>
+    <div class="sig-block"><div class="sig-line" style="margin-top:40px;"></div><div class="sig-label">Firma del cliente</div></div>
   </div>
   <div class="download-bar"><button onclick="window.print()">📄 Scarica PDF</button></div>
 </main>
