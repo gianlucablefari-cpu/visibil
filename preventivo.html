@@ -213,7 +213,9 @@
       vociEl.innerHTML = '';
       const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       (data.voci || []).forEach(v => {
-        if (v.tipo === 'tabella') {
+        if (v.tipo === 'sconto') {
+          vociEl.innerHTML += `<div class="quote-row"><span>Sconto ${esc(v.percentuale)}%</span><span>CHF ${esc(v.importo)}.–</span></div>`;
+        } else if (v.tipo === 'tabella') {
           const head = v.colonne.map(c => `<th style="text-align:left; font-weight:600; color:var(--grey); padding:0.5rem 0.4rem; border-bottom:1px solid rgba(0,0,0,0.12); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em;">${esc(c)}</th>`).join('');
           const body = v.righe.map(r => `<tr>${v.colonne.map((_, i) => `<td style="padding:0.6rem 0.4rem; border-bottom:1px solid rgba(0,0,0,0.06); vertical-align:top;">${esc(r[i] || '')}</td>`).join('')}</tr>`).join('');
           vociEl.innerHTML += `<table style="width:100%; border-collapse:collapse; font-size:0.9rem; margin:0.75rem 0;"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;

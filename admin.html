@@ -716,6 +716,9 @@
         <button type="button" class="secondary" onclick="aggiungiVoce()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce vuota</button>
         <button type="button" class="secondary" onclick="aggiungiTabella()" style="width:100%; margin-top:0.5rem;">+ Aggiungi tabella</button>
 
+        <label for="p-sconto">Sconto (%)</label>
+        <input type="number" id="p-sconto" min="0" max="100" step="0.5" placeholder="0" oninput="ricalcolaTotale()">
+
         <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.08); font-size:1rem; font-weight:700; display:flex; justify-content:space-between;">
           <span>Totale</span>
           <span>CHF <span id="p-totale">0</span></span>
@@ -1906,12 +1909,63 @@
   }
 
   function ricalcolaTotale() {
-    let totale = 0;
-    document.querySelectorAll('#p-voci-lista > div[data-tipo="voce"]').forEach(row => {
-      const importoInput = row.querySelectorAll('input')[1];
-      totale += Number(importoInput.value) || 0;
+    document.getElementById('p-totale').textContent = totaleVoci(vociConSconto());
+  }
+
+  // Somma delle colonna scelta per il totale; le righe con valori non numerici contano zero
+  function sommaTabella(v) {
+    if (v.colonnaTotale == null) return 0;
+    return v.righe.reduce((s, r) => s + (parseFloat(String(r[v.colonnaTotale] || '').replace(',', '.')) || 0), 0);
+  }
+
+  // Totale di un elenco di voci: voci con importo, tabelle con la colonna scelta, sconti (negativi)
+  function totaleVoci(voci) {
+    return voci.reduce((s, v) => s + (v.tipo === 'tabella' ? sommaTabella(v) : (Number(v.importo) || 0)), 0);
+  }
+
+  // Aggiunge lo sconto come voce negativa, calcolato sul subtotale
+  function vociConSconto() {
+    const voci = raccogliVoci();
+    const pct = Number(document.getElementById('p-sconto').value) || 0;
+    if (pct > 0) {
+      const subtotale = totaleVoci(voci);
+      const importo = -Math.round(subtotale * pct) / 100;
+      voci.push({ tipo: 'sconto', percentuale: pct, importo });
+    }
+    return voci;
+  }
+
+  function costruisciSelectSomma(div, scelta) {
+    const sel = div.querySelector('.tab-somma');
+    const colonne = colonneTabella(div);
+    sel.innerHTML = '<option value="">— nessuna —</option>' + colonne.map((c, i) => `<option value="${i}">${escapeHtmlAnteprima(c)}</option>`).join('');
+    if (scelta != null && scelta < colonne.length) sel.value = String(scelta);
+  }
+
+  // Se ci sono colonne "Quantità", "Prezzo unitario" e una colonna Totale scelta, il Totale di riga si calcola da solo
+  function ricalcolaTabella(tabella) {
+    if (!tabella) return;
+    const colonne = colonneTabella(tabella).map(c => c.toLowerCase());
+    const iQ = colonne.findIndex(c => /^quantit/.test(c));
+    const iP = colonne.findIndex(c => /^prezzo/.test(c));
+    const sel = tabella.querySelector('.tab-somma');
+    const iT = sel && sel.value !== '' ? Number(sel.value) : -1;
+    const automatico = iQ >= 0 && iP >= 0 && iT >= 0 && iT !== iQ && iT !== iP;
+    tabella.querySelectorAll('.tab-riga').forEach(riga => {
+      const inputs = riga.querySelectorAll('input');
+      if (!inputs[iT]) return;
+      if (automatico) {
+        const q = parseFloat(String(inputs[iQ].value).replace(',', '.')) || 0;
+        const p = parseFloat(String(inputs[iP].value).replace(',', '.')) || 0;
+        inputs[iT].value = (q * p).toFixed(2);
+        inputs[iT].readOnly = true;
+        inputs[iT].style.background = 'rgba(0,0,0,0.03)';
+      } else {
+        inputs[iT].readOnly = false;
+        inputs[iT].style.background = '';
+      }
     });
-    document.getElementById('p-totale').textContent = totale;
+    ricalcolaTotale();
   }
 
   function raccogliVoci() {
@@ -1920,7 +1974,9 @@
       if (row.dataset.tipo === 'tabella') {
         const colonne = colonneTabella(row);
         const righe = raccogliRigheTabella(row);
-        if (colonne.length && righe.length) voci.push({ tipo: 'tabella', colonne, righe });
+        const sel = row.querySelector('.tab-somma');
+        const colonnaTotale = sel && sel.value !== '' ? Number(sel.value) : null;
+        if (colonne.length && righe.length) voci.push({ tipo: 'tabella', colonne, righe, colonnaTotale });
         return;
       }
       const inputs = row.querySelectorAll('input');
@@ -1932,7 +1988,7 @@
   }
 
   // Tabelle: colonne e righe definite dall'utente, nel preventivo
-  function aggiungiTabella(colonne, righe) {
+  function aggiungiTabella(colonne, righe, colonnaTotale) {
     vociCounter++;
     const id = vociCounter;
     const div = document.createElement('div');
@@ -1945,11 +2001,16 @@
         <button type="button" class="secondary btn-small" onclick="applicaColonneTabella(${id})">Applica colonne</button>
         <button type="button" onclick="document.getElementById('voce-${id}').remove(); ricalcolaTotale();" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; padding:0.5rem 0.7rem; flex-shrink:0;">✕</button>
       </div>
+      <div style="margin-top:0.5rem; font-size:0.8rem; color:var(--grey);">Colonna da sommare nel totale:
+        <select class="tab-somma" onchange="ricalcolaTabella(this.closest('[data-tipo]'))" style="margin-left:0.4rem;"></select>
+      </div>
       <div class="tab-righe"></div>
       <button type="button" class="secondary btn-small" onclick="aggiungiRigaTabella(${id})" style="margin-top:0.5rem;">+ Riga</button>
     `;
     document.getElementById('p-voci-lista').appendChild(div);
+    costruisciSelectSomma(div, colonnaTotale);
     (righe || []).forEach(r => aggiungiRigaTabella(id, r));
+    ricalcolaTabella(div);
   }
 
   function colonneTabella(div) {
@@ -1970,8 +2031,8 @@
     riga.className = 'tab-riga';
     riga.style.cssText = 'display:flex; gap:0.4rem; margin-top:0.4rem;';
     riga.innerHTML = colonne.map((c, i) =>
-      `<input type="text" placeholder="${escapeHtmlAnteprima(c)}" value="${escapeHtmlAnteprima(valori ? valori[i] : '')}" style="flex:1; min-width:0;">`
-    ).join('') + `<button type="button" onclick="this.parentElement.remove()" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; padding:0.5rem 0.7rem; flex-shrink:0;">✕</button>`;
+      `<input type="text" placeholder="${escapeHtmlAnteprima(c)}" value="${escapeHtmlAnteprima(valori ? valori[i] : '')}" style="flex:1; min-width:0;" oninput="ricalcolaTabella(this.closest('[data-tipo]'))">`
+    ).join('') + `<button type="button" onclick="this.parentElement.remove(); ricalcolaTabella(this.closest('[data-tipo]'))" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; padding:0.5rem 0.7rem; flex-shrink:0;">✕</button>`;
     div.querySelector('.tab-righe').appendChild(riga);
   }
 
@@ -1979,8 +2040,12 @@
   function applicaColonneTabella(id) {
     const div = document.getElementById(`voce-${id}`);
     const righe = raccogliRigheTabella(div);
+    const sel = div.querySelector('.tab-somma');
+    const scelta = sel && sel.value !== '' ? Number(sel.value) : null;
+    costruisciSelectSomma(div, scelta);
     div.querySelector('.tab-righe').innerHTML = '';
     righe.forEach(r => aggiungiRigaTabella(id, r));
+    ricalcolaTabella(div);
   }
 
   function tabellaHtmlAnteprima(v) {
@@ -2029,7 +2094,8 @@
 
     document.getElementById('p-voci-lista').innerHTML = '';
     (p.voci || []).forEach(v => {
-      if (v.tipo === 'tabella') aggiungiTabella(v.colonne, v.righe);
+      if (v.tipo === 'tabella') aggiungiTabella(v.colonne, v.righe, v.colonnaTotale);
+      else if (v.tipo === 'sconto') document.getElementById('p-sconto').value = v.percentuale;
       else aggiungiVoce(v.descrizione, v.importo);
     });
     if (!p.voci || p.voci.length === 0) aggiungiVoce();
@@ -2053,6 +2119,7 @@
     document.getElementById('p-stato').value = 'In attesa';
     document.getElementById('p-data').value = '';
     document.getElementById('p-voci-lista').innerHTML = '';
+    document.getElementById('p-sconto').value = '';
     aggiungiVoce();
     window.preventivoAttivoLink = null;
     document.getElementById('preventivo-msg').textContent = '';
@@ -2066,8 +2133,8 @@
 
   function anteprimaPreventivo() {
     const titolo = document.getElementById('p-titolo').value || '(senza titolo)';
-    const voci = raccogliVoci();
-    const totale = voci.reduce((sum, v) => sum + (Number(v.importo) || 0), 0);
+    const voci = vociConSconto();
+    const totale = totaleVoci(voci);
     const note = document.getElementById('p-note').value || '';
     const stato = document.getElementById('p-stato').value || 'In attesa';
     const dataVal = document.getElementById('p-data').value || new Date().toISOString().slice(0,10);
@@ -2078,6 +2145,8 @@
 
     const vociHtml = voci.map(v => v.tipo === 'tabella'
       ? tabellaHtmlAnteprima(v)
+      : v.tipo === 'sconto'
+      ? `<div class="quote-row"><span>Sconto ${escapeHtmlAnteprima(v.percentuale)}%</span><span>CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
       : `<div class="quote-row"><span>${escapeHtmlAnteprima(v.descrizione)}</span><span>CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
     ).join('');
     const badgeClass = stato === 'Accettato' ? 'accettato' : 'attesa';
@@ -2164,8 +2233,8 @@
     const isEditing = !!editingId;
     const idPreventivo = isEditing ? editingId : crypto.randomUUID();
     const linkApprovazione = isEditing ? (window.preventivoAttivoLink || `https://vsbl.ch/preventivo.html?id=${idPreventivo}`) : `https://vsbl.ch/preventivo.html?id=${idPreventivo}`;
-    const voci = raccogliVoci();
-    const totale = voci.reduce((sum, v) => sum + (Number(v.importo) || 0), 0);
+    const voci = vociConSconto();
+    const totale = totaleVoci(voci);
 
     const payload = {
       user_id,
