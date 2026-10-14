@@ -1892,7 +1892,7 @@
     document.getElementById('icona-toggle-link-lavoro').textContent = acc.classList.contains('open') ? '✕' : '+';
   }
 
-  function aggiungiVoce(desc, importo) {
+  function aggiungiVoce(desc, importo, barrato) {
     vociCounter++;
     const id = vociCounter;
     const div = document.createElement('div');
@@ -1902,6 +1902,7 @@
     div.innerHTML = `
       <input type="text" placeholder="Descrizione voce" value="${desc || ''}" style="flex:2;" oninput="ricalcolaTotale()">
       <input type="number" placeholder="CHF" value="${importo != null ? importo : ''}" style="flex:1;" oninput="ricalcolaTotale()">
+      <input type="number" class="voce-barrato" placeholder="Barrato" title="Prezzo originale da barrare (solo visivo, non incide sul totale)" value="${barrato != null ? barrato : ''}" style="flex:1;" oninput="ricalcolaTotale()">
       <button type="button" onclick="document.getElementById('voce-${id}').remove(); ricalcolaTotale();" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; padding:0.5rem 0.7rem; flex-shrink:0;">✕</button>
     `;
     document.getElementById('p-voci-lista').appendChild(div);
@@ -1982,7 +1983,8 @@
       const inputs = row.querySelectorAll('input');
       const descrizione = inputs[0].value;
       const importo = Number(inputs[1].value) || 0;
-      if (descrizione || importo) voci.push({ descrizione, importo });
+      const barrato = Number(row.querySelector('.voce-barrato').value) || 0;
+      if (descrizione || importo) voci.push(barrato ? { descrizione, importo, barrato } : { descrizione, importo });
     });
     return voci;
   }
@@ -2096,7 +2098,7 @@
     (p.voci || []).forEach(v => {
       if (v.tipo === 'tabella') aggiungiTabella(v.colonne, v.righe, v.colonnaTotale);
       else if (v.tipo === 'sconto') document.getElementById('p-sconto').value = v.percentuale;
-      else aggiungiVoce(v.descrizione, v.importo);
+      else aggiungiVoce(v.descrizione, v.importo, v.barrato);
     });
     if (!p.voci || p.voci.length === 0) aggiungiVoce();
     ricalcolaTotale();
@@ -2147,7 +2149,7 @@
       ? tabellaHtmlAnteprima(v)
       : v.tipo === 'sconto'
       ? `<div class="quote-row"><span>Sconto ${escapeHtmlAnteprima(v.percentuale)}%</span><span>CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
-      : `<div class="quote-row"><span>${escapeHtmlAnteprima(v.descrizione)}</span><span>CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
+      : `<div class="quote-row"><span>${escapeHtmlAnteprima(v.descrizione)}</span><span>${v.barrato ? `<s style="color:var(--grey);">CHF ${escapeHtmlAnteprima(v.barrato)}</s> ` : ''}CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
     ).join('');
     const badgeClass = stato === 'Accettato' ? 'accettato' : 'attesa';
     const noteHtml = note ? `<div style="margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.06); font-size:0.85rem; white-space:pre-wrap; line-height:1.5;">${escapeHtmlAnteprima(note)}</div>` : '';
