@@ -2050,6 +2050,19 @@
     ricalcolaTabella(div);
   }
 
+  // Stessa regola della pagina cliente: blocchi separati da riga vuota, titolo con "# " o riga che finisce con ":"
+  function formattaNoteAnteprima(testo) {
+    return String(testo).split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).map((b, i) => {
+      const righe = b.split('\n').map(r => r.trim()).filter(Boolean);
+      let titolo = '';
+      if (/^#\s+/.test(righe[0])) titolo = righe.shift().replace(/^#\s+/, '');
+      else if (righe.length > 1 && /:$/.test(righe[0])) titolo = righe.shift().replace(/:$/, '');
+      const etichetta = titolo ? `<div style="font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink); font-weight:700; margin-bottom:0.4rem;">${escapeHtmlAnteprima(titolo)}</div>` : '';
+      const corpo = righe.map(r => `<p style="margin:0.2rem 0;">${escapeHtmlAnteprima(r)}</p>`).join('');
+      return `<div style="padding:0.9rem 0; ${i > 0 ? 'border-top:1px solid rgba(0,0,0,0.06);' : ''}">${etichetta}${corpo}</div>`;
+    }).join('');
+  }
+
   function tabellaHtmlAnteprima(v) {
     const head = v.colonne.map(c => `<th style="text-align:left; font-weight:600; color:var(--grey); padding:0.5rem 0.4rem; border-bottom:1px solid rgba(0,0,0,0.12); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em;">${escapeHtmlAnteprima(c)}</th>`).join('');
     const body = v.righe.map(r => `<tr>${v.colonne.map((_, i) => `<td style="padding:0.6rem 0.4rem; border-bottom:1px solid rgba(0,0,0,0.06); vertical-align:top;">${escapeHtmlAnteprima(r[i] || '')}</td>`).join('')}</tr>`).join('');
@@ -2152,7 +2165,7 @@
       : `<div class="quote-row"><span>${escapeHtmlAnteprima(v.descrizione)}</span><span>${v.barrato ? `<s style="color:var(--grey);">CHF ${escapeHtmlAnteprima(v.barrato)}</s> ` : ''}CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
     ).join('');
     const badgeClass = stato === 'Accettato' ? 'accettato' : 'attesa';
-    const noteHtml = note ? `<div style="margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.06); font-size:0.85rem; white-space:pre-wrap; line-height:1.5;">${escapeHtmlAnteprima(note)}</div>` : '';
+    const noteHtml = note ? `<div style="margin-top:1rem; font-size:0.85rem; line-height:1.5;">${formattaNoteAnteprima(note)}</div>` : '';
 
     const html = `<!DOCTYPE html>
 <html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">

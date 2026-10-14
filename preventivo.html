@@ -224,9 +224,24 @@
         }
       });
 
+      // Note: blocchi separati da una riga vuota; una riga che inizia con "# " o finisce con ":" fa da titolo del blocco
+      const formattaNote = testo => {
+        const e = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        return String(testo).split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).map((b, i) => {
+          const righe = b.split('\n').map(r => r.trim()).filter(Boolean);
+          let titolo = '';
+          if (/^#\s+/.test(righe[0])) titolo = righe.shift().replace(/^#\s+/, '');
+          else if (righe.length > 1 && /:$/.test(righe[0])) titolo = righe.shift().replace(/:$/, '');
+          const etichetta = titolo ? `<div style="font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink); font-weight:700; margin-bottom:0.4rem;">${e(titolo)}</div>` : '';
+          const corpo = righe.map(r => `<p style="margin:0.2rem 0;">${e(r)}</p>`).join('');
+          return `<div style="padding:0.9rem 0; ${i > 0 ? 'border-top:1px solid rgba(0,0,0,0.06);' : ''}">${etichetta}${corpo}</div>`;
+        }).join('');
+      };
+
       if (data.note) {
         const noteBox = document.getElementById('q-note-box');
-        noteBox.textContent = data.note;
+        noteBox.innerHTML = formattaNote(data.note);
+        noteBox.style.whiteSpace = 'normal';
         noteBox.style.display = 'block';
       }
 
