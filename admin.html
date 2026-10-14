@@ -714,6 +714,7 @@
 
         <div id="p-voci-lista"></div>
         <button type="button" class="secondary" onclick="aggiungiVoce()" style="width:100%; margin-top:0.5rem;">+ Aggiungi voce vuota</button>
+        <button type="button" class="secondary" onclick="aggiungiTabella()" style="width:100%; margin-top:0.5rem;">+ Aggiungi tabella</button>
 
         <div style="margin-top:1.25rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.08); font-size:1rem; font-weight:700; display:flex; justify-content:space-between;">
           <span>Totale</span>
@@ -1893,6 +1894,7 @@
     const id = vociCounter;
     const div = document.createElement('div');
     div.id = `voce-${id}`;
+    div.dataset.tipo = 'voce';
     div.style.cssText = 'display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;';
     div.innerHTML = `
       <input type="text" placeholder="Descrizione voce" value="${desc || ''}" style="flex:2;" oninput="ricalcolaTotale()">
@@ -1905,7 +1907,7 @@
 
   function ricalcolaTotale() {
     let totale = 0;
-    document.querySelectorAll('#p-voci-lista > div').forEach(row => {
+    document.querySelectorAll('#p-voci-lista > div[data-tipo="voce"]').forEach(row => {
       const importoInput = row.querySelectorAll('input')[1];
       totale += Number(importoInput.value) || 0;
     });
@@ -1915,12 +1917,76 @@
   function raccogliVoci() {
     const voci = [];
     document.querySelectorAll('#p-voci-lista > div').forEach(row => {
+      if (row.dataset.tipo === 'tabella') {
+        const colonne = colonneTabella(row);
+        const righe = raccogliRigheTabella(row);
+        if (colonne.length && righe.length) voci.push({ tipo: 'tabella', colonne, righe });
+        return;
+      }
       const inputs = row.querySelectorAll('input');
       const descrizione = inputs[0].value;
       const importo = Number(inputs[1].value) || 0;
       if (descrizione || importo) voci.push({ descrizione, importo });
     });
     return voci;
+  }
+
+  // Tabelle: colonne e righe definite dall'utente, nel preventivo
+  function aggiungiTabella(colonne, righe) {
+    vociCounter++;
+    const id = vociCounter;
+    const div = document.createElement('div');
+    div.id = `voce-${id}`;
+    div.dataset.tipo = 'tabella';
+    div.style.cssText = 'border:1px dashed rgba(0,0,0,0.2); border-radius:6px; padding:0.75rem; margin-top:0.75rem;';
+    div.innerHTML = `
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <input type="text" class="tab-colonne" placeholder="Colonne separate da virgola (es. Descrizione, Q.tà, Prezzo)" value="${escapeHtmlAnteprima((colonne || []).join(', '))}" style="flex:1;">
+        <button type="button" class="secondary btn-small" onclick="applicaColonneTabella(${id})">Applica colonne</button>
+        <button type="button" onclick="document.getElementById('voce-${id}').remove(); ricalcolaTotale();" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; padding:0.5rem 0.7rem; flex-shrink:0;">✕</button>
+      </div>
+      <div class="tab-righe"></div>
+      <button type="button" class="secondary btn-small" onclick="aggiungiRigaTabella(${id})" style="margin-top:0.5rem;">+ Riga</button>
+    `;
+    document.getElementById('p-voci-lista').appendChild(div);
+    (righe || []).forEach(r => aggiungiRigaTabella(id, r));
+  }
+
+  function colonneTabella(div) {
+    return div.querySelector('.tab-colonne').value.split(',').map(s => s.trim()).filter(Boolean);
+  }
+
+  function raccogliRigheTabella(div) {
+    return [...div.querySelectorAll('.tab-riga')].map(r =>
+      [...r.querySelectorAll('input')].map(i => i.value)
+    );
+  }
+
+  function aggiungiRigaTabella(id, valori) {
+    const div = document.getElementById(`voce-${id}`);
+    const colonne = colonneTabella(div);
+    if (!colonne.length) { alert('Scrivi prima le colonne e clicca "Applica colonne".'); return; }
+    const riga = document.createElement('div');
+    riga.className = 'tab-riga';
+    riga.style.cssText = 'display:flex; gap:0.4rem; margin-top:0.4rem;';
+    riga.innerHTML = colonne.map((c, i) =>
+      `<input type="text" placeholder="${escapeHtmlAnteprima(c)}" value="${escapeHtmlAnteprima(valori ? valori[i] : '')}" style="flex:1; min-width:0;">`
+    ).join('') + `<button type="button" onclick="this.parentElement.remove()" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; padding:0.5rem 0.7rem; flex-shrink:0;">✕</button>`;
+    div.querySelector('.tab-righe').appendChild(riga);
+  }
+
+  // Cambiare le colonne mantiene i valori già scritti, per posizione
+  function applicaColonneTabella(id) {
+    const div = document.getElementById(`voce-${id}`);
+    const righe = raccogliRigheTabella(div);
+    div.querySelector('.tab-righe').innerHTML = '';
+    righe.forEach(r => aggiungiRigaTabella(id, r));
+  }
+
+  function tabellaHtmlAnteprima(v) {
+    const head = v.colonne.map(c => `<th style="text-align:left; font-weight:600; color:var(--grey); padding:0.5rem 0.4rem; border-bottom:1px solid rgba(0,0,0,0.12); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em;">${escapeHtmlAnteprima(c)}</th>`).join('');
+    const body = v.righe.map(r => `<tr>${v.colonne.map((_, i) => `<td style="padding:0.6rem 0.4rem; border-bottom:1px solid rgba(0,0,0,0.06); vertical-align:top;">${escapeHtmlAnteprima(r[i] || '')}</td>`).join('')}</tr>`).join('');
+    return `<table style="width:100%; border-collapse:collapse; font-size:0.9rem; margin:0.75rem 0;"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
   }
 
   aggiungiVoce();
@@ -1962,7 +2028,10 @@
     document.getElementById('p-documento').value = p.documento_url || '';
 
     document.getElementById('p-voci-lista').innerHTML = '';
-    (p.voci || []).forEach(v => aggiungiVoce(v.descrizione, v.importo));
+    (p.voci || []).forEach(v => {
+      if (v.tipo === 'tabella') aggiungiTabella(v.colonne, v.righe);
+      else aggiungiVoce(v.descrizione, v.importo);
+    });
     if (!p.voci || p.voci.length === 0) aggiungiVoce();
     ricalcolaTotale();
 
@@ -2007,7 +2076,10 @@
     const clienteIndirizzo = document.getElementById('c-indirizzo').value || '';
     const clienteFatturazione = document.getElementById('c-nome-fatturazione').value || clienteNome;
 
-    const vociHtml = voci.map(v => `<div class="quote-row"><span>${escapeHtmlAnteprima(v.descrizione)}</span><span>CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`).join('');
+    const vociHtml = voci.map(v => v.tipo === 'tabella'
+      ? tabellaHtmlAnteprima(v)
+      : `<div class="quote-row"><span>${escapeHtmlAnteprima(v.descrizione)}</span><span>CHF ${escapeHtmlAnteprima(v.importo)}.–</span></div>`
+    ).join('');
     const badgeClass = stato === 'Accettato' ? 'accettato' : 'attesa';
     const noteHtml = note ? `<div style="margin-top:1rem; padding-top:1rem; border-top:1px solid rgba(0,0,0,0.06); font-size:0.85rem; white-space:pre-wrap; line-height:1.5;">${escapeHtmlAnteprima(note)}</div>` : '';
 
