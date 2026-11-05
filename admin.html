@@ -436,7 +436,7 @@
 
       <div id="home-stripe-abbinare-box" style="display:none; margin-top:1.5rem; padding:1rem 1.1rem; border:1px solid var(--ink); border-radius:6px;">
         <div class="section-label" style="margin-top:0;">Pagamenti Stripe da abbinare</div>
-        <p class="desc" style="margin-top:0;">Incassi arrivati da Stripe che non ho saputo collegare a un cliente. Scegli il cliente: i rinnovi successivi verranno abbinati da soli.</p>
+        <p class="desc" style="margin-top:0;">Fatture e incassi arrivati da Stripe che non ho saputo collegare a un cliente. Scegli il cliente: i rinnovi successivi verranno abbinati da soli.</p>
         <div id="home-stripe-abbinare"></div>
       </div>
 
@@ -1066,7 +1066,7 @@
       .join('');
     el.innerHTML = data.map(p => `
       <div style="padding:0.75rem 0; border-top:1px solid rgba(0,0,0,0.06);">
-        <div style="font-size:0.9rem;"><strong>CHF ${esc(p.importo)}</strong> — ${esc(p.descrizione)}</div>
+        <div style="font-size:0.9rem;"><strong>CHF ${esc(p.importo)}</strong> — ${esc(p.descrizione)} <span style="font-size:0.75rem; color:${(p.stato || 'Pagato') === 'Pagato' ? 'var(--grey)' : '#A32D2D'};">(${esc(p.stato || 'Pagato')})</span></div>
         <div style="font-size:0.8rem; color:var(--grey); margin-bottom:0.5rem;">
           ${p.data ? esc(new Date(p.data).toLocaleDateString('it-CH')) : ''}
           ${p.nome ? ' · ' + esc(p.nome) : ''}${p.email ? ' · ' + esc(p.email) : ''}
@@ -1094,8 +1094,9 @@
         descrizione: p.descrizione,
         importo: p.importo,
         voci: [{ descrizione: p.descrizione, importo: Number(p.importo) || 0 }],
-        stato: 'Pagato',
+        stato: p.stato || 'Pagato',
         data: p.data,
+        payment_link: p.payment_link || null,
         stripe_invoice_id: p.stripe_invoice_id
       });
       if (e2 && !String(e2.message).includes('duplicate')) throw new Error(e2.message);

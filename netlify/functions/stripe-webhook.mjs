@@ -58,16 +58,42 @@ function descrizioneFattura(invoice) {
   return periodo ? `Stripe – ${testo} – ${periodo}` : `Stripe – ${testo}`;
 }
 
-async function importaFattura(invoice, serviceKey) {
-  const importo = (invoice.amount_paid || 0) / 100;
-  if (!invoice.id || importo <= 0) return;
+// pagata = true  → evento invoice.paid (incasso avvenuto)
+// pagata = false → evento invoice.finalized (fattura emessa, da pagare)
+async function importaFattura(invoice, serviceKey, pagata) {
+  if (!invoice.id) return;
+  const importo = ((pagata ? invoice.amount_paid : invoice.amount_due) || 0) / 100;
+  if (importo <= 0) return;
 
-  // Già importata? (Stripe può inviare lo stesso evento più volte)
+  const stato = pagata ? "Pagato" : "In attesa";
+  const linkPagamento = invoice.hosted_invoice_url || null;
+  const ts = pagata && invoice.status_transitions && invoice.status_transitions.paid_at
+    ? invoice.status_transitions.paid_at
+    : invoice.created;
+  const data = new Date(ts * 1000).toISOString().slice(0, 10);
+
+  // Esiste già? (stessa fattura vista prima come "da pagare", o evento ripetuto)
   const enc = encodeURIComponent(invoice.id);
-  const giaPagamenti = await sb(`pagamenti?select=id&stripe_invoice_id=eq.${enc}`, serviceKey);
-  if (giaPagamenti && giaPagamenti.length) return;
-  const giaInAttesa = await sb(`pagamenti_stripe_da_abbinare?select=id&stripe_invoice_id=eq.${enc}`, serviceKey);
-  if (giaInAttesa && giaInAttesa.length) return;
+  const esistente = await sb(`pagamenti?select=id,stato&stripe_invoice_id=eq.${enc}`, serviceKey);
+  if (esistente && esistente.length) {
+    if (pagata && esistente[0].stato !== "Pagato") {
+      await sb(`pagamenti?id=eq.${esistente[0].id}`, serviceKey, {
+        method: "PATCH",
+        body: JSON.stringify({ stato: "Pagato", data })
+      });
+    }
+    return;
+  }
+  const inAttesa = await sb(`pagamenti_stripe_da_abbinare?select=id,stato&stripe_invoice_id=eq.${enc}`, serviceKey);
+  if (inAttesa && inAttesa.length) {
+    if (pagata && inAttesa[0].stato !== "Pagato") {
+      await sb(`pagamenti_stripe_da_abbinare?id=eq.${inAttesa[0].id}`, serviceKey, {
+        method: "PATCH",
+        body: JSON.stringify({ stato: "Pagato", data })
+      });
+    }
+    return;
+  }
 
   const customerId = typeof invoice.customer === "string" ? invoice.customer : (invoice.customer && invoice.customer.id) || null;
   const subscriptionId =
@@ -75,10 +101,6 @@ async function importaFattura(invoice, serviceKey) {
     (invoice.parent && invoice.parent.subscription_details && invoice.parent.subscription_details.subscription) ||
     null;
   const email = (invoice.customer_email || "").trim().toLowerCase();
-  const paidAt = invoice.status_transitions && invoice.status_transitions.paid_at
-    ? invoice.status_transitions.paid_at
-    : invoice.created;
-  const data = new Date(paidAt * 1000).toISOString().slice(0, 10);
   const descrizione = descrizioneFattura(invoice);
 
   // 1) Cliente già collegato a questo customer Stripe
@@ -102,15 +124,16 @@ async function importaFattura(invoice, serviceKey) {
         descrizione,
         importo,
         voci: [{ descrizione, importo }],
-        stato: "Pagato",
+        stato,
         data,
+        payment_link: linkPagamento,
         stripe_invoice_id: invoice.id
       })
     });
-    const aggiorna = { abbonamento_stato: subscriptionId ? "stripe" : undefined };
+    const aggiorna = {};
+    if (subscriptionId) { aggiorna.stripe_subscription_id = subscriptionId; aggiorna.abbonamento_stato = "stripe"; }
     if (customerId && !cliente.stripe_customer_id) aggiorna.stripe_customer_id = customerId;
-    if (subscriptionId) aggiorna.stripe_subscription_id = subscriptionId;
-    if (Object.values(aggiorna).some((v) => v !== undefined)) {
+    if (Object.keys(aggiorna).length) {
       await sb(`clienti?id=eq.${cliente.id}`, serviceKey, { method: "PATCH", body: JSON.stringify(aggiorna) });
     }
     return;
@@ -127,7 +150,9 @@ async function importaFattura(invoice, serviceKey) {
       nome: invoice.customer_name || null,
       descrizione,
       importo,
-      data
+      data,
+      stato,
+      payment_link: linkPagamento
     })
   });
 }
@@ -194,9 +219,9 @@ export default async (req) => {
   // Fattura pagata su Stripe (abbonamenti, rinnovi, fatture manuali):
   // la importa in "pagamenti" sotto il cliente giusto, oppure la mette
   // tra i "pagamenti da abbinare" se il cliente non viene riconosciuto.
-  if (event.type === "invoice.paid") {
+  if (event.type === "invoice.paid" || event.type === "invoice.finalized") {
     try {
-      await importaFattura(event.data.object, SERVICE_KEY);
+      await importaFattura(event.data.object, SERVICE_KEY, event.type === "invoice.paid");
     } catch (e) {
       console.error("Errore importazione fattura:", e);
       // 500 → Stripe ritenta più tardi
