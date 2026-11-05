@@ -434,6 +434,12 @@
       <h2>Bentornato, Gianluca</h2>
       <p class="desc">Nessun cliente selezionato — qui trovi le cose trasversali e una panoramica generale.</p>
 
+      <div id="home-stripe-abbinare-box" style="display:none; margin-top:1.5rem; padding:1rem 1.1rem; border:1px solid var(--ink); border-radius:6px;">
+        <div class="section-label" style="margin-top:0;">Pagamenti Stripe da abbinare</div>
+        <p class="desc" style="margin-top:0;">Incassi arrivati da Stripe che non ho saputo collegare a un cliente. Scegli il cliente: i rinnovi successivi verranno abbinati da soli.</p>
+        <div id="home-stripe-abbinare"></div>
+      </div>
+
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
         <div class="section-label" style="margin-top:0;">Da fare — tutti i clienti</div>
         <div id="home-da-fare-generale"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
@@ -1014,6 +1020,8 @@
     });
     renderListaHome('home-da-fare-generale', daFareGenerale, c => `<strong>${c.nome || c.user_id}</strong>: ${c.prossimo_passo}`);
 
+    caricaStripeDaAbbinare();
+
     const { data: pagamentiSospesi } = await client.from('pagamenti').select('*').neq('stato', 'Pagato').order('data', { ascending: true });
     document.getElementById('stat-pagamenti').textContent = (pagamentiSospesi || []).length;
     renderListaHome('home-pagamenti-sospesi', pagamentiSospesi, p => `${nomeClienteById(p.user_id)} — ${p.descrizione || ''} — CHF ${p.importo || 0}`);
@@ -1040,6 +1048,76 @@
     renderListaHome('home-messaggi-recenti', (window.messaggiCache || []).slice(0, 5), m => `${nomeClienteById(m.user_id)} — ${m.tipo === 'contatto' ? 'Dal cliente' : 'Inviata da te'} — ${(m.contenuto || '').slice(0, 60)}${(m.contenuto || '').length > 60 ? '…' : ''}`);
 
     document.getElementById('home-admin-email').textContent = document.getElementById('admin-email').textContent;
+  }
+
+  // --- Pagamenti Stripe da abbinare -------------------------------------
+  async function caricaStripeDaAbbinare() {
+    const box = document.getElementById('home-stripe-abbinare-box');
+    const el = document.getElementById('home-stripe-abbinare');
+    const { data, error } = await client.from('pagamenti_stripe_da_abbinare').select('*').order('data', { ascending: true });
+    if (error || !data || data.length === 0) { box.style.display = 'none'; el.innerHTML = ''; return; }
+    box.style.display = 'block';
+    const esc = escapeHtmlAnteprima;
+    const opzioni = clientiCache
+      .filter(c => !c.archiviato)
+      .slice()
+      .sort((a, b) => (a.nome || '').localeCompare(b.nome || ''))
+      .map(c => `<option value="${esc(c.user_id)}">${esc(c.nome || c.user_id)}</option>`)
+      .join('');
+    el.innerHTML = data.map(p => `
+      <div style="padding:0.75rem 0; border-top:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:0.9rem;"><strong>CHF ${esc(p.importo)}</strong> — ${esc(p.descrizione)}</div>
+        <div style="font-size:0.8rem; color:var(--grey); margin-bottom:0.5rem;">
+          ${p.data ? esc(new Date(p.data).toLocaleDateString('it-CH')) : ''}
+          ${p.nome ? ' · ' + esc(p.nome) : ''}${p.email ? ' · ' + esc(p.email) : ''}
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:center;">
+          <select id="abbina-sel-${esc(p.id)}" style="flex:1;">
+            <option value="">Scegli il cliente…</option>${opzioni}
+          </select>
+          <button type="button" class="btn-small" style="flex-shrink:0; margin-top:0;" onclick="abbinaPagamentoStripe('${esc(p.id)}', this)">Abbina</button>
+        </div>
+      </div>`).join('');
+  }
+
+  async function abbinaPagamentoStripe(id, btn) {
+    const userId = document.getElementById('abbina-sel-' + id).value;
+    if (!userId) { alert('Scegli prima il cliente.'); return; }
+    btn.disabled = true; btn.textContent = '...';
+    try {
+      const { data: righe, error: e1 } = await client.from('pagamenti_stripe_da_abbinare').select('*').eq('id', id);
+      if (e1 || !righe || !righe.length) throw new Error(e1 ? e1.message : 'Pagamento non trovato');
+      const p = righe[0];
+
+      const { error: e2 } = await client.from('pagamenti').insert({
+        user_id: userId,
+        descrizione: p.descrizione,
+        importo: p.importo,
+        voci: [{ descrizione: p.descrizione, importo: Number(p.importo) || 0 }],
+        stato: 'Pagato',
+        data: p.data,
+        stripe_invoice_id: p.stripe_invoice_id
+      });
+      if (e2 && !String(e2.message).includes('duplicate')) throw new Error(e2.message);
+
+      // Ricorda il collegamento: i prossimi rinnovi verranno abbinati da soli
+      const cliente = clientiCache.find(c => c.user_id === userId);
+      if (cliente && p.stripe_customer_id) {
+        const agg = { stripe_customer_id: p.stripe_customer_id };
+        if (p.stripe_subscription_id) { agg.stripe_subscription_id = p.stripe_subscription_id; agg.abbonamento_stato = 'stripe'; }
+        const { error: e3 } = await client.from('clienti').update(agg).eq('id', cliente.id);
+        if (e3) throw new Error(e3.message);
+        Object.assign(cliente, agg);
+      }
+
+      const { error: e4 } = await client.from('pagamenti_stripe_da_abbinare').delete().eq('id', id);
+      if (e4) throw new Error(e4.message);
+
+      caricaStatistiche();
+    } catch (err) {
+      alert('Errore durante l\'abbinamento: ' + err.message);
+      btn.disabled = false; btn.textContent = 'Abbina';
+    }
   }
 
   function renderListaHome(containerId, righe, formattatore) {
