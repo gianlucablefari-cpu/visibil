@@ -219,11 +219,12 @@
   .progetto-item-extra-gratis { color: #1E6B3C; }
   .progetto-item-note a { color: var(--ink); text-decoration: underline; word-break: break-all; }
   .video-comments { margin: 1.75rem 0 1rem; padding: 1rem 1.1rem 1.1rem; background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
-  .vc-title { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.6rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .vc-title { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.75rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .vc-sort { font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--black); padding: 0.3rem 0.5rem; background: #fff; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; cursor: pointer; }
   .vc-item { font-size: 0.85rem; line-height: 1.45; padding: 0.45rem 0; border-top: 1px solid rgba(0,0,0,0.06); }
-  .vc-title + .vc-item { border-top: 0; }
+  .vc-lista .vc-item:first-child { border-top: 0; }
   .vc-item { padding: 0.65rem 0; }
-  .vc-form { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid rgba(0,0,0,0.08); }
+  .vc-form { margin-bottom: 0.9rem; padding-bottom: 0.9rem; border-bottom: 1px solid rgba(0,0,0,0.08); }
   .vc-row { display: flex; align-items: flex-start; gap: 0.75rem; }
   .vc-row .vc-testo { flex: 1; min-width: 0; padding-top: 0.4rem; }
   @media (max-width: 520px) { .vc-row { flex-wrap: wrap; } .vc-row .vc-left { order: 1; } .vc-row .vc-side { order: 2; margin-left: auto; } .vc-row .vc-testo { order: 3; flex-basis: 100%; padding-top: 0; } }
@@ -233,6 +234,7 @@
   .vc-info { font-size: 0.7rem; color: var(--grey); margin-top: 0.2rem; text-align: right; }
   .vc-autore-admin { color: var(--ink); font-weight: 700; }
   .vc-ts { background: var(--ink); color: #fff; border: 0; border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 0.8rem; letter-spacing: 0.02em; font-weight: 600; cursor: pointer; }
+  .vc-mod-tag { font-size: 0.68rem; color: var(--grey); white-space: nowrap; }
   .vc-testo { white-space: pre-wrap; word-break: break-word; }
   .vc-form textarea { width: 100%; min-height: 56px; padding: 0.55rem 0.7rem; font-family: inherit; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; resize: vertical; box-sizing: border-box; }
   .vc-form-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.4rem; flex-wrap: wrap; }
@@ -760,19 +762,42 @@
       await pl.setCurrentTime(Math.min(Math.max(0, t + delta), dur));
     } catch (e) {}
   }
+  let ordineCommentiMem = null;
+  function getOrdineCommenti() {
+    if (ordineCommentiMem) return ordineCommentiMem;
+    try { return localStorage.getItem('vcOrdine') || 'scrittura'; } catch (e) { return 'scrittura'; }
+  }
+  function setOrdineCommenti(v) {
+    ordineCommentiMem = v;
+    try { localStorage.setItem('vcOrdine', v); } catch (e) {}
+  }
   async function renderVideoComments(box, tutti) {
     const videoId = box.dataset.video;
-    const items = tutti.filter(c => c.video_id === videoId);
+    const bozzaEl = box.querySelector('.vc-form textarea');
+    const bozza = bozzaEl ? bozzaEl.value : '';
+    const ordine = getOrdineCommenti();
+    const items = tutti.filter(c => c.video_id === videoId).slice().sort((a, b) => {
+      const ta = new Date(a.created_at).getTime(), tb = new Date(b.created_at).getTime();
+      if (ordine === 'recenti') return tb - ta;
+      if (ordine === 'minuto-asc' || ordine === 'minuto-desc') {
+        const sa = a.secondi, sb = b.secondi;
+        if (sa == null && sb == null) return ta - tb;
+        if (sa == null) return 1;   // senza minuto in fondo
+        if (sb == null) return -1;
+        return ordine === 'minuto-asc' ? (sa - sb || ta - tb) : (sb - sa || ta - tb);
+      }
+      return ta - tb;
+    });
     const lista = items.map(c => `
       <div class="vc-item" data-id="${c.id}">
         <div class="vc-row">
           <div class="vc-left">${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">Vai a ${IC.play} ${fmtSecondi(c.secondi)}</button>` : ''}</div>
-          <div class="vc-testo">${escHtml(c.testo)}</div>
+          <div class="vc-testo">${escHtml(c.testo)}${c.modificato ? ' <span class="vc-mod-tag">(modificato)</span>' : ''}</div>
           <div class="vc-side">
             ${(window.isPreviewMode || c.autore === 'cliente') ? `<span class="vc-azioni">${c.autore === (window.isPreviewMode ? 'admin' : 'cliente') ? `<button type="button" class="vc-mod" title="Modifica"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>` : ''}<button type="button" class="vc-del" title="Elimina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></span>` : ''}
           </div>
         </div>
-        <div class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span> · ${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}${c.modificato ? ' · modificato' : ''}</div>
+        <div class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span> · ${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
       </div>`).join('');
     const form = `
       <div class="vc-form">
@@ -780,7 +805,16 @@
         <textarea placeholder="Scrivi un commento… (Invio per inviare, Maiusc+Invio per andare a capo)" maxlength="2000"></textarea>
         <div class="vc-form-row vc-form-send"><button type="button" class="vc-invia">Invia</button></div>
       </div>`;
-    box.innerHTML = `<div class="vc-title">Commenti${items.length ? ' (' + items.length + ')' : ''}</div>${lista}${form}`;
+    const sel = (v, t) => `<option value="${v}"${ordine === v ? ' selected' : ''}>${t}</option>`;
+    const ordinaUI = items.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
+    box.innerHTML = `<div class="vc-title"><span>Commenti${items.length ? ' (' + items.length + ')' : ''}</span>${ordinaUI}</div>${form}<div class="vc-lista">${lista}</div>`;
+    const taBozza = box.querySelector('.vc-form textarea');
+    if (taBozza && bozza) taBozza.value = bozza;
+    const selOrd = box.querySelector('.vc-sort');
+    if (selOrd) selOrd.onchange = () => {
+      setOrdineCommenti(selOrd.value);
+      document.querySelectorAll('.video-comments[data-init]').forEach(b => renderVideoComments(b, tutti));
+    };
 
     box.querySelectorAll('.vc-ts').forEach(b => b.onclick = async () => {
       try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) { await pl.setCurrentTime(Number(b.dataset.sec)); pl.play(); } } catch (e) {}
@@ -849,6 +883,7 @@
       }
       const { error } = await client.from('video_commenti').insert({ user_id: window.currentUserId, video_id: videoId, autore: window.isPreviewMode ? 'admin' : 'cliente', testo, secondi });
       if (error) { btn.disabled = false; alert('Errore: ' + error.message); return; }
+      ta.value = '';
       const aggiornati = await fetchVideoCommenti(true);
       document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(b => renderVideoComments(b, aggiornati));
     };
