@@ -293,6 +293,10 @@
   .video-qualita button { height: 28px; padding: 0 0.7rem; background: none; border: 0; font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--grey); cursor: pointer; }
   .video-qualita button.attiva { background: var(--ink); color: #fff; }
   .video-dl { text-decoration: none; }
+  .video-hd { font-weight: 800; letter-spacing: 0.02em; }
+  .video-hd.attiva { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .video-hd:disabled { opacity: 0.4; cursor: not-allowed; }
+  .video-qualita { display: inline-flex; }
   .video-nome { display: block; height: 1.4rem; line-height: 1.4rem; margin-bottom: 0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   @media (min-width: 900px) { .video-block:not(:has(.video-wrap.espanso)):has(.video-nome) .vc-form { margin-top: calc(0.6rem + 1.8rem); } }
   .video-nome:hover { text-decoration: underline; }
@@ -786,9 +790,9 @@
           const dbId = 'db_' + (seg[0] === 's' ? seg[1] : seg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
           const q = x => escOnly(x).replace(/"/g, '&quot;');
           const v0 = varianti[0];
-          const qualita = varianti.length > 1
-            ? `<span class="video-qualita" role="group" aria-label="Qualità">${varianti.map((v, i) => `<button type="button" class="${i === 0 ? 'attiva' : ''}" data-src="${q(v.src)}" data-dl="${q(v.dl)}" data-orig="${q(v.orig)}" data-nome="${q(v.nome)}" onclick="vimeoQualita(this)">${escOnly(v.label)}</button>`).join('')}</span>`
-            : '';
+          const hdBtn = (dis, tit) => `<button type="button" class="video-toggle video-hd" ${dis ? 'disabled' : 'onclick="vimeoHd(this)"'} title="${tit}" aria-label="${tit}">HD</button>`;
+          const qualita = varianti.length < 2 ? hdBtn(true, 'Alta qualità non ancora disponibile')
+            : `<span class="video-qualita" role="group" aria-label="Qualità">${hdBtn(false, 'Cambia qualità')}${varianti.map((v, i) => `<button type="button" class="${i === 0 ? 'attiva' : ''}" data-src="${q(v.src)}" data-dl="${q(v.dl)}" data-orig="${q(v.orig)}" data-nome="${q(v.nome)}" onclick="vimeoQualita(this)" data-label="${q(v.label)}" hidden>${escOnly(v.label)}</button>`).join('')}</span>`;
           out += videoWrapHtml(`<video src="${q(v0.src)}" controls playsinline preload="metadata"></video>`, dbId,
             `<a class="video-fallback" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
             { scarica: q(v0.dl), senzaCommenti, qualita,
@@ -864,6 +868,40 @@
     return playerDiIframe(el);
   }
   // Cambio qualità (Dropbox): mantiene il punto del video e lo stato play/pausa
+  // Percorso del file Dropbox a partire dalla cartella del cliente (risolto lato server)
+  const percorsoCache = {};
+  async function risolviPercorsiVideo() {
+    const cc = window.clienteCartella;
+    if (!cc || !cc.link) return;
+    const links = new Set();
+    document.querySelectorAll('.video-wrap').forEach(w => {
+      w.querySelectorAll('.video-qualita button[data-orig]').forEach(b => links.add(b.dataset.orig));
+      const n = w.querySelector('.video-nome'); if (n && !w.querySelector('.video-qualita')) links.add(n.getAttribute('href'));
+    });
+    const todo = [...links].filter(l => l && !(l in percorsoCache));
+    if (!todo.length) return;
+    todo.forEach(l => { percorsoCache[l] = ''; });
+    let tk; try { tk = (await client.auth.getSession()).data.session.access_token; } catch (e) { return; }
+    await Promise.all(todo.map(async l => {
+      try {
+        const res = await fetch('/api/percorso-dropbox', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tk }, body: JSON.stringify({ file_url: l, folder_url: cc.link }) });
+        const d = await res.json();
+        if (res.ok && d.percorso) percorsoCache[l] = d.percorso;
+      } catch (e) {}
+    }));
+    document.querySelectorAll('.video-wrap .video-nome').forEach(n => {
+      const w = n.closest('.video-wrap');
+      const att = w.querySelector('.video-qualita button.attiva');
+      const l = att ? att.dataset.orig : n.getAttribute('href');
+      if (percorsoCache[l]) n.textContent = percorsoCache[l];
+    });
+  }
+  function vimeoHd(hd) {
+    const wrap = hd.closest('.video-wrap');
+    const vars = [...wrap.querySelectorAll('.video-qualita button[data-src]')];
+    const i = vars.findIndex(b => b.classList.contains('attiva'));
+    vimeoQualita(vars[(i + 1) % vars.length]);
+  }
   function vimeoQualita(btn) {
     if (btn.classList.contains('attiva')) return;
     const wrap = btn.closest('.video-wrap');
@@ -876,8 +914,15 @@
     }, { once: true });
     v.src = btn.dataset.src;
     v.load();
-    wrap.querySelectorAll('.video-qualita button').forEach(b => b.classList.toggle('attiva', b === btn));
-    const nm = wrap.querySelector('.video-nome'); if (nm) { nm.href = btn.dataset.orig; nm.textContent = btn.dataset.nome; }
+    const vars = [...wrap.querySelectorAll('.video-qualita button[data-src]')];
+    vars.forEach(b => b.classList.toggle('attiva', b === btn));
+    const hd = wrap.querySelector('.video-hd');
+    if (hd) {
+      const nx = vars[(vars.indexOf(btn) + 1) % vars.length];
+      hd.classList.toggle('attiva', /alta/i.test(btn.dataset.label || ''));
+      hd.title = hd.ariaLabel = 'Qualità attuale: ' + (btn.dataset.label || '') + ' · passa a ' + (nx.dataset.label || '');
+    }
+    const nm = wrap.querySelector('.video-nome'); if (nm) { nm.href = btn.dataset.orig; nm.textContent = percorsoCache[btn.dataset.orig] || btn.dataset.nome; nm.dataset.nome = btn.dataset.nome; }
     const dl = wrap.querySelector('.video-dl'); if (dl) dl.href = btn.dataset.dl;
     const fb = wrap.querySelector('.video-fallback'); if (fb) { fb.href = btn.dataset.orig; fb.style.display = 'none'; }
   }
@@ -1096,6 +1141,7 @@
     };
   }
   async function initVideoComments() {
+    risolviPercorsiVideo();
     const boxes = document.querySelectorAll('.video-comments:not([data-init])');
     if (!boxes.length || !window.currentUserId) return;
     boxes.forEach(b => b.setAttribute('data-init', '1'));
@@ -1230,6 +1276,8 @@
 
       const onedriveLink = document.getElementById('onedrive-link');
       document.getElementById('onedrive-title').textContent = cliente.cartella_nome || 'Cartella';
+      window.clienteCartella = { link: cliente.onedrive_link || '', nome: cliente.cartella_nome || '' };
+      if (typeof risolviPercorsiVideo === 'function') risolviPercorsiVideo();
       if (cliente.onedrive_link) {
         onedriveLink.href = cliente.onedrive_link;
         onedriveLink.classList.remove('folder-card-disabled');
