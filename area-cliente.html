@@ -725,7 +725,7 @@
       </div>`).join('');
     const form = `
       <div class="vc-form">
-        <textarea placeholder="Scrivi un commento mentre guardi il video…" maxlength="2000"></textarea>
+        <textarea placeholder="Scrivi un commento… (Invio per inviare, Maiusc+Invio per andare a capo)" maxlength="2000"></textarea>
         <div class="vc-form-row">
           <button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">⏱ <span class="vc-chip-t">0:00</span></button>
           <button type="button" class="vc-invia">Invia</button>
@@ -764,6 +764,10 @@
       const testoEl = item.querySelector('.vc-testo');
       testoEl.innerHTML = '<textarea class="vc-edit" maxlength="2000"></textarea><div class="vc-form-row"><button type="button" class="vc-annulla vc-sec">Annulla</button><button type="button" class="vc-salva">Salva</button></div>';
       const ta = testoEl.querySelector('textarea'); ta.value = c.testo; ta.focus();
+      ta.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); testoEl.querySelector('.vc-salva').click(); }
+        if (e.key === 'Escape') testoEl.querySelector('.vc-annulla').click();
+      });
       testoEl.querySelector('.vc-annulla').onclick = () => renderVideoComments(box, tutti);
       testoEl.querySelector('.vc-salva').onclick = async () => {
         const nuovo = ta.value.trim(); if (!nuovo) return;
@@ -774,6 +778,10 @@
       };
     });
     const btn = box.querySelector('.vc-invia');
+    const taNuovo = box.querySelector('.vc-form textarea');
+    if (taNuovo && btn) taNuovo.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); btn.click(); }
+    });
     if (btn) btn.onclick = async () => {
       const ta = box.querySelector('textarea');
       const testo = ta.value.trim();

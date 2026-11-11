@@ -1884,7 +1884,7 @@
             <button type="button" onclick="eliminaVideoCommento('${c.id}')" title="Elimina" style="width:26px; height:26px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">×</button>
           </div>`).join('')}
         <div style="margin-top:0.5rem;">
-          <textarea id="vc-reply-${vid}" rows="2" placeholder="Rispondi…" style="width:100%; padding:0.5rem 0.65rem; font-family:var(--sans); font-size:0.82rem; border:1px solid rgba(0,0,0,0.1); border-radius:5px; resize:vertical;"></textarea>
+          <textarea id="vc-reply-${vid}" rows="2" placeholder="Rispondi… (Invio per inviare, Maiusc+Invio per andare a capo)" onkeydown="if(event.key==='Enter' && !event.shiftKey && !event.isComposing){event.preventDefault();rispondiVideoCommento('${vid}');}" style="width:100%; padding:0.5rem 0.65rem; font-family:var(--sans); font-size:0.82rem; border:1px solid rgba(0,0,0,0.1); border-radius:5px; resize:vertical;"></textarea>
           <button type="button" onclick="rispondiVideoCommento('${vid}')" style="margin-top:0.35rem;">Rispondi</button>
         </div>
       </div>`).join('');
