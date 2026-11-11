@@ -696,14 +696,15 @@
     fwd2:  `<svg ${SVG_ATTR}><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>`,
     download:`<svg ${SVG_ATTR}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
     expand:`<svg ${SVG_ATTR}><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`,
+    pause: `<svg ${SVG_ATTR}><rect x="6" y="4" width="4" height="16" fill="currentColor"></rect><rect x="14" y="4" width="4" height="16" fill="currentColor"></rect></svg>`,
     shrink:`<svg ${SVG_ATTR}><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`
   };
 
   // Contenitore comune per video Vimeo (iframe) e Dropbox (video): controlli + zona commenti
   function videoWrapHtml(mediaHtml, id, extraHtml, opz) {
     opz = opz || {};
-    const scarica = opz.scarica ? `<a class="video-toggle video-dl" href="${opz.scarica}" download title="Scarica il video">${IC.download}<span>Scarica</span></a>` : '';
-    return `<div class="video-wrap"><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><span class="video-right">${opz.qualita || ''}${scarica}<button type="button" class="video-toggle" onclick="vimeoToggle(this)">${IC.expand}<span>Ingrandisci</span></button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}`;
+    const scarica = opz.scarica ? `<a class="video-toggle video-dl" href="${opz.scarica}" download title="Scarica il video" aria-label="Scarica il video">${IC.download}</a>` : '';
+    return `<div class="video-wrap"><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><span class="video-right">${opz.qualita || ''}${scarica}<button type="button" class="video-toggle" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}`;
   }
   // Se un video Dropbox non si carica, mostra il link di riserva
   document.addEventListener('error', e => {
@@ -861,10 +862,25 @@
     const dl = wrap.querySelector('.video-dl'); if (dl) dl.href = btn.dataset.dl;
     const fb = wrap.querySelector('.video-fallback'); if (fb) { fb.href = btn.dataset.orig; fb.style.display = 'none'; }
   }
+  async function vimeoPlay(btn) {
+    const el = btn.closest('.video-wrap').querySelector('iframe, video');
+    try {
+      await loadVimeoApi();
+      if (el.tagName === 'VIDEO') { if (el.paused) await el.play(); else el.pause(); }
+      else { const pl = playerDiIframe(el); if (await pl.getPaused()) { await pl.play(); syncPlayIcon(el, true); } else { await pl.pause(); syncPlayIcon(el, false); } }
+    } catch (e) {}
+  }
+  function syncPlayIcon(el, playing) {
+    const b = el.closest('.video-wrap') && el.closest('.video-wrap').querySelector('.video-playbtn');
+    if (b) b.innerHTML = playing ? IC.pause : IC.play;
+  }
+  document.addEventListener('play', e => { if (e.target.tagName === 'VIDEO') syncPlayIcon(e.target, true); }, true);
+  document.addEventListener('pause', e => { if (e.target.tagName === 'VIDEO') syncPlayIcon(e.target, false); }, true);
   function vimeoToggle(btn) {
     const w = btn.closest('.video-wrap');
     const on = w.classList.toggle('espanso');
-    btn.innerHTML = (on ? IC.shrink : IC.expand) + '<span>' + (on ? 'Riduci' : 'Ingrandisci') + '</span>';
+    btn.innerHTML = on ? IC.shrink : IC.expand;
+    btn.title = btn.ariaLabel = on ? 'Riduci' : 'Ingrandisci';
   }
   // Salti avanti/indietro: i clic ravvicinati si sommano e partono come un solo spostamento
   // (evita richieste ripetute al player e di finire esattamente a fine video)
