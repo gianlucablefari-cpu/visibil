@@ -713,7 +713,7 @@
       const q = m[2] || m[6] || '';
       if (!h && q) h = (new URLSearchParams(q.replace(/&amp;/g,'&')).get('h')) || '';
       if (!/^[a-z0-9]*$/i.test(h)) h = '';
-      out += `<div class="video-wrap"><div class="video-embed"><iframe src="https://player.vimeo.com/video/${id}${h ? '?h=' + h : ''}" allow="fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><button type="button" class="video-toggle" onclick="vimeoToggle(this)">${IC.expand}<span>Ingrandisci</span></button></div></div><div class="video-comments" data-video="${id}"></div>`;
+      out += `<div class="video-wrap"><div class="video-embed"><iframe src="https://player.vimeo.com/video/${id}${h ? '?h=' + h : ''}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><button type="button" class="video-toggle" onclick="vimeoToggle(this)">${IC.expand}<span>Ingrandisci</span></button></div></div><div class="video-comments" data-video="${id}"></div>`;
     }
     return out + fmt(s.slice(last));
   }
@@ -848,7 +848,7 @@
     };
 
     box.querySelectorAll('.vc-ts').forEach(b => b.onclick = async () => {
-      try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) { await pl.setCurrentTime(Number(b.dataset.sec)); pl.play(); } } catch (e) {}
+      try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) { await pl.setCurrentTime(Number(b.dataset.sec)); await pl.play().catch(() => {}); } } catch (e) {}
     });
     const chip = box.querySelector('.vc-chip');
     if (chip) {
