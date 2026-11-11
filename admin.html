@@ -706,6 +706,11 @@
           <div id="pr-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
           <button type="button" id="pr-nuovo-btn" class="secondary" onclick="resetFormProgetto()" style="width:100%; margin-top:0.75rem; display:none;">+ Nuovo progetto</button>
         </div>
+
+        <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:1rem;">
+          <div class="section-label" style="margin-top:0;">💬 Commenti ai video di questo cliente</div>
+          <div id="vc-admin"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
+        </div>
       </div>
 
       <div class="sub-doc-panel active" id="subpanel-preventivo">
@@ -1810,7 +1815,58 @@
     box.style.color = pct > 100 ? '#A32D2D' : 'var(--grey)';
   }
 
+  // ---- Commenti ai video Vimeo (risposte di Gianluca) ----
+  function vcEsc(t) { return String(t == null ? '' : t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function vcFmt(n) { n = Math.max(0, Math.floor(n)); return Math.floor(n/60) + ':' + String(n % 60).padStart(2,'0'); }
+  async function caricaVideoCommenti(user_id) {
+    const box = document.getElementById('vc-admin');
+    if (!user_id) { box.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p>'; return; }
+    const { data, error } = await client.from('video_commenti').select('*').eq('user_id', user_id).order('created_at', { ascending: true });
+    if (error) { box.innerHTML = '<p style="font-size:0.85rem; color:#c0392b;">Errore nel caricamento: ' + vcEsc(error.message) + '</p>'; return; }
+    if (!data || data.length === 0) { box.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun commento ancora.</p>'; return; }
+    const gruppi = {};
+    data.forEach(c => { (gruppi[c.video_id] = gruppi[c.video_id] || []).push(c); });
+    box.innerHTML = Object.keys(gruppi).map(vid => `
+      <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.7rem 0.85rem; margin-bottom:0.75rem;">
+        <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.4rem;">
+          Video <a href="https://vimeo.com/${vid}" target="_blank" rel="noopener" style="color:var(--ink);">${vid}</a>
+        </div>
+        ${gruppi[vid].map(c => `
+          <div style="font-size:0.82rem; padding:0.4rem 0; border-top:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; gap:0.5rem;">
+            <div style="flex:1;">
+              <div style="font-size:0.7rem; color:var(--grey);">
+                <strong style="color:${c.autore === 'admin' ? 'var(--ink)' : '#A32D2D'};">${c.autore === 'admin' ? 'Tu' : 'Cliente'}</strong>
+                · ${new Date(c.created_at).toLocaleString('it-CH', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}
+                ${c.secondi != null ? ` · <a href="https://vimeo.com/${vid}#t=${c.secondi}s" target="_blank" rel="noopener" style="color:var(--ink);">▶ ${vcFmt(c.secondi)}</a>` : ''}
+              </div>
+              <div style="white-space:pre-wrap; word-break:break-word;">${vcEsc(c.testo)}</div>
+            </div>
+            <button type="button" onclick="eliminaVideoCommento('${c.id}')" title="Elimina" style="width:26px; height:26px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">×</button>
+          </div>`).join('')}
+        <div style="margin-top:0.5rem;">
+          <textarea id="vc-reply-${vid}" rows="2" placeholder="Rispondi…" style="width:100%; padding:0.5rem 0.65rem; font-family:var(--sans); font-size:0.82rem; border:1px solid rgba(0,0,0,0.1); border-radius:5px; resize:vertical;"></textarea>
+          <button type="button" onclick="rispondiVideoCommento('${vid}')" style="margin-top:0.35rem;">Rispondi</button>
+        </div>
+      </div>`).join('');
+  }
+  async function rispondiVideoCommento(vid) {
+    const user_id = document.getElementById('c-userid').value.trim();
+    const ta = document.getElementById('vc-reply-' + vid);
+    const testo = ta.value.trim();
+    if (!user_id || !testo) return;
+    const { error } = await client.from('video_commenti').insert({ user_id, video_id: vid, autore: 'admin', testo });
+    if (error) { showMsg('progetto-msg', 'Errore: ' + error.message, false); return; }
+    caricaVideoCommenti(user_id);
+  }
+  async function eliminaVideoCommento(id) {
+    if (!confirm('Eliminare questo commento?')) return;
+    const { error } = await client.from('video_commenti').delete().eq('id', id);
+    if (error) { showMsg('progetto-msg', 'Errore: ' + error.message, false); return; }
+    caricaVideoCommenti(document.getElementById('c-userid').value.trim());
+  }
+
   async function caricaProgettiEsistenti(user_id) {
+    caricaVideoCommenti(user_id);
     const container = document.getElementById('pr-lista-esistenti');
     if (!user_id) {
       container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p>';
