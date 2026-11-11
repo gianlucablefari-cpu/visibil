@@ -252,7 +252,7 @@
   .vc-form-row label { font-size: 0.75rem; color: var(--grey); display: flex; align-items: center; gap: 0.35rem; }
   .vc-form-row button { padding: 0.45rem 0.9rem; background: var(--ink); color: #fff; border: 0; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
   .vc-form-row button:disabled { opacity: 0.5; cursor: default; }
-  .vc-form-top { margin-bottom: 0.4rem; }
+  .vc-form-top { margin-bottom: 0.4rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
   .vc-form-send { justify-content: flex-end; }
   .vc-ts, .vc-chip { display: inline-flex; align-items: center; gap: 0.35rem; }
   .vc-ts .ic, .vc-chip .ic { width: 13px; height: 13px; }
@@ -965,7 +965,7 @@
     const lista = radici.map(c => itemHtml(c, false)).join('');
     const form = `
       <div class="vc-form">
-        <div class="vc-form-top"><button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">${IC.clock}<span class="vc-chip-t">0:00</span></button></div>
+        <div class="vc-form-top"><button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">${IC.clock}<span class="vc-chip-t">0:00</span></button><button type="button" class="vc-chip vc-chip-no" title="Invia il commento senza minuto del video">Senza minuto</button></div>
         <textarea placeholder="Scrivi un commento… (Invio per inviare, Maiusc+Invio per andare a capo)" maxlength="2000"></textarea>
         <div class="vc-form-row vc-form-send"><button type="button" class="vc-invia">Invia</button></div>
       </div>`;
@@ -986,15 +986,19 @@
     });
     const chip = box.querySelector('.vc-chip');
     if (chip) {
-      chip.onclick = () => {
-        const on = chip.classList.toggle('attivo');
-        chip.innerHTML = on ? IC.clock + '<span class="vc-chip-t">' + (box._tempo || '0:00') + '</span>' : 'Senza minuto';
+      const noBtn = box.querySelector('.vc-chip-no');
+      const setMinuto = on => {
+        chip.classList.toggle('attivo', on);
+        if (noBtn) noBtn.classList.toggle('attivo', !on);
+        const t = chip.querySelector('.vc-chip-t'); if (t) t.textContent = box._tempo || t.textContent;
       };
+      chip.onclick = () => setMinuto(!chip.classList.contains('attivo'));
+      if (noBtn) noBtn.onclick = () => setMinuto(noBtn.classList.contains('attivo'));
       loadVimeoApi().then(() => {
         const pl = getVideoPlayer(box);
         if (pl && !box._tl) { box._tl = true; pl.on('timeupdate', d => {
           box._tempo = fmtSecondi(d.seconds);
-          const t = box.querySelector('.vc-chip.attivo .vc-chip-t'); if (t) t.textContent = box._tempo;
+          const t = box.querySelector('.vc-chip .vc-chip-t'); if (t) t.textContent = box._tempo;
         }); }
       }).catch(() => {});
     }
