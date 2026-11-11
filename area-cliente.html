@@ -280,6 +280,8 @@
   .video-skip:hover, .video-toggle:hover { border-color: var(--ink); color: var(--ink); }
   .video-skip:active { background: rgba(26,26,230,0.08); }
   .ic { width: 15px; height: 15px; flex-shrink: 0; }
+  .video-embed video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
+  .video-fallback { display: block; margin-top: 0.4rem; font-size: 0.75rem; color: var(--ink); text-decoration: underline; }
   .video-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .progetto-item-note { font-size: 0.8rem; color: var(--black); margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid rgba(0,0,0,0.06); white-space: pre-wrap; }
   .badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.35rem 0.75rem; border-radius: 100px; }
@@ -691,6 +693,18 @@
     shrink:`<svg ${SVG_ATTR}><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`
   };
 
+  // Contenitore comune per video Vimeo (iframe) e Dropbox (video): controlli + zona commenti
+  function videoWrapHtml(mediaHtml, id, extraHtml) {
+    return `<div class="video-wrap"><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><button type="button" class="video-toggle" onclick="vimeoToggle(this)">${IC.expand}<span>Ingrandisci</span></button></div>${extraHtml || ''}</div><div class="video-comments" data-video="${id}"></div>`;
+  }
+  // Se un video Dropbox non si carica, mostra il link di riserva
+  document.addEventListener('error', e => {
+    if (e.target && e.target.tagName === 'VIDEO') {
+      const fb = e.target.closest('.video-wrap') && e.target.closest('.video-wrap').querySelector('.video-fallback');
+      if (fb) fb.style.display = 'block';
+    }
+  }, true);
+
   // Testo sicuro + player Vimeo responsive (solo iframe/link di vimeo.com)
   function renderNota(raw) {
     const s = String(raw == null ? '' : raw);
@@ -703,7 +717,7 @@
       const url = part.slice(0, part.length - tail.length);
       return `<a href="${escOnly(url).replace(/"/g,'&quot;')}" target="_blank" rel="noopener noreferrer">${escOnly(url)}</a>${escOnly(tail)}`;
     }).join('');
-    const re = /<iframe[^>]*?src=["']https:\/\/player\.vimeo\.com\/video\/(\d+)(?:\?([^"']*))?["'][^>]*>\s*<\/iframe>(?:\s*<p>[\s\S]*?vimeo[\s\S]*?<\/p>)?(?:\s*<script[^>]*player\.vimeo\.com[^>]*><\/script>)?|https?:\/\/(?:www\.)?vimeo\.com\/(?:(?:channels\/[\w-]+|groups\/[\w-]+\/videos|album\/\d+\/video)\/)?(\d+)(?:\/([a-z0-9]+))?|https?:\/\/player\.vimeo\.com\/video\/(\d+)(?:\?([\w=&%.\-;]*))?/gi;
+    const re = /<iframe[^>]*?src=["']https:\/\/player\.vimeo\.com\/video\/(\d+)(?:\?([^"']*))?["'][^>]*>\s*<\/iframe>(?:\s*<p>[\s\S]*?vimeo[\s\S]*?<\/p>)?(?:\s*<script[^>]*player\.vimeo\.com[^>]*><\/script>)?|https?:\/\/(?:www\.)?vimeo\.com\/(?:(?:channels\/[\w-]+|groups\/[\w-]+\/videos|album\/\d+\/video)\/)?(\d+)(?:\/([a-z0-9]+))?|https?:\/\/player\.vimeo\.com\/video\/(\d+)(?:\?([\w=&%.\-;]*))?|(https?:\/\/(?:www\.)?dropbox\.com\/(?:scl\/fi|s)\/[^\s<>\"]+?\.(?:mp4|mov|m4v|webm)(?:\?[^\s<>\"]*)?(?=$|[\s<>\"]))/gi;
     let out = '', last = 0, m;
     while ((m = re.exec(s)) !== null) {
       out += fmt(s.slice(last, m.index));
@@ -713,7 +727,20 @@
       const q = m[2] || m[6] || '';
       if (!h && q) h = (new URLSearchParams(q.replace(/&amp;/g,'&')).get('h')) || '';
       if (!/^[a-z0-9]*$/i.test(h)) h = '';
-      out += `<div class="video-wrap"><div class="video-embed"><iframe src="https://player.vimeo.com/video/${id}${h ? '?h=' + h : ''}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><button type="button" class="video-toggle" onclick="vimeoToggle(this)">${IC.expand}<span>Ingrandisci</span></button></div></div><div class="video-comments" data-video="${id}"></div>`;
+      if (m[7]) {
+        // Video su Dropbox: link condiviso -> riproduzione diretta
+        let u; try { u = new URL(m[7].replace(/&amp;/g, '&')); } catch (e) { u = null; }
+        if (u) {
+          const seg = u.pathname.split('/').filter(Boolean);
+          const dbId = 'db_' + (seg[0] === 's' ? seg[1] : seg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
+          const orig = u.toString();
+          u.searchParams.delete('dl'); u.searchParams.set('raw', '1');
+          out += videoWrapHtml(`<video src="${escOnly(u.toString()).replace(/"/g,'&quot;')}" controls playsinline preload="metadata"></video>`, dbId,
+            `<a class="video-fallback" href="${escOnly(orig).replace(/"/g,'&quot;')}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`);
+          continue;
+        }
+      }
+      out += videoWrapHtml(`<iframe src="https://player.vimeo.com/video/${id}${h ? '?h=' + h : ''}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>`, id);
     }
     return out + fmt(s.slice(last));
   }
@@ -740,10 +767,12 @@
   let vimeoApiPromise = null;
   function loadVimeoApi() {
     if (window.Vimeo && window.Vimeo.Player) return Promise.resolve();
-    if (!vimeoApiPromise) vimeoApiPromise = new Promise((res, rej) => {
+    // niente da caricare se in pagina non ci sono video Vimeo (es. solo video Dropbox)
+    if (!document.querySelector('iframe[src*="player.vimeo.com"]')) return Promise.resolve();
+    if (!vimeoApiPromise) vimeoApiPromise = new Promise(res => {
       const sc = document.createElement('script');
       sc.src = 'https://player.vimeo.com/api/player.js';
-      sc.onload = res; sc.onerror = rej;
+      sc.onload = res; sc.onerror = () => { vimeoApiPromise = null; res(); };
       document.head.appendChild(sc);
     });
     return vimeoApiPromise;
@@ -756,14 +785,27 @@
     }
     return videoCommentiPromise;
   }
-  function playerDiIframe(iframe) {
-    if (!iframe || !window.Vimeo) return null;
-    if (!iframe._player) iframe._player = new Vimeo.Player(iframe);
-    return iframe._player;
+  // Restituisce un oggetto player con la stessa interfaccia per Vimeo (iframe) e Dropbox (video)
+  function playerDiIframe(el) {
+    if (!el) return null;
+    if (el._player) return el._player;
+    if (el.tagName === 'VIDEO') {
+      el._player = {
+        getCurrentTime: async () => el.currentTime,
+        getDuration: async () => el.duration || 0,
+        setCurrentTime: async t => { el.currentTime = t; },
+        play: () => el.play(),
+        on: (ev, cb) => { if (ev === 'timeupdate') el.addEventListener('timeupdate', () => cb({ seconds: el.currentTime })); }
+      };
+      return el._player;
+    }
+    if (!window.Vimeo) return null;
+    el._player = new Vimeo.Player(el);
+    return el._player;
   }
   function getVideoPlayer(box) {
-    const iframe = box.previousElementSibling && box.previousElementSibling.querySelector('iframe');
-    return playerDiIframe(iframe);
+    const el = box.previousElementSibling && box.previousElementSibling.querySelector('iframe, video');
+    return playerDiIframe(el);
   }
   function vimeoToggle(btn) {
     const w = btn.closest('.video-wrap');
@@ -773,7 +815,7 @@
   // Salti avanti/indietro: i clic ravvicinati si sommano e partono come un solo spostamento
   // (evita richieste ripetute al player e di finire esattamente a fine video)
   async function vimeoSkip(btn, delta) {
-    const iframe = btn.closest('.video-wrap').querySelector('iframe');
+    const iframe = btn.closest('.video-wrap').querySelector('iframe, video');
     try {
       await loadVimeoApi();
       const pl = playerDiIframe(iframe);
