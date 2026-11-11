@@ -624,7 +624,7 @@
       <label for="c-instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg>Link Instagram</label>
       <input type="text" id="c-instagram">
 
-      <label for="c-cartella-nome">Nome cartella materiali (come appare al cliente)</label>
+      <label for="c-cartella-nome">Nome cartella materiali (automatico dal link Dropbox, modificabile)</label>
       <input type="text" id="c-cartella-nome" placeholder="es. KleinCASA — Materiali">
 
       <label for="c-onedrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Link cartella materiali (Dropbox)</label>
@@ -1275,9 +1275,35 @@
     msg.className = 'msg ok';
   }
 
+  // Legge in automatico il nome della cartella dal link Dropbox (null se non riesce)
+  async function risolviNomeCartella(link) {
+    link = (link || '').trim();
+    if (!/^https:\/\/(www\.)?dropbox\.com\//i.test(link)) return null;
+    try {
+      const { data: sessionData } = await client.auth.getSession();
+      const res = await fetch('/api/nome-cartella-dropbox', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionData.session.access_token}` },
+        body: JSON.stringify({ url: link })
+      });
+      if (!res.ok) return null;
+      const d = await res.json();
+      return d.nome || null;
+    } catch (e) { return null; }
+  }
+
   async function salvaCliente() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('cliente-msg', 'Serve lo User ID.', false); return; }
+
+    const linkCartella = document.getElementById('c-onedrive').value.trim();
+    const cartellaCorrente = (clientiCache.find(x => x.user_id === user_id) || {});
+    let cartellaNome = document.getElementById('c-cartella-nome').value.trim();
+    if (linkCartella && (!cartellaNome || linkCartella !== (cartellaCorrente.onedrive_link || '').trim())) {
+      cartellaNome = (await risolviNomeCartella(linkCartella)) || cartellaNome;
+    }
+    if (!linkCartella) cartellaNome = '';
+    document.getElementById('c-cartella-nome').value = cartellaNome;
 
     const payload = {
       user_id,
@@ -1292,7 +1318,7 @@
       pref_telefono: document.getElementById('c-pref-telefono').checked,
       orario_preferito: document.getElementById('c-orario').value,
       onedrive_link: document.getElementById('c-onedrive').value,
-      cartella_nome: document.getElementById('c-cartella-nome').value.trim() || null,
+      cartella_nome: cartellaNome || null,
       sito_url: document.getElementById('c-sito-url').value,
       sito_stato: document.getElementById('c-sito-stato').value,
       sito_password: document.getElementById('c-sito-password').value,
@@ -1725,6 +1751,14 @@
     document.getElementById('c-orario').value = c.orario_preferito || '';
     document.getElementById('c-onedrive').value = c.onedrive_link || '';
     document.getElementById('c-cartella-nome').value = c.cartella_nome || '';
+    if (c.onedrive_link && !c.cartella_nome) {
+      risolviNomeCartella(c.onedrive_link).then(async nome => {
+        if (!nome) return;
+        if (document.getElementById('c-userid').value.trim() === user_id) document.getElementById('c-cartella-nome').value = nome;
+        c.cartella_nome = nome;
+        await client.from('clienti').update({ cartella_nome: nome }).eq('user_id', user_id);
+      });
+    }
     document.getElementById('c-sito-url').value = c.sito_url || '';
     document.getElementById('c-sito-stato').value = c.sito_stato || '';
     document.getElementById('c-sito-password').value = c.sito_password || '';
