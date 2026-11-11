@@ -232,6 +232,12 @@
   .vc-form-row label { font-size: 0.75rem; color: var(--grey); display: flex; align-items: center; gap: 0.35rem; }
   .vc-form-row button { padding: 0.45rem 0.9rem; background: var(--ink); color: #fff; border: 0; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
   .vc-form-row button:disabled { opacity: 0.5; cursor: default; }
+  .vc-chip { padding: 0.35rem 0.7rem; background: none; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; font: inherit; font-size: 0.75rem; font-weight: 600; color: var(--grey); cursor: pointer; }
+  .vc-chip.attivo { background: rgba(26,26,230,0.08); border-color: rgba(26,26,230,0.3); color: var(--ink); }
+  .vc-azioni { margin-left: auto; display: inline-flex; gap: 0.6rem; }
+  .vc-azioni button { background: none; border: 0; padding: 0; font: inherit; font-size: 0.7rem; color: var(--grey); text-decoration: underline; cursor: pointer; }
+  .vc-edit { width: 100%; min-height: 56px; padding: 0.5rem 0.65rem; font-family: inherit; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; box-sizing: border-box; }
+  .vc-form-row .vc-sec { background: none; color: var(--grey); border: 1px solid rgba(0,0,0,0.15); }
   .video-wrap { max-width: 380px; margin: 0.6rem 0; white-space: normal; transition: max-width 0.25s; }
   .video-wrap.espanso { max-width: 100%; }
   .video-embed { position: relative; padding-top: 56.25%; border-radius: 8px; overflow: hidden; background: #000; }
@@ -694,11 +700,12 @@
     const videoId = box.dataset.video;
     const items = tutti.filter(c => c.video_id === videoId);
     const lista = items.map(c => `
-      <div class="vc-item">
+      <div class="vc-item" data-id="${c.id}">
         <div class="vc-meta">
           <span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${c.autore === 'admin' ? 'Gianluca' : 'Tu'}</span>
-          <span>${new Date(c.created_at).toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit' })}</span>
+          <span>${new Date(c.created_at).toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit' })}${c.modificato ? ' · modificato' : ''}</span>
           ${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}">▶ ${fmtSecondi(c.secondi)}</button>` : ''}
+          ${(c.autore === 'cliente' && !window.isPreviewMode) ? `<span class="vc-azioni"><button type="button" class="vc-mod">Modifica</button><button type="button" class="vc-del">Elimina</button></span>` : ''}
         </div>
         <div class="vc-testo">${escHtml(c.testo)}</div>
       </div>`).join('');
@@ -706,7 +713,7 @@
       <div class="vc-form">
         <textarea placeholder="Scrivi un commento mentre guardi il video…" maxlength="2000"></textarea>
         <div class="vc-form-row">
-          <label><input type="checkbox" class="vc-usa-minuto" checked> Collega al minuto attuale</label>
+          <button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">⏱ <span class="vc-chip-t">0:00</span></button>
           <button type="button" class="vc-invia">Invia</button>
         </div>
       </div>`;
@@ -715,6 +722,43 @@
     box.querySelectorAll('.vc-ts').forEach(b => b.onclick = async () => {
       try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) { await pl.setCurrentTime(Number(b.dataset.sec)); pl.play(); } } catch (e) {}
     });
+    const chip = box.querySelector('.vc-chip');
+    if (chip) {
+      chip.onclick = () => {
+        const on = chip.classList.toggle('attivo');
+        chip.innerHTML = on ? '⏱ <span class="vc-chip-t">' + (box._tempo || '0:00') + '</span>' : 'Senza minuto';
+      };
+      loadVimeoApi().then(() => {
+        const pl = getVideoPlayer(box);
+        if (pl && !box._tl) { box._tl = true; pl.on('timeupdate', d => {
+          box._tempo = fmtSecondi(d.seconds);
+          const t = box.querySelector('.vc-chip.attivo .vc-chip-t'); if (t) t.textContent = box._tempo;
+        }); }
+      }).catch(() => {});
+    }
+    box.querySelectorAll('.vc-del').forEach(b => b.onclick = async () => {
+      const id = b.closest('.vc-item').dataset.id;
+      if (!confirm('Eliminare questo commento?')) return;
+      const { error } = await client.from('video_commenti').delete().eq('id', id);
+      if (error) { alert('Errore: ' + error.message); return; }
+      const agg = await fetchVideoCommenti(true);
+      document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg));
+    });
+    box.querySelectorAll('.vc-mod').forEach(b => b.onclick = () => {
+      const item = b.closest('.vc-item');
+      const c = items.find(x => x.id === item.dataset.id);
+      const testoEl = item.querySelector('.vc-testo');
+      testoEl.innerHTML = '<textarea class="vc-edit" maxlength="2000"></textarea><div class="vc-form-row"><button type="button" class="vc-annulla vc-sec">Annulla</button><button type="button" class="vc-salva">Salva</button></div>';
+      const ta = testoEl.querySelector('textarea'); ta.value = c.testo; ta.focus();
+      testoEl.querySelector('.vc-annulla').onclick = () => renderVideoComments(box, tutti);
+      testoEl.querySelector('.vc-salva').onclick = async () => {
+        const nuovo = ta.value.trim(); if (!nuovo) return;
+        const { error } = await client.from('video_commenti').update({ testo: nuovo, modificato: true }).eq('id', c.id);
+        if (error) { alert('Errore: ' + error.message); return; }
+        const agg = await fetchVideoCommenti(true);
+        document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg));
+      };
+    });
     const btn = box.querySelector('.vc-invia');
     if (btn) btn.onclick = async () => {
       const ta = box.querySelector('textarea');
@@ -722,7 +766,7 @@
       if (!testo) return;
       btn.disabled = true;
       let secondi = null;
-      if (box.querySelector('.vc-usa-minuto').checked) {
+      if (box.querySelector('.vc-chip').classList.contains('attivo')) {
         try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) secondi = Math.floor(await pl.getCurrentTime()); } catch (e) {}
       }
       const { error } = await client.from('video_commenti').insert({ user_id: window.currentUserId, video_id: videoId, autore: 'cliente', testo, secondi });

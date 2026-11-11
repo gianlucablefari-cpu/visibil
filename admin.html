@@ -1880,6 +1880,7 @@
               </div>
               <div style="white-space:pre-wrap; word-break:break-word;">${vcEsc(c.testo)}</div>
             </div>
+            ${c.autore === 'admin' ? `<button type="button" onclick="modificaVideoCommento('${c.id}')" title="Modifica" style="width:26px; height:26px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; cursor:pointer; flex-shrink:0;">✎</button>` : ''}
             <button type="button" onclick="eliminaVideoCommento('${c.id}')" title="Elimina" style="width:26px; height:26px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">×</button>
           </div>`).join('')}
         <div style="margin-top:0.5rem;">
@@ -1896,6 +1897,14 @@
     const { error } = await client.from('video_commenti').insert({ user_id, video_id: vid, autore: 'admin', testo });
     if (error) { showMsg('progetto-msg', 'Errore: ' + error.message, false); return; }
     caricaVideoCommenti(user_id);
+  }
+  async function modificaVideoCommento(id) {
+    const { data } = await client.from('video_commenti').select('testo').eq('id', id).single();
+    const nuovo = prompt('Modifica commento', data ? data.testo : '');
+    if (nuovo === null || !nuovo.trim()) return;
+    const { error } = await client.from('video_commenti').update({ testo: nuovo.trim(), modificato: true }).eq('id', id);
+    if (error) { showMsg('progetto-msg', 'Errore: ' + error.message, false); return; }
+    caricaVideoCommenti(document.getElementById('c-userid').value.trim());
   }
   async function eliminaVideoCommento(id) {
     if (!confirm('Eliminare questo commento?')) return;
