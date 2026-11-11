@@ -273,11 +273,13 @@
   .vc-form-row .vc-sec { background: none; color: var(--grey); border: 1px solid rgba(0,0,0,0.15); }
   .video-wrap { max-width: 380px; margin: 0.6rem 0; white-space: normal; transition: max-width 0.25s; }
   .video-wrap.espanso { max-width: 100%; }
-  /* Video piccolo su schermo largo: commenti a sinistra, video a destra */
+  /* Video piccolo su schermo largo: campo commento a destra del video, elenco sotto */
   @media (min-width: 900px) {
-    .video-block:not(:has(.video-wrap.espanso)):has(.video-comments) { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 1.25rem; align-items: start; }
-    .video-block:not(:has(.video-wrap.espanso)) > .video-wrap { order: 2; margin: 0.6rem 0; }
-    .video-block:not(:has(.video-wrap.espanso)) > .video-comments { order: 1; margin: 0.6rem 0; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 0 1.25rem; align-items: start; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) > .video-comments { display: contents; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-form { grid-column: 2; grid-row: 1; margin: 0.6rem 0; padding: 1rem 1.1rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) > .video-wrap { grid-column: 1; grid-row: 1; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-elenco { grid-column: 1 / -1; grid-row: 2; margin: 0.6rem 0 1rem; padding: 1rem 1.1rem 1.1rem; background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
   }
   .video-embed { position: relative; padding-top: 56.25%; border-radius: 8px; overflow: hidden; background: #000; }
   .video-controls { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
@@ -969,7 +971,7 @@
     const sel = (v, t) => `<option value="${v}"${ordine === v ? ' selected' : ''}>${t}</option>`;
     const ordinaUI = radici.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
     const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})</span>${ordinaUI}</div>` : '';
-    box.innerHTML = `${form}${testata}<div class="vc-lista">${lista}</div>`;
+    box.innerHTML = `${form}<div class="vc-elenco">${testata}<div class="vc-lista">${lista}</div></div>`;
     const taBozza = box.querySelector('.vc-form textarea');
     if (taBozza && bozza) taBozza.value = bozza;
     const selOrd = box.querySelector('.vc-sort');
