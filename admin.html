@@ -1870,18 +1870,27 @@
     if (!data || data.length === 0) { box.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun commento ancora.</p>'; return; }
     const gruppi = {};
     data.forEach(c => { (gruppi[c.video_id] = gruppi[c.video_id] || []).push(c); });
+    // le risposte vengono subito dopo il commento a cui rispondono
+    Object.keys(gruppi).forEach(v => {
+      const tutti = gruppi[v];
+      const radici = tutti.filter(c => !c.risposta_a);
+      const ordinati = [];
+      radici.forEach(r => { ordinati.push(r); tutti.filter(c => c.risposta_a === r.id).forEach(f => ordinati.push(f)); });
+      tutti.filter(c => c.risposta_a && !radici.some(r => r.id === c.risposta_a)).forEach(c => ordinati.push(c));
+      gruppi[v] = ordinati;
+    });
     box.innerHTML = Object.keys(gruppi).map(vid => `
       <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.7rem 0.85rem; margin-bottom:0.75rem;">
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.4rem;">
           Video <a href="https://vimeo.com/${vid}" target="_blank" rel="noopener" style="color:var(--ink);">${vid}</a>
         </div>
         ${gruppi[vid].map(c => `
-          <div style="font-size:0.82rem; padding:0.4rem 0; border-top:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; gap:0.5rem;">
+          <div style="font-size:0.82rem; padding:0.4rem 0; border-top:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; gap:0.5rem;${c.risposta_a ? ' margin-left:1.1rem; padding-left:0.6rem; border-left:2px solid rgba(0,0,0,0.12);' : ''}">
             <div style="flex:1;">
               <div style="font-size:0.7rem; color:var(--grey);">
                 <strong style="color:${c.autore === 'admin' ? 'var(--ink)' : '#A32D2D'};">${c.autore === 'admin' ? 'Tu' : 'Cliente'}</strong>
                 · ${new Date(c.created_at).toLocaleString('it-CH', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
-                ${c.secondi != null ? ` · <a href="https://vimeo.com/${vid}#t=${c.secondi}s" target="_blank" rel="noopener" style="color:var(--ink);">▶ ${vcFmt(c.secondi)}</a>` : ''}
+                ${c.risposta_a ? ' · ↳ risposta' : ''}${c.secondi != null ? ` · <a href="https://vimeo.com/${vid}#t=${c.secondi}s" target="_blank" rel="noopener" style="color:var(--ink);">▶ ${vcFmt(c.secondi)}</a>` : ''}
               </div>
               <div style="white-space:pre-wrap; word-break:break-word;">${vcEsc(c.testo)}</div>
             </div>

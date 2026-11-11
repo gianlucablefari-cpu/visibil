@@ -219,6 +219,13 @@
   .progetto-item-extra-gratis { color: #1E6B3C; }
   .progetto-item-note a { color: var(--ink); text-decoration: underline; word-break: break-all; }
   .video-comments { margin: 1.75rem 0 1rem; padding: 1rem 1.1rem 1.1rem; background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
+  .vc-risposte { margin-left: 1.1rem; padding-left: 0.8rem; border-left: 2px solid rgba(0,0,0,0.1); }
+  .vc-risposte:empty { display: none; }
+  .vc-reply { padding: 0.4rem 0 !important; border-top: 0 !important; }
+  .vc-reply-form { margin: 0.5rem 0 0.4rem 1.1rem; padding-left: 0.8rem; border-left: 2px solid var(--ink); }
+  .vc-reply-form .vc-annulla-risp { background: none; color: var(--grey); border: 1px solid rgba(0,0,0,0.15); }
+  .vc-reply-form textarea { width: 100%; min-height: 48px; padding: 0.5rem 0.65rem; font-family: inherit; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; resize: vertical; box-sizing: border-box; }
+  .vc-azioni .vc-rispondi:hover { color: var(--ink); border-color: var(--ink); }
   .vc-title { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.25rem; }
   .vc-sort { font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--black); padding: 0.3rem 0.5rem; background: #fff; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; cursor: pointer; }
   .vc-item { font-size: 0.85rem; line-height: 1.45; padding: 0.45rem 0; border-top: 1px solid rgba(0,0,0,0.06); }
@@ -787,7 +794,8 @@
     const bozzaEl = box.querySelector('.vc-form textarea');
     const bozza = bozzaEl ? bozzaEl.value : '';
     const ordine = getOrdineCommenti();
-    const items = tutti.filter(c => c.video_id === videoId).slice().sort((a, b) => {
+    const items = tutti.filter(c => c.video_id === videoId);   // tutti (radici + risposte)
+    const radici = items.filter(c => !c.risposta_a).sort((a, b) => {
       const ta = new Date(a.created_at).getTime(), tb = new Date(b.created_at).getTime();
       if (ordine === 'recenti') return tb - ta;
       if (ordine === 'minuto-asc' || ordine === 'minuto-desc') {
@@ -799,16 +807,28 @@
       }
       return ta - tb;
     });
-    const lista = items.map(c => `
-      <div class="vc-item" data-id="${c.id}">
+    const risposteDi = id => items.filter(c => c.risposta_a === id).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const SVG_ST = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    const itemHtml = (c, isReply) => {
+      const mioRuolo = window.isPreviewMode ? 'admin' : 'cliente';
+      const puoModificare = c.autore === mioRuolo;
+      const puoEliminare = window.isPreviewMode || c.autore === 'cliente';
+      const figli = isReply ? [] : risposteDi(c.id);
+      return `
+      <div class="vc-item${isReply ? ' vc-reply' : ''}" data-id="${c.id}">
         <div class="vc-row">
           <div class="vc-left">${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">Vai a ${IC.play} ${fmtSecondi(c.secondi)}</button>` : ''}</div>
           <div class="vc-testo">${escHtml(c.testo)} <span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span>${c.modificato ? ' <span class="vc-mod-tag">(modificato)</span>' : ''}</span></div>
-          <div class="vc-side">
-            ${(window.isPreviewMode || c.autore === 'cliente') ? `<span class="vc-azioni">${c.autore === (window.isPreviewMode ? 'admin' : 'cliente') ? `<button type="button" class="vc-mod" title="Modifica"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>` : ''}<button type="button" class="vc-del" title="Elimina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></span>` : ''}
-          </div>
+          <div class="vc-side"><span class="vc-azioni">
+            ${isReply ? '' : `<button type="button" class="vc-rispondi" title="Rispondi"><svg ${SVG_ST}><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg></button>`}
+            ${puoModificare ? `<button type="button" class="vc-mod" title="Modifica"><svg ${SVG_ST}><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>` : ''}
+            ${puoEliminare ? `<button type="button" class="vc-del" title="Elimina"><svg ${SVG_ST}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>` : ''}
+          </span></div>
         </div>
-      </div>`).join('');
+        ${isReply ? '' : `<div class="vc-risposte">${figli.map(f => itemHtml(f, true)).join('')}</div>`}
+      </div>`;
+    };
+    const lista = radici.map(c => itemHtml(c, false)).join('');
     const form = `
       <div class="vc-form">
         <div class="vc-form-top"><button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">${IC.clock}<span class="vc-chip-t">0:00</span></button></div>
@@ -816,7 +836,7 @@
         <div class="vc-form-row vc-form-send"><button type="button" class="vc-invia">Invia</button></div>
       </div>`;
     const sel = (v, t) => `<option value="${v}"${ordine === v ? ' selected' : ''}>${t}</option>`;
-    const ordinaUI = items.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
+    const ordinaUI = radici.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
     const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})</span>${ordinaUI}</div>` : '';
     box.innerHTML = `${form}${testata}<div class="vc-lista">${lista}</div>`;
     const taBozza = box.querySelector('.vc-form textarea');
@@ -846,7 +866,8 @@
     }
     box.querySelectorAll('.vc-del').forEach(b => b.onclick = async () => {
       const id = b.closest('.vc-item').dataset.id;
-      if (!confirm('Eliminare questo commento?')) return;
+      const haRisposte = items.some(x => x.risposta_a === id);
+      if (!confirm(haRisposte ? 'Eliminare questo commento e le sue risposte?' : 'Eliminare questo commento?')) return;
       const { error } = await client.from('video_commenti').delete().eq('id', id);
       if (error) { alert('Errore: ' + error.message); return; }
       const agg = await fetchVideoCommenti(true);
@@ -856,12 +877,15 @@
       const item = b.closest('.vc-item');
       const c = items.find(x => x.id === item.dataset.id);
       const testoEl = item.querySelector('.vc-testo');
-      testoEl.innerHTML = '<textarea class="vc-edit" maxlength="2000"></textarea><div class="vc-edit-row"><span class="vc-tempo-edit">' + IC.clock + '<span>Minuto nel video</span><input type="text" class="vc-tempo-input" placeholder="m:ss" size="5" inputmode="numeric" title="Minuto del video (vuoto = nessuno)"><button type="button" class="vc-adesso vc-mini">Usa quello attuale</button></span><span class="vc-edit-btns"><button type="button" class="vc-annulla vc-mini">Annulla</button><button type="button" class="vc-salva vc-mini vc-primario">Salva</button></span></div>';
+      const isRisposta = !!c.risposta_a;
+      testoEl.innerHTML = '<textarea class="vc-edit" maxlength="2000"></textarea><div class="vc-edit-row">' + (isRisposta ? '<span></span>' : '<span class="vc-tempo-edit">' + IC.clock + '<span>Minuto nel video</span><input type="text" class="vc-tempo-input" placeholder="m:ss" size="5" inputmode="numeric" title="Minuto del video (vuoto = nessuno)"><button type="button" class="vc-adesso vc-mini">Usa quello attuale</button></span>') + '<span class="vc-edit-btns"><button type="button" class="vc-annulla vc-mini">Annulla</button><button type="button" class="vc-salva vc-mini vc-primario">Salva</button></span></div>';
       const tin = testoEl.querySelector('.vc-tempo-input');
-      tin.value = c.secondi != null ? fmtSecondi(c.secondi) : '';
-      testoEl.querySelector('.vc-adesso').onclick = async () => {
-        try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) tin.value = fmtSecondi(await pl.getCurrentTime()); } catch (e) {}
-      };
+      if (tin) {
+        tin.value = c.secondi != null ? fmtSecondi(c.secondi) : '';
+        testoEl.querySelector('.vc-adesso').onclick = async () => {
+          try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) tin.value = fmtSecondi(await pl.getCurrentTime()); } catch (e) {}
+        };
+      }
       const ta = testoEl.querySelector('textarea'); ta.value = c.testo; ta.focus();
       ta.addEventListener('keydown', e => {
         if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); testoEl.querySelector('.vc-salva').click(); }
@@ -870,13 +894,41 @@
       testoEl.querySelector('.vc-annulla').onclick = () => renderVideoComments(box, tutti);
       testoEl.querySelector('.vc-salva').onclick = async () => {
         const nuovo = ta.value.trim(); if (!nuovo) return;
-        const sec = parseTempo(tin.value);
-        if (sec === undefined) { alert('Minuto non valido: scrivi ad esempio 1:15, oppure lascia vuoto.'); return; }
-        const { error } = await client.from('video_commenti').update({ testo: nuovo, secondi: sec, modificato: true }).eq('id', c.id);
+        const upd = { testo: nuovo, modificato: true };
+        if (tin) {
+          const sec = parseTempo(tin.value);
+          if (sec === undefined) { alert('Minuto non valido: scrivi ad esempio 1:15, oppure lascia vuoto.'); return; }
+          upd.secondi = sec;
+        }
+        const { error } = await client.from('video_commenti').update(upd).eq('id', c.id);
         if (error) { alert('Errore: ' + error.message); return; }
         const agg = await fetchVideoCommenti(true);
         document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg));
       };
+    });
+    box.querySelectorAll('.vc-rispondi').forEach(b => b.onclick = () => {
+      const item = b.closest('.vc-item');
+      const gia = item.querySelector(':scope > .vc-reply-form');
+      if (gia) { gia.remove(); return; }
+      const f = document.createElement('div');
+      f.className = 'vc-reply-form';
+      f.innerHTML = '<textarea maxlength="2000" placeholder="Scrivi una risposta… (Invio per inviare)"></textarea><div class="vc-form-row vc-form-send"><button type="button" class="vc-annulla-risp vc-mini">Annulla</button><button type="button" class="vc-invia-risp vc-mini vc-primario">Invia</button></div>';
+      item.insertBefore(f, item.querySelector(':scope > .vc-risposte'));
+      const ta = f.querySelector('textarea'); ta.focus();
+      const invia = async () => {
+        const testo = ta.value.trim(); if (!testo) return;
+        f.querySelector('.vc-invia-risp').disabled = true;
+        const { error } = await client.from('video_commenti').insert({ user_id: window.currentUserId, video_id: videoId, autore: window.isPreviewMode ? 'admin' : 'cliente', testo, secondi: null, risposta_a: item.dataset.id });
+        if (error) { f.querySelector('.vc-invia-risp').disabled = false; alert('Errore: ' + error.message); return; }
+        const agg = await fetchVideoCommenti(true);
+        document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg));
+      };
+      f.querySelector('.vc-invia-risp').onclick = invia;
+      f.querySelector('.vc-annulla-risp').onclick = () => f.remove();
+      ta.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); invia(); }
+        if (e.key === 'Escape') f.remove();
+      });
     });
     const btn = box.querySelector('.vc-invia');
     const taNuovo = box.querySelector('.vc-form textarea');
@@ -884,7 +936,7 @@
       if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); btn.click(); }
     });
     if (btn) btn.onclick = async () => {
-      const ta = box.querySelector('textarea');
+      const ta = box.querySelector('.vc-form textarea');
       const testo = ta.value.trim();
       if (!testo) return;
       btn.disabled = true;
