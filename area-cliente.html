@@ -235,6 +235,8 @@
   .vc-form-row label { font-size: 0.75rem; color: var(--grey); display: flex; align-items: center; gap: 0.35rem; }
   .vc-form-row button { padding: 0.45rem 0.9rem; background: var(--ink); color: #fff; border: 0; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
   .vc-form-row button:disabled { opacity: 0.5; cursor: default; }
+  .vc-form-top { margin-bottom: 0.4rem; }
+  .vc-form-send { justify-content: flex-end; }
   .vc-chip { padding: 0.35rem 0.7rem; background: none; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; font: inherit; font-size: 0.75rem; font-weight: 600; color: var(--grey); cursor: pointer; }
   .vc-chip.attivo { background: rgba(26,26,230,0.08); border-color: rgba(26,26,230,0.3); color: var(--ink); }
   .vc-azioni { display: inline-flex; gap: 0.35rem; }
@@ -747,11 +749,9 @@
       </div>`).join('');
     const form = `
       <div class="vc-form">
+        <div class="vc-form-top"><button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">⏱ <span class="vc-chip-t">0:00</span></button></div>
         <textarea placeholder="Scrivi un commento… (Invio per inviare, Maiusc+Invio per andare a capo)" maxlength="2000"></textarea>
-        <div class="vc-form-row">
-          <button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">⏱ <span class="vc-chip-t">0:00</span></button>
-          <button type="button" class="vc-invia">Invia</button>
-        </div>
+        <div class="vc-form-row vc-form-send"><button type="button" class="vc-invia">Invia</button></div>
       </div>`;
     box.innerHTML = `<div class="vc-title">Commenti${items.length ? ' (' + items.length + ')' : ''}</div>${lista}${form}`;
 
