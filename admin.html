@@ -1899,10 +1899,20 @@
     caricaVideoCommenti(user_id);
   }
   async function modificaVideoCommento(id) {
-    const { data } = await client.from('video_commenti').select('testo').eq('id', id).single();
+    const { data } = await client.from('video_commenti').select('testo, secondi').eq('id', id).single();
     const nuovo = prompt('Modifica commento', data ? data.testo : '');
     if (nuovo === null || !nuovo.trim()) return;
-    const { error } = await client.from('video_commenti').update({ testo: nuovo.trim(), modificato: true }).eq('id', id);
+    const t = prompt('Minuto del video (es. 1:15). Lascia vuoto per nessun minuto.', data && data.secondi != null ? vcFmt(data.secondi) : '');
+    if (t === null) return;
+    let sec = null;
+    const v = t.trim();
+    if (v) {
+      const m = v.match(/^(\d{1,3}):([0-5]?\d)$/);
+      if (m) sec = Number(m[1]) * 60 + Number(m[2]);
+      else if (/^\d{1,5}$/.test(v)) sec = Number(v);
+      else { showMsg('progetto-msg', 'Minuto non valido: scrivi ad esempio 1:15.', false); return; }
+    }
+    const { error } = await client.from('video_commenti').update({ testo: nuovo.trim(), secondi: sec, modificato: true }).eq('id', id);
     if (error) { showMsg('progetto-msg', 'Errore: ' + error.message, false); return; }
     caricaVideoCommenti(document.getElementById('c-userid').value.trim());
   }
