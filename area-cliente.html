@@ -386,7 +386,7 @@
               <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
                 <div class="folder-icon">📁</div>
                 <div>
-                  <div class="folder-card-title">Cartella</div>
+                  <div class="folder-card-title" id="onedrive-title">Cartella</div>
                   <div class="folder-card-desc" id="onedrive-desc">Foto, video e progetti grafici</div>
                 </div>
               </a>
@@ -865,6 +865,7 @@
       }
 
       const onedriveLink = document.getElementById('onedrive-link');
+      document.getElementById('onedrive-title').textContent = cliente.cartella_nome || 'Cartella';
       if (cliente.onedrive_link) {
         onedriveLink.href = cliente.onedrive_link;
         onedriveLink.classList.remove('folder-card-disabled');
