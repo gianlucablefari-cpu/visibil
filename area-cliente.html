@@ -797,6 +797,7 @@
             `<a class="video-fallback" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
             { scarica: q(v0.dl), senzaCommenti, qualita,
               titolo: `<a class="video-nome" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" title="Apri su Dropbox">${escOnly(v0.nome)}</a>` });
+          re.lastIndex = last;
           continue;
         }
       }
