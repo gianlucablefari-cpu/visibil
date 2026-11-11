@@ -770,15 +770,24 @@
     const on = w.classList.toggle('espanso');
     btn.innerHTML = (on ? IC.shrink : IC.expand) + '<span>' + (on ? 'Riduci' : 'Ingrandisci') + '</span>';
   }
+  // Salti avanti/indietro: i clic ravvicinati si sommano e partono come un solo spostamento
+  // (evita richieste ripetute al player e di finire esattamente a fine video)
   async function vimeoSkip(btn, delta) {
+    const iframe = btn.closest('.video-wrap').querySelector('iframe');
     try {
       await loadVimeoApi();
-      const pl = playerDiIframe(btn.closest('.video-wrap').querySelector('iframe'));
+      const pl = playerDiIframe(iframe);
       if (!pl) return;
-      const t = await pl.getCurrentTime();
-      const dur = await pl.getDuration();
-      await pl.setCurrentTime(Math.min(Math.max(0, t + delta), dur));
-    } catch (e) {}
+      if (iframe._skipBase == null) iframe._skipBase = await pl.getCurrentTime();
+      if (iframe._dur == null) iframe._dur = await pl.getDuration();
+      iframe._skipBase = Math.min(Math.max(0, iframe._skipBase + delta), Math.max(0, iframe._dur - 1));
+      clearTimeout(iframe._skipT);
+      iframe._skipT = setTimeout(async () => {
+        const t = iframe._skipBase;
+        iframe._skipBase = null;
+        try { await pl.setCurrentTime(t); } catch (e) {}
+      }, 250);
+    } catch (e) { iframe._skipBase = null; }
   }
   let ordineCommentiMem = null;
   function getOrdineCommenti() {
