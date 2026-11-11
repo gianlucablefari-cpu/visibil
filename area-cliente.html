@@ -249,6 +249,8 @@
   .vc-testo { white-space: pre-wrap; word-break: break-word; }
   .vc-form textarea { width: 100%; min-height: 56px; padding: 0.55rem 0.7rem; font-family: inherit; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; resize: vertical; box-sizing: border-box; }
   .vc-form-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.4rem; flex-wrap: wrap; }
+  .vc-hint { font-size: 0.72rem; color: var(--grey); }
+  .vc-hint kbd { font: inherit; font-weight: 600; padding: 0.05rem 0.35rem; border: 1px solid rgba(0,0,0,0.18); border-radius: 4px; background: #fff; color: var(--black); }
   .vc-form-row label { font-size: 0.75rem; color: var(--grey); display: flex; align-items: center; gap: 0.35rem; }
   .vc-form-row button { padding: 0.45rem 0.9rem; background: var(--ink); color: #fff; border: 0; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
   .vc-form-row button:disabled { opacity: 0.5; cursor: default; }
@@ -966,8 +968,8 @@
     const form = `
       <div class="vc-form">
         <div class="vc-form-top"><button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">${IC.clock}<span class="vc-chip-t">0:00</span></button><button type="button" class="vc-chip vc-chip-no" title="Invia il commento senza minuto del video">Senza minuto</button></div>
-        <textarea placeholder="Scrivi un commento… (Invio per inviare, Maiusc+Invio per andare a capo)" maxlength="2000"></textarea>
-        <div class="vc-form-row vc-form-send"><button type="button" class="vc-invia">Invia</button></div>
+        <textarea placeholder="Scrivi un commento…" maxlength="2000"></textarea>
+        <div class="vc-form-row vc-form-send"><span class="vc-hint"><kbd>Invio</kbd> invia · <kbd>Maiusc</kbd>+<kbd>Invio</kbd> va a capo</span><button type="button" class="vc-invia">Invia</button></div>
       </div>`;
     const sel = (v, t) => `<option value="${v}"${ordine === v ? ' selected' : ''}>${t}</option>`;
     const ordinaUI = radici.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
