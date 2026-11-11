@@ -219,7 +219,7 @@
   .progetto-item-extra-gratis { color: #1E6B3C; }
   .progetto-item-note a { color: var(--ink); text-decoration: underline; word-break: break-all; }
   .video-comments { margin: 1.75rem 0 1rem; padding: 1rem 1.1rem 1.1rem; background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
-  .vc-title { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.75rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(0,0,0,0.08); }
+  .vc-title { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.25rem; }
   .vc-sort { font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--black); padding: 0.3rem 0.5rem; background: #fff; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; cursor: pointer; }
   .vc-item { font-size: 0.85rem; line-height: 1.45; padding: 0.45rem 0; border-top: 1px solid rgba(0,0,0,0.06); }
   .vc-lista .vc-item:first-child { border-top: 0; }
@@ -817,7 +817,8 @@
       </div>`;
     const sel = (v, t) => `<option value="${v}"${ordine === v ? ' selected' : ''}>${t}</option>`;
     const ordinaUI = items.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
-    box.innerHTML = `<div class="vc-title"><span>Commenti${items.length ? ' (' + items.length + ')' : ''}</span>${ordinaUI}</div>${form}<div class="vc-lista">${lista}</div>`;
+    const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})</span>${ordinaUI}</div>` : '';
+    box.innerHTML = `${form}${testata}<div class="vc-lista">${lista}</div>`;
     const taBozza = box.querySelector('.vc-form textarea');
     if (taBozza && bozza) taBozza.value = bozza;
     const selOrd = box.querySelector('.vc-sort');
