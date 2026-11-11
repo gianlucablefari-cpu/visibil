@@ -278,6 +278,9 @@
   .video-skips { display: inline-flex; gap: 0.35rem; }
   .video-skip, .video-toggle { display: inline-flex; align-items: center; gap: 0.25rem; height: 30px; padding: 0 0.6rem; background: #fff; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--black); cursor: pointer; }
   .video-right { display: inline-flex; gap: 0.35rem; align-items: center; margin-left: auto; }
+  .video-qualita { display: inline-flex; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; overflow: hidden; background: #fff; }
+  .video-qualita button { height: 28px; padding: 0 0.7rem; background: none; border: 0; font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--grey); cursor: pointer; }
+  .video-qualita button.attiva { background: var(--ink); color: #fff; }
   .video-dl { text-decoration: none; }
   .video-skip:hover, .video-toggle:hover { border-color: var(--ink); color: var(--ink); }
   .video-skip:active { background: rgba(26,26,230,0.08); }
@@ -700,7 +703,7 @@
   function videoWrapHtml(mediaHtml, id, extraHtml, opz) {
     opz = opz || {};
     const scarica = opz.scarica ? `<a class="video-toggle video-dl" href="${opz.scarica}" download title="Scarica il video">${IC.download}<span>Scarica</span></a>` : '';
-    return `<div class="video-wrap"><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><span class="video-right">${scarica}<button type="button" class="video-toggle" onclick="vimeoToggle(this)">${IC.expand}<span>Ingrandisci</span></button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}`;
+    return `<div class="video-wrap"><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><span class="video-right">${opz.qualita || ''}${scarica}<button type="button" class="video-toggle" onclick="vimeoToggle(this)">${IC.expand}<span>Ingrandisci</span></button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}`;
   }
   // Se un video Dropbox non si carica, mostra il link di riserva
   document.addEventListener('error', e => {
@@ -737,17 +740,40 @@
       if (!h && q) h = (new URLSearchParams(q.replace(/&amp;/g,'&')).get('h')) || '';
       if (!/^[a-z0-9]*$/i.test(h)) h = '';
       if (m[7]) {
-        // Video su Dropbox: link condiviso -> riproduzione diretta
-        let u; try { u = new URL(m[7].replace(/&amp;/g, '&')); } catch (e) { u = null; }
-        if (u) {
-          const seg = u.pathname.split('/').filter(Boolean);
-          const dbId = 'db_' + (seg[0] === 's' ? seg[1] : seg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
+        // Video su Dropbox: uno o più link consecutivi (versioni a qualità diversa) -> riproduzione diretta
+        const reDb = /^\s*(https?:\/\/(?:www\.)?dropbox\.com\/(?:scl\/fi|s)\/[^\s<>"]+?\.(?:mp4|mov|m4v|webm)(?:\?[^\s<>"]*)?)(?=$|[\s<>"])/i;
+        const links = [m[7]];
+        let mx;
+        while ((mx = s.slice(last).match(reDb)) !== null) { links.push(mx[1]); last += mx[0].length; }
+        if (!senzaCommenti) {
+          const mn2 = s.slice(last).match(/^[ \t]*(?:#nocommenti|\[senza commenti\])/i);
+          if (mn2) { last += mn2[0].length; senzaCommenti = true; }
+        }
+        const nomeQualita = (u, i) => {
+          const nome = decodeURIComponent(u.pathname.split('/').pop() || '').toLowerCase();
+          if (/(^|[^a-z])(high|hq|hd|hr|alta|4k|full)([^a-z]|$)/.test(nome)) return 'Alta';
+          if (/(^|[^a-z])(low|lq|sd|bassa|proxy)([^a-z]|$)/.test(nome)) return 'Bassa';
+          return links.length > 1 ? 'Versione ' + (i + 1) : '';
+        };
+        const varianti = [];
+        links.forEach((lk, i) => {
+          let u; try { u = new URL(lk.replace(/&amp;/g, '&')); } catch (e) { return; }
           const orig = u.toString();
           const dlUrl = new URL(orig); dlUrl.searchParams.delete('raw'); dlUrl.searchParams.set('dl', '1');
-          u.searchParams.delete('dl'); u.searchParams.set('raw', '1');
-          out += videoWrapHtml(`<video src="${escOnly(u.toString()).replace(/"/g,'&quot;')}" controls playsinline preload="metadata"></video>`, dbId,
-            `<a class="video-fallback" href="${escOnly(orig).replace(/"/g,'&quot;')}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
-            { scarica: escOnly(dlUrl.toString()).replace(/"/g,'&quot;'), senzaCommenti });
+          const play = new URL(orig); play.searchParams.delete('dl'); play.searchParams.set('raw', '1');
+          varianti.push({ u, orig, dl: dlUrl.toString(), src: play.toString(), label: nomeQualita(u, i) });
+        });
+        if (varianti.length) {
+          const seg = varianti[0].u.pathname.split('/').filter(Boolean);
+          const dbId = 'db_' + (seg[0] === 's' ? seg[1] : seg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
+          const q = x => escOnly(x).replace(/"/g, '&quot;');
+          const v0 = varianti[0];
+          const qualita = varianti.length > 1
+            ? `<span class="video-qualita" role="group" aria-label="Qualità">${varianti.map((v, i) => `<button type="button" class="${i === 0 ? 'attiva' : ''}" data-src="${q(v.src)}" data-dl="${q(v.dl)}" data-orig="${q(v.orig)}" onclick="vimeoQualita(this)">${escOnly(v.label)}</button>`).join('')}</span>`
+            : '';
+          out += videoWrapHtml(`<video src="${q(v0.src)}" controls playsinline preload="metadata"></video>`, dbId,
+            `<a class="video-fallback" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
+            { scarica: q(v0.dl), senzaCommenti, qualita });
           continue;
         }
       }
@@ -817,6 +843,23 @@
   function getVideoPlayer(box) {
     const el = box.previousElementSibling && box.previousElementSibling.querySelector('iframe, video');
     return playerDiIframe(el);
+  }
+  // Cambio qualità (Dropbox): mantiene il punto del video e lo stato play/pausa
+  function vimeoQualita(btn) {
+    if (btn.classList.contains('attiva')) return;
+    const wrap = btn.closest('.video-wrap');
+    const v = wrap.querySelector('video');
+    if (!v) return;
+    const t = v.currentTime, inPlay = !v.paused;
+    v.addEventListener('loadedmetadata', () => {
+      try { v.currentTime = t; } catch (e) {}
+      if (inPlay) v.play().catch(() => {});
+    }, { once: true });
+    v.src = btn.dataset.src;
+    v.load();
+    wrap.querySelectorAll('.video-qualita button').forEach(b => b.classList.toggle('attiva', b === btn));
+    const dl = wrap.querySelector('.video-dl'); if (dl) dl.href = btn.dataset.dl;
+    const fb = wrap.querySelector('.video-fallback'); if (fb) { fb.href = btn.dataset.orig; fb.style.display = 'none'; }
   }
   function vimeoToggle(btn) {
     const w = btn.closest('.video-wrap');
