@@ -224,10 +224,13 @@
   .vc-title + .vc-item { border-top: 0; }
   .vc-item { padding: 0.65rem 0; }
   .vc-form { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid rgba(0,0,0,0.08); }
-  .vc-meta { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.2rem; }
-  .vc-left { min-width: 0; }
+  .vc-row { display: flex; align-items: flex-start; gap: 0.75rem; }
+  .vc-row .vc-testo { flex: 1; min-width: 0; padding-top: 0.4rem; }
+  @media (max-width: 520px) { .vc-row { flex-wrap: wrap; } .vc-row .vc-left { order: 1; } .vc-row .vc-side { order: 2; margin-left: auto; } .vc-row .vc-testo { order: 3; flex-basis: 100%; padding-top: 0; } }
+  .vc-left { flex-shrink: 0; }
+  .vc-left:empty { display: none; }
   .vc-side { display: flex; align-items: center; flex-shrink: 0; }
-  .vc-info { font-size: 0.7rem; color: var(--grey); margin-top: 0.35rem; text-align: right; }
+  .vc-info { font-size: 0.7rem; color: var(--grey); margin-top: 0.2rem; text-align: right; }
   .vc-autore-admin { color: var(--ink); font-weight: 700; }
   .vc-ts { background: var(--ink); color: #fff; border: 0; border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 0.8rem; letter-spacing: 0.02em; font-weight: 600; cursor: pointer; }
   .vc-testo { white-space: pre-wrap; word-break: break-word; }
@@ -762,13 +765,13 @@
     const items = tutti.filter(c => c.video_id === videoId);
     const lista = items.map(c => `
       <div class="vc-item" data-id="${c.id}">
-        <div class="vc-meta">
+        <div class="vc-row">
           <div class="vc-left">${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">Vai a ${IC.play} ${fmtSecondi(c.secondi)}</button>` : ''}</div>
+          <div class="vc-testo">${escHtml(c.testo)}</div>
           <div class="vc-side">
             ${(window.isPreviewMode || c.autore === 'cliente') ? `<span class="vc-azioni">${c.autore === (window.isPreviewMode ? 'admin' : 'cliente') ? `<button type="button" class="vc-mod" title="Modifica"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>` : ''}<button type="button" class="vc-del" title="Elimina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></span>` : ''}
           </div>
         </div>
-        <div class="vc-testo">${escHtml(c.testo)}</div>
         <div class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span> · ${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}${c.modificato ? ' · modificato' : ''}</div>
       </div>`).join('');
     const form = `
