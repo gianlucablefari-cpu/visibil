@@ -702,14 +702,14 @@
     const lista = items.map(c => `
       <div class="vc-item" data-id="${c.id}">
         <div class="vc-meta">
-          <span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${c.autore === 'admin' ? 'Gianluca' : 'Tu'}</span>
+          <span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span>
           <span>${new Date(c.created_at).toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit' })}${c.modificato ? ' · modificato' : ''}</span>
           ${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}">▶ ${fmtSecondi(c.secondi)}</button>` : ''}
-          ${(c.autore === 'cliente' && !window.isPreviewMode) ? `<span class="vc-azioni"><button type="button" class="vc-mod">Modifica</button><button type="button" class="vc-del">Elimina</button></span>` : ''}
+          ${(window.isPreviewMode || c.autore === 'cliente') ? `<span class="vc-azioni">${c.autore === (window.isPreviewMode ? 'admin' : 'cliente') ? '<button type="button" class="vc-mod">Modifica</button>' : ''}<button type="button" class="vc-del">Elimina</button></span>` : ''}
         </div>
         <div class="vc-testo">${escHtml(c.testo)}</div>
       </div>`).join('');
-    const form = window.isPreviewMode ? '' : `
+    const form = `
       <div class="vc-form">
         <textarea placeholder="Scrivi un commento mentre guardi il video…" maxlength="2000"></textarea>
         <div class="vc-form-row">
@@ -769,7 +769,7 @@
       if (box.querySelector('.vc-chip').classList.contains('attivo')) {
         try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) secondi = Math.floor(await pl.getCurrentTime()); } catch (e) {}
       }
-      const { error } = await client.from('video_commenti').insert({ user_id: window.currentUserId, video_id: videoId, autore: 'cliente', testo, secondi });
+      const { error } = await client.from('video_commenti').insert({ user_id: window.currentUserId, video_id: videoId, autore: window.isPreviewMode ? 'admin' : 'cliente', testo, secondi });
       if (error) { btn.disabled = false; alert('Errore: ' + error.message); return; }
       const aggiornati = await fetchVideoCommenti(true);
       document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(b => renderVideoComments(b, aggiornati));
