@@ -236,8 +236,12 @@
   .vc-chip.attivo { background: rgba(26,26,230,0.08); border-color: rgba(26,26,230,0.3); color: var(--ink); }
   .vc-azioni { margin-left: auto; display: inline-flex; gap: 0.6rem; }
   .vc-azioni button { background: none; border: 0; padding: 0; font: inherit; font-size: 0.7rem; color: var(--grey); text-decoration: underline; cursor: pointer; }
-  .vc-tempo-edit { font-size: 0.75rem; color: var(--grey); display: inline-flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
-  .vc-tempo-input { width: 4.2em; padding: 0.3rem 0.4rem; font: inherit; font-size: 0.8rem; border: 1px solid rgba(0,0,0,0.15); border-radius: 5px; }
+  .vc-edit-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .vc-tempo-edit { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--grey); }
+  .vc-edit-btns { display: inline-flex; align-items: center; gap: 0.5rem; }
+  .vc-tempo-input { box-sizing: border-box; height: 32px; width: 4.6em; padding: 0 0.5rem; font: inherit; font-size: 0.82rem; text-align: center; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; }
+  .vc-mini { box-sizing: border-box; height: 32px; padding: 0 0.75rem; font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; line-height: 1; background: none; color: var(--ink); border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; cursor: pointer; white-space: nowrap; }
+  .vc-mini.vc-primario { background: var(--ink); color: #fff; border-color: var(--ink); }
   .vc-edit { width: 100%; min-height: 56px; padding: 0.5rem 0.65rem; font-family: inherit; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; box-sizing: border-box; }
   .vc-form-row .vc-sec { background: none; color: var(--grey); border: 1px solid rgba(0,0,0,0.15); }
   .video-wrap { max-width: 380px; margin: 0.6rem 0; white-space: normal; transition: max-width 0.25s; }
@@ -728,8 +732,8 @@
       <div class="vc-item" data-id="${c.id}">
         <div class="vc-meta">
           <span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span>
-          <span>${new Date(c.created_at).toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit' })}${c.modificato ? ' · modificato' : ''}</span>
-          ${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}">▶ ${fmtSecondi(c.secondi)}</button>` : ''}
+          <span>${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}${c.modificato ? ' · modificato' : ''}</span>
+          ${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">▶ ${fmtSecondi(c.secondi)} nel video</button>` : ''}
           ${(window.isPreviewMode || c.autore === 'cliente') ? `<span class="vc-azioni">${c.autore === (window.isPreviewMode ? 'admin' : 'cliente') ? '<button type="button" class="vc-mod">Modifica</button>' : ''}<button type="button" class="vc-del">Elimina</button></span>` : ''}
         </div>
         <div class="vc-testo">${escHtml(c.testo)}</div>
@@ -773,7 +777,7 @@
       const item = b.closest('.vc-item');
       const c = items.find(x => x.id === item.dataset.id);
       const testoEl = item.querySelector('.vc-testo');
-      testoEl.innerHTML = '<textarea class="vc-edit" maxlength="2000"></textarea><div class="vc-form-row"><span class="vc-tempo-edit">⏱ <input type="text" class="vc-tempo-input" placeholder="m:ss" size="5" inputmode="numeric" title="Minuto del video (vuoto = nessuno)"> <button type="button" class="vc-adesso vc-sec">Usa minuto attuale</button></span><span><button type="button" class="vc-annulla vc-sec">Annulla</button> <button type="button" class="vc-salva">Salva</button></span></div>';
+      testoEl.innerHTML = '<textarea class="vc-edit" maxlength="2000"></textarea><div class="vc-edit-row"><span class="vc-tempo-edit"><span>Minuto nel video</span><input type="text" class="vc-tempo-input" placeholder="m:ss" size="5" inputmode="numeric" title="Minuto del video (vuoto = nessuno)"><button type="button" class="vc-adesso vc-mini">Usa quello attuale</button></span><span class="vc-edit-btns"><button type="button" class="vc-annulla vc-mini">Annulla</button><button type="button" class="vc-salva vc-mini vc-primario">Salva</button></span></div>';
       const tin = testoEl.querySelector('.vc-tempo-input');
       tin.value = c.secondi != null ? fmtSecondi(c.secondi) : '';
       testoEl.querySelector('.vc-adesso').onclick = async () => {
