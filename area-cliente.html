@@ -277,7 +277,7 @@
   @media (min-width: 900px) {
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 0 1.25rem; align-items: start; }
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) > .video-comments { display: contents; }
-    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-form { grid-column: 2; grid-row: 1; margin: 0.6rem 0; padding: 1rem 1.1rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-form { grid-column: 2; grid-row: 1; margin: 0.6rem 0; box-sizing: border-box; height: calc(380px * 9 / 16); overflow: auto; padding: 1rem 1.1rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) > .video-wrap { grid-column: 1; grid-row: 1; }
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-elenco { grid-column: 1 / -1; grid-row: 2; margin: 0.6rem 0 1rem; padding: 1rem 1.1rem 1.1rem; background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
   }
@@ -290,7 +290,8 @@
   .video-qualita button { height: 28px; padding: 0 0.7rem; background: none; border: 0; font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--grey); cursor: pointer; }
   .video-qualita button.attiva { background: var(--ink); color: #fff; }
   .video-dl { text-decoration: none; }
-  .video-nome { display: block; margin-bottom: 0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .video-nome { display: block; height: 1.4rem; line-height: 1.4rem; margin-bottom: 0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (min-width: 900px) { .video-block:not(:has(.video-wrap.espanso)):has(.video-nome) .vc-form { margin-top: calc(0.6rem + 1.8rem); } }
   .video-nome:hover { text-decoration: underline; }
   .video-skip:hover, .video-toggle:hover { border-color: var(--ink); color: var(--ink); }
   .video-skip:active { background: rgba(26,26,230,0.08); }
