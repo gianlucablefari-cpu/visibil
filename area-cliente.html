@@ -231,7 +231,11 @@
   .vc-left { flex-shrink: 0; }
   .vc-left:empty { display: none; }
   .vc-side { display: flex; align-items: center; flex-shrink: 0; }
-  .vc-info { font-size: 0.68rem; color: var(--grey); margin-left: 0.4rem; white-space: nowrap; }
+  .vc-info { font-size: 0.68rem; color: var(--grey); margin-left: 0.4rem; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.3rem; }
+  .vc-when { position: relative; display: inline-flex; align-items: center; cursor: help; outline: none; }
+  .vc-when .ic { width: 12px; height: 12px; }
+  .vc-when::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--black); color: #fff; font-size: 0.68rem; font-weight: 500; padding: 0.3rem 0.5rem; border-radius: 5px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.12s; z-index: 5; }
+  .vc-when:hover::after, .vc-when:focus::after { opacity: 1; }
   .vc-autore-admin { color: var(--ink); font-weight: 700; }
   .vc-ts { background: var(--ink); color: #fff; border: 0; border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 0.8rem; letter-spacing: 0.02em; font-weight: 600; cursor: pointer; }
   .vc-mod-tag { font-size: 0.68rem; color: var(--grey); white-space: nowrap; }
@@ -792,7 +796,7 @@
       <div class="vc-item" data-id="${c.id}">
         <div class="vc-row">
           <div class="vc-left">${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">Vai a ${IC.play} ${fmtSecondi(c.secondi)}</button>` : ''}</div>
-          <div class="vc-testo">${escHtml(c.testo)} <span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span> · ${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}${c.modificato ? ' <span class="vc-mod-tag">(modificato)</span>' : ''}</span></div>
+          <div class="vc-testo">${escHtml(c.testo)} <span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span>${c.modificato ? ' <span class="vc-mod-tag">(modificato)</span>' : ''}</span></div>
           <div class="vc-side">
             ${(window.isPreviewMode || c.autore === 'cliente') ? `<span class="vc-azioni">${c.autore === (window.isPreviewMode ? 'admin' : 'cliente') ? `<button type="button" class="vc-mod" title="Modifica"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>` : ''}<button type="button" class="vc-del" title="Elimina"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></span>` : ''}
           </div>
