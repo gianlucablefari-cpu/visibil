@@ -218,7 +218,10 @@
   .progetto-item-extra-fatturato { color: #A32D2D; }
   .progetto-item-extra-gratis { color: #1E6B3C; }
   .progetto-item-note a { color: var(--ink); text-decoration: underline; word-break: break-all; }
-  .video-embed { position: relative; padding-top: 56.25%; margin: 0.6rem 0; border-radius: 8px; overflow: hidden; background: #000; white-space: normal; }
+  .video-wrap { max-width: 380px; margin: 0.6rem 0; white-space: normal; transition: max-width 0.25s; }
+  .video-wrap.espanso { max-width: 100%; }
+  .video-embed { position: relative; padding-top: 56.25%; border-radius: 8px; overflow: hidden; background: #000; }
+  .video-toggle { margin-top: 0.4rem; padding: 0; background: none; border: 0; font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); cursor: pointer; text-decoration: underline; }
   .video-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
   .progetto-item-note { font-size: 0.8rem; color: var(--black); margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid rgba(0,0,0,0.06); white-space: pre-wrap; }
   .badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.35rem 0.75rem; border-radius: 100px; }
@@ -639,7 +642,7 @@
       const q = m[2] || m[6] || '';
       if (!h && q) h = (new URLSearchParams(q.replace(/&amp;/g,'&')).get('h')) || '';
       if (!/^[a-z0-9]*$/i.test(h)) h = '';
-      out += `<div class="video-embed"><iframe src="https://player.vimeo.com/video/${id}${h ? '?h=' + h : ''}" allow="fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+      out += `<div class="video-wrap"><div class="video-embed"><iframe src="https://player.vimeo.com/video/${id}${h ? '?h=' + h : ''}" allow="fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe></div><button type="button" class="video-toggle" onclick="const w=this.closest('.video-wrap');this.textContent=w.classList.toggle('espanso')?'Riduci':'Ingrandisci';">Ingrandisci</button></div>`;
     }
     return out + fmt(s.slice(last));
   }
