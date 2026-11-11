@@ -299,6 +299,9 @@
   .video-skip:hover, .video-toggle:hover { border-color: var(--ink); color: var(--ink); }
   .video-skip:active { background: rgba(26,26,230,0.08); }
   .ic { width: 15px; height: 15px; flex-shrink: 0; }
+  /* La barra nativa si vede solo con il mouse sopra il video (non compare più usando i salti/play sotto) */
+  .video-embed video::-webkit-media-controls-panel { transition: opacity 0.2s; }
+  @media (hover: hover) { .video-embed video:not(:hover)::-webkit-media-controls-panel { opacity: 0; } }
   .video-embed video { position: absolute; inset: 0; width: 100%; height: 100%; background: #000; }
   .video-fallback { display: block; margin-top: 0.4rem; font-size: 0.75rem; color: var(--ink); text-decoration: underline; }
   .video-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
