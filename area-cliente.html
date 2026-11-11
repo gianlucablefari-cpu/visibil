@@ -273,20 +273,20 @@
   .vc-mini.vc-primario { background: var(--ink); color: #fff; border-color: var(--ink); }
   .vc-edit { width: 100%; min-height: 56px; padding: 0.5rem 0.65rem; font-family: inherit; font-size: 0.85rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 6px; box-sizing: border-box; }
   .vc-form-row .vc-sec { background: none; color: var(--grey); border: 1px solid rgba(0,0,0,0.15); }
-  .video-wrap { max-width: 380px; margin: 0.6rem 0; white-space: normal; transition: max-width 0.25s; }
+  .video-wrap { max-width: 420px; margin: 0.6rem 0; white-space: normal; transition: max-width 0.25s; }
   .video-wrap.espanso { max-width: 100%; }
   /* Video piccolo su schermo largo: campo commento a destra del video, elenco sotto */
   @media (min-width: 900px) {
-    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 0 1.25rem; align-items: start; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 0 1.25rem; align-items: start; }
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) > .video-comments { display: contents; }
-    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-form { grid-column: 2; grid-row: 1; margin: 0.6rem 0; box-sizing: border-box; height: calc(380px * 9 / 16); overflow: auto; padding: 1rem 1.1rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-form { grid-column: 2; grid-row: 1; margin: 0.6rem 0; box-sizing: border-box; height: calc(420px * 9 / 16); overflow: auto; padding: 1rem 1.1rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) > .video-wrap { grid-column: 1; grid-row: 1; }
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-lista { max-height: max(240px, calc(100vh - 27rem)); overflow-y: auto; overscroll-behavior: contain; padding-right: 0.4rem; }
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-elenco { grid-column: 1 / -1; grid-row: 2; margin: 0.6rem 0 1rem; padding: 1rem 1.1rem 1.1rem; background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
   }
   .video-embed { position: relative; padding-top: 56.25%; border-radius: 8px; overflow: hidden; background: #000; }
   .video-controls { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
-  .video-skips { display: inline-flex; gap: 0.35rem; }
+  .video-skips { display: inline-flex; gap: 0.25rem; }
   .video-skip, .video-toggle { display: inline-flex; align-items: center; gap: 0.25rem; height: 30px; padding: 0 0.6rem; background: #fff; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--black); cursor: pointer; }
   .video-right { display: inline-flex; gap: 0.35rem; align-items: center; margin-left: auto; }
   .video-qualita { display: inline-flex; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; overflow: hidden; background: #fff; }
@@ -894,7 +894,7 @@
       const w = n.closest('.video-wrap');
       const att = w.querySelector('.video-qualita button.attiva');
       const l = att ? att.dataset.orig : n.getAttribute('href');
-      if (percorsoCache[l]) n.textContent = percorsoCache[l];
+      if (percorsoCache[l]) n.title = 'Apri su Dropbox: ' + percorsoCache[l];
     });
   }
   function vimeoHd(hd) {
@@ -923,7 +923,7 @@
       hd.classList.toggle('attiva', /alta/i.test(btn.dataset.label || ''));
       hd.title = hd.ariaLabel = 'Qualità attuale: ' + (btn.dataset.label || '') + ' · passa a ' + (nx.dataset.label || '');
     }
-    const nm = wrap.querySelector('.video-nome'); if (nm) { nm.href = btn.dataset.orig; nm.textContent = percorsoCache[btn.dataset.orig] || btn.dataset.nome; nm.dataset.nome = btn.dataset.nome; }
+    const nm = wrap.querySelector('.video-nome'); if (nm) { nm.href = btn.dataset.orig; nm.textContent = btn.dataset.nome; nm.title = percorsoCache[btn.dataset.orig] ? 'Apri su Dropbox: ' + percorsoCache[btn.dataset.orig] : 'Apri su Dropbox'; }
     const dl = wrap.querySelector('.video-dl'); if (dl) dl.href = btn.dataset.dl;
     const fb = wrap.querySelector('.video-fallback'); if (fb) { fb.href = btn.dataset.orig; fb.style.display = 'none'; }
   }
