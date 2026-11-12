@@ -290,6 +290,14 @@
   .vc-copia-tutti:hover { color: var(--ink); border-color: var(--ink); }
   .vc-copia-tutti.copiato { color: #fff; background: #1d6b32; border-color: #1d6b32; }
   .vc-copia-tutti.copia-err { color: #fff; background: #A32D2D; border-color: #A32D2D; }
+  .vc-gruppo-risolti { border-top: 1px solid rgba(0,0,0,0.06); }
+  .vc-gruppo-testa { display: flex; align-items: center; gap: 0.45rem; width: 100%; margin: 0; padding: 0.6rem 0.2rem; background: none; border: 0; color: #1d6b32; font: inherit; font-size: 0.8rem; font-weight: 600; letter-spacing: 0; text-transform: none; text-align: left; cursor: pointer; }
+  .vc-gruppo-testa:hover { background: rgba(29,107,50,0.05); color: #1d6b32; }
+  .vc-gruppo-testa svg { width: 15px; height: 15px; }
+  .vc-gruppo-freccia { margin-left: auto; transition: transform 0.2s; }
+  .vc-gruppo-risolti.aperto .vc-gruppo-freccia { transform: rotate(180deg); }
+  .vc-gruppo-corpo { display: none; padding-left: 0.6rem; border-left: 2px solid rgba(29,107,50,0.25); }
+  .vc-gruppo-risolti.aperto .vc-gruppo-corpo { display: block; }
   .vc-stati.vc-stati-fondo { margin: 0.9rem 0 0; display: flex; justify-content: center; }
   .vc-stati { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
   .vc-stato-attesa { display: inline-flex; align-items: center; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; }
@@ -1268,7 +1276,22 @@
     };
     const fissati = radici.filter(c => c.fissato).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     const lista = (fissati.length ? `<div class="vc-fissati">${fissati.map(c => itemHtml(c, false)).join('')}</div>` : '')
-      + radici.filter(c => !c.fissato).map(c => itemHtml(c, false)).join('');
+      + (() => {
+        // Commenti risolti uno dopo l'altro (almeno 2) diventano un unico blocco richiudibile
+        box._gruppiAperti = box._gruppiAperti || new Set();
+        const normali = radici.filter(c => !c.fissato);
+        let out = '', run = [];
+        const chiudiRun = () => {
+          if (run.length >= 2) {
+            const k = run[0].id, aperto = box._gruppiAperti.has(k);
+            out += `<div class="vc-gruppo-risolti${aperto ? ' aperto' : ''}" data-k="${k}"><button type="button" class="vc-gruppo-testa" aria-expanded="${aperto}"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg>${run.length} commenti risolti<svg class="vc-gruppo-freccia" ${SVG_ST}><polyline points="6 9 12 15 18 9"></polyline></svg></button><div class="vc-gruppo-corpo">${run.map(c => itemHtml(c, false)).join('')}</div></div>`;
+          } else out += run.map(c => itemHtml(c, false)).join('');
+          run = [];
+        };
+        normali.forEach(c => { if (risoltoVisto(c)) run.push(c); else { chiudiRun(); out += itemHtml(c, false); } });
+        chiudiRun();
+        return out;
+      })();
     const form = `
       <div class="vc-form">
         <div class="vc-form-top"><button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">${IC.clock}<span class="vc-chip-t">0:00</span></button><button type="button" class="vc-chip vc-chip-no" title="Senza minuto: il commento non viene legato a un punto del video" aria-label="Senza minuto">${IC.clockOff}</button>${window.isPreviewMode ? `<button type="button" class="vc-chip vc-chip-pin" title="Fissa in alto: commento senza minuto, in cima all'elenco" aria-label="Fissa in alto"><svg class="ic" ${SVG_ST}><line x1="12" y1="16" x2="12" y2="4"></line><polyline points="6 10 12 4 18 10"></polyline><line x1="5" y1="20" x2="19" y2="20"></line></svg></button>` : ''}</div>
@@ -1342,6 +1365,13 @@
         .map(c => tcPremiere(c.secondi) + '  ' + String(c.testo || '').replace(/\s+/g, ' ').trim()).join('\n');
       feedbackCopia(bct, await copiaTesto(elenco));
     };
+    box.querySelectorAll('.vc-gruppo-testa').forEach(t => t.onclick = () => {
+      const g = t.closest('.vc-gruppo-risolti');
+      const ap = g.classList.toggle('aperto');
+      t.setAttribute('aria-expanded', ap);
+      if (ap) box._gruppiAperti.add(g.dataset.k); else box._gruppiAperti.delete(g.dataset.k);
+      aggiornaPiu(box);
+    });
     const tgl = box.querySelector('.vc-toggle');
     if (tgl) tgl.onclick = () => {
       window.vcChiusiMem[videoId] = !chiuso;
@@ -1400,6 +1430,8 @@
     const secs = [...new Set(items.filter(x => x.secondi != null).map(x => x.secondi))].sort((a, b) => a - b);
     const evidenzia = row => {
       if (!row) return;
+      const g = row.closest('.vc-gruppo-risolti');
+      if (g && !g.classList.contains('aperto')) { g.classList.add('aperto'); box._gruppiAperti.add(g.dataset.k); }
       box.querySelectorAll('.vc-corrente').forEach(x => x.classList.remove('vc-corrente'));
       row.classList.add('vc-corrente');
       row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
