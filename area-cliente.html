@@ -338,7 +338,7 @@
   .video-info[hidden] { display: none; }
   .video-nome { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .video-nome:hover { text-decoration: underline; }
-  .video-nome-video { flex: 0 0 auto; min-width: 0; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.85rem; font-weight: 700; color: var(--black); }
+  .video-intestazione { margin: 1.6rem 0 0.6rem; font-size: 1.35rem; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; color: var(--black); text-transform: none; white-space: normal; word-break: break-word; }
   .video-skip:hover, .video-toggle:hover { border-color: var(--ink); color: var(--ink); }
   .video-skip:active { background: rgba(26,26,230,0.08); }
   .ic { width: 15px; height: 15px; flex-shrink: 0; }
@@ -797,7 +797,7 @@
   function videoWrapHtml(mediaHtml, id, extraHtml, opz) {
     opz = opz || {};
     const scarica = opz.scarica ? `<a class="video-toggle video-dl" href="${opz.scarica}" download title="Scarica il video" aria-label="Scarica il video">${IC.download}</a>` : '';
-    return `<div class="video-cq"><div class="video-block"><div class="video-wrap"><div class="video-titolo"><span class="video-right"><button type="button" class="video-toggle video-exp" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button>${scarica}${opz.qualita || ''}</span>${opz.titolo || ''}<span class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || '')}</span></div><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-60)" title="Indietro di 60 secondi">${IC.back3}<span>60</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,60)" title="Avanti di 60 secondi"><span>60</span>${IC.fwd3}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}</div></div>`;
+    return `<div class="video-cq">${opz.intestazione ? `<h3 class="video-intestazione">${opz.intestazione}</h3>` : ''}<div class="video-block"><div class="video-wrap"><div class="video-titolo"><span class="video-right"><button type="button" class="video-toggle video-exp" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button>${scarica}${opz.qualita || ''}</span>${opz.titolo || ''}<span class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || '')}</span></div><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-60)" title="Indietro di 60 secondi">${IC.back3}<span>60</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,60)" title="Avanti di 60 secondi"><span>60</span>${IC.fwd3}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}</div></div>`;
   }
   // Se un video Dropbox non si carica, mostra il link di riserva
   document.addEventListener('error', e => {
@@ -847,7 +847,8 @@
     return videoWrapHtml(`<video src="${q(v0.src)}" controls playsinline preload="metadata"></video>`, dbId,
       `<a class="video-fallback" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
       { scarica: q(v0.dl), senzaCommenti, qualita, info: v0.info,
-        titolo: (nomeVideo ? `<span class="video-nome-video">${escOnly(nomeVideo)}</span>` : '') + `<a class="video-nome" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" title="Apri su Dropbox">${escOnly(v0.nome)}</a>` });
+        intestazione: nomeVideo ? escOnly(nomeVideo) : '',
+        titolo: `<a class="video-nome" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" title="Apri su Dropbox">${escOnly(v0.nome)}</a>` });
   }
 
   // Testo sicuro + player Vimeo responsive (solo iframe/link di vimeo.com)
@@ -1449,7 +1450,6 @@
       hasItems = true;
       container.innerHTML += `
         <div style="text-align:left;">
-          <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink); margin-bottom:0.3rem;">Note</div>
           ${window.progettoTesto ? `<div style="font-size:0.88rem; line-height:1.5; white-space:pre-wrap;">${renderNota(window.progettoTesto)}</div>` : ''}
           ${videoStrutturatiHtml}
         </div>`;
