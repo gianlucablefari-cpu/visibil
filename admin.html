@@ -1957,20 +1957,31 @@
   async function vidSalva() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('vid-msg', 'Carica prima un cliente.', false); return; }
-    const c = clientiCache.find(x => x.user_id === user_id);
+    // ID del cliente: dalla cache (che esclude gli archiviati) o, se manca, dal database
+    let cliente_id = (clientiCache.find(x => x.user_id === user_id) || {}).id;
+    if (!cliente_id) {
+      const rc = await client.from('clienti').select('id').eq('user_id', user_id).maybeSingle();
+      cliente_id = rc.data && rc.data.id;
+    }
+    if (!cliente_id) { showMsg('vid-msg', 'Cliente non trovato: video non salvati.', false); return; }
     const righe = [];
     for (const v of vidDati) {
       const versioni = v.versioni.filter(x => x.link.trim()).map(x => ({ link: x.link.trim(), qualita: x.qualita || '', info: x.info || '' }));
       if (!versioni.length) continue;
       if (versioni.length > 1 && versioni.some(x => !x.qualita)) { showMsg('vid-msg', 'Con più versioni imposta la qualità (LOW/HD/4K) di ciascuna.', false); return; }
-      righe.push({ cliente_id: c ? c.id : null, user_id, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
+      righe.push({ cliente_id, user_id, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
     }
-    const del = await client.from('video_cliente').delete().eq('user_id', user_id);
-    if (del.error) { showMsg('vid-msg', 'Errore: ' + del.error.message, false); return; }
+    // Prima inserisco le righe nuove, poi tolgo le vecchie: se l'inserimento fallisce i video esistenti restano
+    let nuoviId = [];
     if (righe.length) {
-      const ins = await client.from('video_cliente').insert(righe);
+      const ins = await client.from('video_cliente').insert(righe).select('id');
       if (ins.error) { showMsg('vid-msg', 'Errore: ' + ins.error.message, false); return; }
+      nuoviId = (ins.data || []).map(r => r.id);
     }
+    let delQ = client.from('video_cliente').delete().eq('user_id', user_id);
+    if (nuoviId.length) delQ = delQ.not('id', 'in', '(' + nuoviId.join(',') + ')');
+    const del = await delQ;
+    if (del.error) { showMsg('vid-msg', 'Errore nella pulizia dei video vecchi: ' + del.error.message, false); vidCarica(user_id); return; }
     showMsg('vid-msg', 'Video salvati ✓', true);
     vidCarica(user_id);
   }
