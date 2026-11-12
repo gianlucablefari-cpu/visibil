@@ -269,6 +269,10 @@
   .vc-rev svg { width: 14px; height: 14px; }
   .vc-rev.vc-rev-ok { background: #e3f3e8; color: #1d6b32; border-color: #e3f3e8; }
   .vc-rev:disabled { cursor: default; opacity: 1; }
+  .vc-rev-wrap { display: flex; justify-content: center; margin: 0.2rem 0 0.9rem; }
+  .vc-rev-wrap.vc-rev-fondo { margin: 0.9rem 0 0.1rem; }
+  .vc-elenco.vc-chiuso .vc-rev-fondo { display: none; }
+  .vc-rev-wrap .vc-rev { height: 36px; padding: 0 1.2rem; font-size: 0.82rem; }
   .vc-stati { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
   .vc-stato-attesa { display: inline-flex; align-items: center; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; }
   .vc-item.vc-attesa > .vc-row .vc-fatto-btn.attivo { background: #b7791f; border-color: #b7791f; }
@@ -1241,14 +1245,14 @@
       ? `<button type="button" class="vc-rev vc-rev-ok"${window.isPreviewMode ? ' disabled' : ''} title="${window.isPreviewMode ? 'Il cliente ha finito di rivedere questa versione' : 'Clicca per annullare'}"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg>${window.isPreviewMode ? 'Revisione completata dal cliente' : 'Revisione inviata'} il ${dataBreve(finitaIl)}</button>`
       : (window.isPreviewMode ? '' : `<button type="button" class="vc-rev" title="Avvisa Gianluca che hai finito di guardare il video e può iniziare con le correzioni">Ho finito di rivedere</button>`);
     const attesaUI = nAttesa ? `<span class="vc-stato-attesa" title="Il cliente li vedrà risolti quando carichi la nuova versione del video">${nAttesa} in attesa della nuova versione</span>` : '';
-    const testata = (items.length || revisioneUI) ? `<div class="vc-title">${items.length ? toggleUI : ''}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span>${statoUI || attesaUI || revisioneUI ? `<span class="vc-stati">${statoUI}${attesaUI}${revisioneUI}</span>` : ''}</div>` : '';
-    box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${testata}<div class="vc-lista">${lista}</div></div>`;
+    const testata = items.length ? `<div class="vc-title">${toggleUI}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span>${statoUI || attesaUI ? `<span class="vc-stati">${statoUI}${attesaUI}</span>` : ''}</div>` : '';
+    const revBlocco = revisioneUI ? `<div class="vc-rev-wrap">${revisioneUI}</div>` : '';
+    box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${revBlocco}${testata}<div class="vc-lista">${lista}</div>${items.length > 2 ? revBlocco.replace('vc-rev-wrap', 'vc-rev-wrap vc-rev-fondo') : ''}</div>`;
     box._oraIds = null; if (box._sec != null) evidenziaOra(box, box._sec);
     posizionaMarker(box, box._sec || 0);
     const taBozza = box.querySelector('.vc-form textarea');
     if (taBozza && bozza) taBozza.value = bozza;
-    const rev = box.querySelector('.vc-rev:not([disabled])');
-    if (rev) rev.onclick = async () => {
+    box.querySelectorAll('.vc-rev:not([disabled])').forEach(rev => rev.onclick = async () => {
       const annulla = revFinita;
       if (!confirm(annulla ? 'Annullare "Revisione inviata"?' : 'Hai finito di rivedere il video?\n\nGianluca riceverà un avviso e inizierà con le correzioni. Potrai comunque continuare a commentare.')) return;
       rev.disabled = true;
@@ -1267,7 +1271,7 @@
           }) });
         } catch (e) {}
       }
-    };
+    });
     const tgl = box.querySelector('.vc-toggle');
     if (tgl) tgl.onclick = () => {
       window.vcChiusiMem[videoId] = !chiuso;
