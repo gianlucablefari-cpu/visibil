@@ -274,7 +274,6 @@
   .vc-rev-nota { font-size: 0.78rem; color: #1d6b32; text-align: center; }
   .vc-rev-nota.vc-rev-err { color: #A32D2D; }
   .vc-rev-wrap.vc-rev-fondo { margin: 0.9rem 0 0.1rem; }
-  .vc-elenco.vc-chiuso .vc-rev-fondo { display: none; }
   .vc-rev-wrap .vc-rev { height: 36px; padding: 0 1.2rem; font-size: 0.82rem; }
   .vc-stati { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
   .vc-stato-attesa { display: inline-flex; align-items: center; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; }
@@ -1253,7 +1252,7 @@
       : box._avviso === 'errore' ? '<div class="vc-rev-nota vc-rev-err">Revisione segnata, ma il messaggio a Gianluca non è partito: scrivigli da "Contattami".</div>' : '';
     const revBlocco = revisioneUI ? `<div class="vc-rev-wrap">${revisioneUI}</div>` : '';
     const revBloccoTop = revisioneUI ? `<div class="vc-rev-wrap">${revisioneUI}${revFinita ? avviso : ''}</div>` : '';
-    box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${revBloccoTop}${testata}<div class="vc-lista">${lista}</div>${items.length > 2 ? revBlocco.replace('vc-rev-wrap', 'vc-rev-wrap vc-rev-fondo') : ''}</div>`;
+    box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${testata}<div class="vc-lista">${lista}</div>${revBloccoTop.replace('vc-rev-wrap', 'vc-rev-wrap vc-rev-fondo')}</div>`;
     box._oraIds = null; if (box._sec != null) evidenziaOra(box, box._sec);
     posizionaMarker(box, box._sec || 0);
     const taBozza = box.querySelector('.vc-form textarea');
