@@ -265,6 +265,8 @@
   .vc-toggle { display: inline-flex; align-items: center; gap: 0.4rem; height: 28px; min-width: 30px; justify-content: center; padding: 0 0.45rem; background: #fff; border: 1px solid rgba(0,0,0,0.18); border-radius: 6px; color: var(--black); font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer; }
   .vc-stato-tutti { text-transform: none; letter-spacing: 0; display: inline-flex; align-items: center; gap: 0.3rem; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: rgba(0,0,0,0.05); color: var(--grey); font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
   .vc-stato-tutti svg { width: 14px; height: 14px; }
+  .vc-stato-attesa { display: inline-flex; align-items: center; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; }
+  .vc-item.vc-attesa > .vc-row .vc-fatto-btn.attivo { background: #b7791f; border-color: #b7791f; }
   .vc-stato-tutti.vc-stato-ok { background: #e3f3e8; color: #1d6b32; }
   .vc-toggle:hover { color: var(--ink); border-color: var(--ink); }
   .vc-toggle svg { width: 15px; height: 15px; }
@@ -809,7 +811,7 @@
     opz = opz || {};
     const scarica = opz.scarica ? `<a class="video-toggle video-dl" href="${opz.scarica}" download title="Scarica il video" aria-label="Scarica il video">${IC.download}</a>` : '';
     const agg = opz.aggiornato ? (() => { const d = new Date(opz.aggiornato); return isNaN(d) ? '' : `<span class="video-aggiornato" title="${d.toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">Nuova versione caricata il ${d.toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>`; })() : '';
-    return `<div class="video-cq">${opz.intestazione || agg ? `<div class="video-testa">${opz.intestazione ? `<h3 class="video-intestazione">${opz.intestazione}</h3>` : ''}${agg}</div>` : ''}<div class="video-block"><div class="video-wrap"><div class="video-titolo"><span class="video-right"><button type="button" class="video-toggle video-exp" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button>${scarica}${opz.qualita || ''}</span>${opz.titolo || ''}<span class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || '')}</span></div><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-60)" title="Indietro di 60 secondi">${IC.back3}<span>60</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,60)" title="Avanti di 60 secondi"><span>60</span>${IC.fwd3}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}</div></div>`;
+    return `<div class="video-cq">${opz.intestazione || agg ? `<div class="video-testa">${opz.intestazione ? `<h3 class="video-intestazione">${opz.intestazione}</h3>` : ''}${agg}</div>` : ''}<div class="video-block"><div class="video-wrap"><div class="video-titolo"><span class="video-right"><button type="button" class="video-toggle video-exp" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button>${scarica}${opz.qualita || ''}</span>${opz.titolo || ''}<span class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || '')}</span></div><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-60)" title="Indietro di 60 secondi">${IC.back3}<span>60</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,60)" title="Avanti di 60 secondi"><span>60</span>${IC.fwd3}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}" data-agg="${opz.aggiornato || ''}"></div>`}</div></div>`;
   }
   // Se un video Dropbox non si carica, mostra il link di riserva
   document.addEventListener('error', e => {
@@ -1173,13 +1175,18 @@
     });
     const risposteDi = id => items.filter(c => c.risposta_a === id).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     const SVG_ST = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+    // Un commento risolto da Gianluca diventa "risolto" per il cliente solo quando viene caricata una nuova versione del video
+    const aggVideo = box.dataset.agg ? new Date(box.dataset.agg) : null;
+    const risoltoPerCliente = c => c.stato === 'risolto' && (c.risolto_da === 'cliente' || (!!c.risolto_il && !!aggVideo && new Date(c.risolto_il) <= aggVideo));
+    const risoltoVisto = c => window.isPreviewMode ? c.stato === 'risolto' : risoltoPerCliente(c);
+    const inAttesa = c => window.isPreviewMode && c.stato === 'risolto' && !risoltoPerCliente(c);
     const itemHtml = (c, isReply) => {
       const mioRuolo = window.isPreviewMode ? 'admin' : 'cliente';
       const puoModificare = c.autore === mioRuolo;
       const puoEliminare = window.isPreviewMode || c.autore === 'cliente';
       const figli = isReply ? [] : risposteDi(c.id);
       return `
-      <div class="vc-item${isReply ? ' vc-reply' : ''}${!isReply && c.fissato ? ' vc-fissato' : ''}${c.stato === 'risolto' ? ' vc-fatto' : ''}${box._aperti && box._aperti.has(c.id) ? ' vc-aperto' : ''}" data-id="${c.id}">
+      <div class="vc-item${isReply ? ' vc-reply' : ''}${!isReply && c.fissato ? ' vc-fissato' : ''}${risoltoVisto(c) ? ' vc-fatto' : ''}${inAttesa(c) ? ' vc-attesa' : ''}${box._aperti && box._aperti.has(c.id) ? ' vc-aperto' : ''}" data-id="${c.id}">
         <div class="vc-row">
           <div class="vc-left">${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">Vai a ${IC.play} ${fmtSecondi(c.secondi)}</button>` : ''}</div>
           <div class="vc-testo"><span class="vc-t">${escHtml(c.testo)}</span><button type="button" class="vc-piu" hidden title="Mostra tutto il commento" aria-label="Mostra o nascondi il resto del commento"></button> ${c.ok_da ? `<span class="vc-ok-tag" title="Approvato"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>Ok ${c.ok_da === mioRuolo ? 'tuo' : c.ok_da === 'admin' ? 'di Gianluca' : 'del cliente'}</span>` : ''}<span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span></span></div>
@@ -1188,7 +1195,7 @@
             ${c.autore !== mioRuolo ? `<button type="button" class="vc-ok-btn${c.ok_da ? ' attivo' : ''}" title="${c.ok_da ? 'Togli l\'ok' : 'Dai l\'ok (va bene)'}"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button>` : ''}
             ${window.isPreviewMode && !isReply ? `<button type="button" class="vc-pin-btn${c.fissato ? ' attivo' : ''}" title="${c.fissato ? 'Non fissare più in alto' : 'Fissa in alto'}"><svg ${SVG_ST}><line x1="12" y1="16" x2="12" y2="4"></line><polyline points="6 10 12 4 18 10"></polyline><line x1="5" y1="20" x2="19" y2="20"></line></svg></button>` : ''}
             ${puoModificare ? `<button type="button" class="vc-mod" title="Modifica"><svg ${SVG_ST}><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>` : ''}
-            ${puoEliminare ? `<button type="button" class="vc-fatto-btn${c.stato === 'risolto' ? ' attivo' : ''}" title="${c.stato === 'risolto' ? 'Fatto: clicca per riaprire' : 'Segna come fatto'}"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg></button>` : ''}
+            ${puoEliminare ? `<button type="button" class="vc-fatto-btn${risoltoVisto(c) ? ' attivo' : ''}" title="${inAttesa(c) ? 'Fatto: il cliente lo vedrà risolto quando carichi la nuova versione. Clicca per riaprire' : risoltoVisto(c) ? 'Fatto: clicca per riaprire' : 'Segna come fatto'}"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg></button>` : ''}
             ${puoEliminare ? `<button type="button" class="vc-del" title="Elimina"><svg ${SVG_ST}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>` : ''}
           </span></div>
         </div>
@@ -1213,11 +1220,13 @@
     if (chiuso === undefined) { chiuso = false; try { chiuso = localStorage.getItem('vcChiuso:' + videoId) === '1'; } catch (e) {} }
     const toggleUI = `<button type="button" class="vc-toggle" aria-expanded="${!chiuso}" title="${chiuso ? 'Mostra i commenti' : 'Nascondi i commenti'}"><svg ${SVG_ST}>${chiuso ? '<polyline points="6 9 12 15 18 9"></polyline>' : '<polyline points="18 15 12 9 6 15"></polyline>'}</svg>${chiuso ? `<span>Mostra commenti (${items.length})</span>` : ''}</button>`;
     // Stato delle correzioni: quanti commenti principali sono segnati come fatti
-    const nRisolti = radici.filter(c => c.stato === 'risolto').length;
+    const nRisolti = radici.filter(risoltoVisto).length;
+    const nAttesa = radici.filter(inAttesa).length;
     const statoUI = !radici.length ? '' : nRisolti === radici.length
       ? `<span class="vc-stato-tutti vc-stato-ok" title="Tutti i commenti sono stati sistemati"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg>Tutti i commenti risolti</span>`
       : nRisolti ? `<span class="vc-stato-tutti" title="Commenti sistemati">${nRisolti} di ${radici.length} risolti</span>` : '';
-    const testata = items.length ? `<div class="vc-title">${toggleUI}${statoUI}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span></div>` : '';
+    const attesaUI = nAttesa ? `<span class="vc-stato-attesa" title="Il cliente li vedrà risolti quando carichi la nuova versione del video">${nAttesa} in attesa della nuova versione</span>` : '';
+    const testata = items.length ? `<div class="vc-title">${toggleUI}${statoUI}${attesaUI}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span></div>` : '';
     box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${testata}<div class="vc-lista">${lista}</div></div>`;
     box._oraIds = null; if (box._sec != null) evidenziaOra(box, box._sec);
     posizionaMarker(box, box._sec || 0);
@@ -1330,7 +1339,10 @@
     box.querySelectorAll('.vc-fatto-btn').forEach(b => b.onclick = async () => {
       const id = b.closest('.vc-item').dataset.id;
       const c = items.find(x => x.id === id);
-      const { error } = await client.from('video_commenti').update({ stato: c && c.stato === 'risolto' ? null : 'risolto' }).eq('id', id);
+      const giaFatto = c && risoltoVisto(c);
+      const { error } = await client.from('video_commenti').update(giaFatto
+        ? { stato: null, risolto_il: null, risolto_da: null }
+        : { stato: 'risolto', risolto_il: new Date().toISOString(), risolto_da: window.isPreviewMode ? 'admin' : 'cliente' }).eq('id', id);
       if (error) { alert('Errore: ' + error.message); return; }
       const agg = await fetchVideoCommenti(true);
       document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg));
