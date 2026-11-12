@@ -826,7 +826,7 @@
           let nome = '';
           try { nome = decodeURIComponent(new URL(lk.replace(/&amp;/g, '&')).pathname.split('/').pop() || '').toLowerCase(); } catch (e) {}
           if (/(^|[^a-z0-9])(4k|uhd|2160p?)([^a-z0-9]|$)/.test(nome)) return '4K';
-          if (/(^|[^a-z])(high|hq|hd|hr|alta|full)([^a-z]|$)/.test(nome)) return 'Alta';
+          if (/(^|[^a-z0-9])(high|hq|hd|hr|alta|full|fullhd|full-hd|fhd|1080p?)([^a-z0-9]|$)/.test(nome)) return 'Alta';
           if (/(^|[^a-z])(low|lq|sd|bassa|proxy)([^a-z]|$)/.test(nome)) return 'Bassa';
           return '';
         };
