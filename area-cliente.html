@@ -333,6 +333,8 @@
   .video-info[hidden] { display: none; }
   .video-nome { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .video-nome:hover { text-decoration: underline; }
+  .video-nome-video { flex: 0 1 auto; min-width: 0; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.85rem; font-weight: 700; color: var(--black); }
+  .video-nome-video + .video-nome { font-weight: 500; color: var(--grey); }
   .video-skip:hover, .video-toggle:hover { border-color: var(--ink); color: var(--ink); }
   .video-skip:active { background: rgba(26,26,230,0.08); }
   .ic { width: 15px; height: 15px; flex-shrink: 0; }
@@ -803,7 +805,7 @@
 
   // Video Dropbox con eventuali versioni (LOW/HD/4K). versioniIn: [{link, label:'Bassa'|'Alta'|'4K'|'', info}]
   // chiave: codice dei commenti (db_xxx, link o codice vecchio); vuoto = ricavato dal primo link
-  function videoDropboxHtml(versioniIn, chiave, senzaCommenti) {
+  function videoDropboxHtml(versioniIn, chiave, senzaCommenti, nomeVideo) {
     const escOnly = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const varianti = [];
     versioniIn.forEach((vi, i) => {
@@ -841,7 +843,7 @@
     return videoWrapHtml(`<video src="${q(v0.src)}" controls playsinline preload="metadata"></video>`, dbId,
       `<a class="video-fallback" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
       { scarica: q(v0.dl), senzaCommenti, qualita, info: v0.info,
-        titolo: `<a class="video-nome" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" title="Apri su Dropbox">${escOnly(v0.nome)}</a>` });
+        titolo: (nomeVideo ? `<span class="video-nome-video">${escOnly(nomeVideo)}</span>` : '') + `<a class="video-nome" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" title="Apri su Dropbox">${escOnly(v0.nome)}</a>` });
   }
 
   // Testo sicuro + player Vimeo responsive (solo iframe/link di vimeo.com)
@@ -1421,7 +1423,7 @@
     // Video strutturati (sezione "Video" dell'admin), mostrati sotto il testo della nota
     const videoStrutturatiHtml = (window.videoCliente || []).map(v => {
       const vers = (Array.isArray(v.versioni) ? v.versioni : []).filter(x => x && x.link).map(x => ({ link: x.link, label: x.qualita || '', info: x.info || '' }));
-      return videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false);
+      return videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false, v.nome || '');
     }).join('');
     if (window.progettoTesto || videoStrutturatiHtml) {
       hasItems = true;

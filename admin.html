@@ -1879,6 +1879,7 @@
   // ---- Sezione "Video" strutturata (tabella video_cliente) ----
   let vidDati = [];          // [{id, chiave, commenti_attivi, versioni:[{link, qualita, info}]}]
   let vidChiaviEsistenti = []; // video_id con commenti già presenti per il cliente
+  let vidConteggi = {};        // video_id -> numero di commenti
   function vidQualitaDaLink(lk) {
     let nome = '';
     try { nome = decodeURIComponent(new URL(lk).pathname.split('/').pop() || '').toLowerCase(); } catch (e) {}
@@ -1886,6 +1887,19 @@
     if (/(^|[^a-z0-9])(high|hq|hd|hr|alta|full|fullhd|full-hd|fhd|1080p?)([^a-z0-9]|$)/.test(nome)) return 'Alta';
     if (/(^|[^a-z])(low|lq|sd|bassa|proxy)([^a-z]|$)/.test(nome)) return 'Bassa';
     return '';
+  }
+  // Nome proposto dal nome del file: senza estensione e senza la parola della qualità finale
+  function vidNomeDaLink(lk) {
+    let n = '';
+    try { n = decodeURIComponent(new URL(lk).pathname.split('/').pop() || ''); } catch (e) { return ''; }
+    n = n.replace(/\.[A-Za-z0-9]{2,4}$/, '');
+    n = n.replace(/[\s_.-]*(low|lq|sd|bassa|proxy|high|hq|hd|hr|alta|full|fullhd|full-hd|fhd|1080p?|720p?|4k|uhd|2160p?)$/i, '');
+    return n.replace(/[_]+/g, ' ').trim();
+  }
+  // Codice fisso dei commenti di un video nuovo: creato una volta, non dipende dai link
+  function vidNuovaChiave() {
+    const a = new Uint8Array(9); crypto.getRandomValues(a);
+    return 'db_v' + Array.from(a, b => b.toString(36).padStart(2, '0')).join('').slice(0, 16);
   }
   function vidChiaveDaLink(lk) {
     try { const sg = new URL(lk).pathname.split('/').filter(Boolean); const id = (sg[0] === 's' ? sg[1] : sg[2] || '').replace(/[^A-Za-z0-9_-]/g, ''); return id ? 'db_' + id : ''; } catch (e) { return ''; }
@@ -1896,8 +1910,12 @@
     if (!vidDati.length) { box.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun video strutturato.</p>'; return; }
     const attr = t => vcEsc(t).replace(/"/g, '&quot;');
     box.innerHTML = vidDati.map((v, i) => {
-      const opzioniChiave = ['<option value="">Nuovo (dal primo link)</option>'].concat(
-        Array.from(new Set(vidChiaviEsistenti.concat(v.chiave ? [v.chiave] : []))).map(k => `<option value="${attr(k)}"${k === v.chiave ? ' selected' : ''}>${vcEsc(k)}</option>`)).join('');
+      // Commenti: quelli propri del video, oppure quelli di un altro codice già commentato e non usato da altri video
+      const usateDaAltri = new Set(vidDati.filter((x, k) => k !== i).map(x => x.chiave).filter(Boolean));
+      const etichetta = k => { const altro = vidDati.find(x => x.chiave === k); const n = vidConteggi[k] || 0;
+        return (altro && altro.nome ? altro.nome : k) + (n ? ` (${n} comment${n === 1 ? 'o' : 'i'})` : ''); };
+      const chiavi = Array.from(new Set([v.chiave].concat(vidChiaviEsistenti).filter(k => k && (k === v.chiave || !usateDaAltri.has(k)))));
+      const opzioniChiave = chiavi.map(k => `<option value="${attr(k)}"${k === v.chiave ? ' selected' : ''}>${k === v.chiave ? 'Commenti di questo video' + (vidConteggi[k] ? ` (${vidConteggi[k]})` : '') : 'Commenti di: ' + vcEsc(etichetta(k))}</option>`).join('');
       const versioni = v.versioni.map((x, j) => `
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.4rem; align-items:center;">
           <input type="text" value="${attr(x.link)}" placeholder="Link Dropbox del file" style="flex:1 1 260px; min-width:0;" onchange="vidCampo(${i},${j},'link',this.value)">
@@ -1910,7 +1928,8 @@
       return `
       <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.7rem 0.85rem; margin-bottom:0.75rem;">
         <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
-          <strong style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Video ${i + 1}</strong>
+          <strong style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--grey);">${i + 1}</strong>
+          <input type="text" value="${attr(v.nome)}" placeholder="Nome del video (es. Spot Bagni Sartoriali)" style="flex:1 1 220px; min-width:0; font-weight:600;" onchange="vidNome(${i},this.value)">
           <label style="display:flex; align-items:center; gap:0.3rem; margin:0; font-size:0.8rem; font-weight:400;"><input type="checkbox" style="width:auto;" ${v.commenti_attivi ? 'checked' : ''} onchange="vidToggleCommenti(${i},this.checked)"> Commenti attivi</label>
           <span style="flex:1"></span>
           <button type="button" class="secondary btn-small" title="Sposta su" ${i === 0 ? 'disabled' : ''} onclick="vidSposta(${i},-1)">↑</button>
@@ -1920,13 +1939,14 @@
         ${versioni}
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; margin-top:0.3rem;">
           <button type="button" class="secondary btn-small" onclick="vidAggiungiVersione(${i})">+ Versione (HD/4K…)</button>
-          <span style="font-size:0.75rem; color:var(--grey);">Commenti collegati a:</span>
-          <select style="width:auto;" onchange="vidChiave(${i},this.value)">${opzioniChiave}</select>
+          ${chiavi.length > 1 ? `<span style="font-size:0.75rem; color:var(--grey);">Commenti:</span>
+          <select style="width:auto; max-width:100%;" onchange="vidChiave(${i},this.value)">${opzioniChiave}</select>` : ''}
         </div>
       </div>`;
     }).join('');
   }
-  function vidAggiungi() { vidDati.push({ id: null, chiave: '', commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
+  function vidNome(i, val) { vidDati[i].nome = val.trim(); }
+  function vidAggiungi() { vidDati.push({ id: null, nome: '', chiave: vidNuovaChiave(), commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
   function vidAggiungiVersione(i) { vidDati[i].versioni.push({ link: '', qualita: '', info: '' }); vidRender(); }
   function vidRimuoviVersione(i, j) { vidDati[i].versioni.splice(j, 1); vidRender(); }
   function vidElimina(i) { if (confirm('Eliminare questo video dalla lista? I commenti restano salvati.')) { vidDati.splice(i, 1); vidRender(); } }
@@ -1938,20 +1958,22 @@
     x[campo] = val.trim();
     if (campo === 'link') {
       if (!x.qualita) x.qualita = vidQualitaDaLink(x.link);
+      if (!vidDati[i].nome && j === 0) vidDati[i].nome = vidNomeDaLink(x.link);
       vidRender();
     }
   }
   async function vidCarica(user_id) {
-    vidDati = []; vidChiaviEsistenti = [];
+    vidDati = []; vidChiaviEsistenti = []; vidConteggi = {};
     if (!user_id) { vidRender(); return; }
     const [r1, r2] = await Promise.all([
       client.from('video_cliente').select('*').eq('user_id', user_id).order('ordine', { ascending: true }),
       client.from('video_commenti').select('video_id').eq('user_id', user_id)
     ]);
     if (r1.error) { showMsg('vid-msg', 'Errore nel caricamento video: ' + r1.error.message, false); }
-    vidDati = (r1.data || []).map(r => ({ id: r.id, chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
+    vidDati = (r1.data || []).map(r => ({ id: r.id, nome: r.nome || vidNomeDaLink(((r.versioni || [])[0] || {}).link || ''), chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
       versioni: (Array.isArray(r.versioni) ? r.versioni : []).map(x => ({ link: x.link || '', qualita: x.qualita || '', info: x.info || '' })) }));
-    vidChiaviEsistenti = Array.from(new Set((r2.data || []).map(c => c.video_id).filter(k => k && k.startsWith('db_'))));
+    (r2.data || []).forEach(c => { if (c.video_id) vidConteggi[c.video_id] = (vidConteggi[c.video_id] || 0) + 1; });
+    vidChiaviEsistenti = Object.keys(vidConteggi).filter(k => k.startsWith('db_'));
     vidRender();
   }
   async function vidSalva() {
@@ -1968,8 +1990,9 @@
     for (const v of vidDati) {
       const versioni = v.versioni.filter(x => x.link.trim()).map(x => ({ link: x.link.trim(), qualita: x.qualita || '', info: x.info || '' }));
       if (!versioni.length) continue;
+      if (!v.nome) { showMsg('vid-msg', 'Dai un nome a ogni video.', false); return; }
       if (versioni.length > 1 && versioni.some(x => !x.qualita)) { showMsg('vid-msg', 'Con più versioni imposta la qualità (LOW/HD/4K) di ciascuna.', false); return; }
-      righe.push({ cliente_id, user_id, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
+      righe.push({ cliente_id, user_id, nome: v.nome, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
     }
     // Prima inserisco le righe nuove, poi tolgo le vecchie: se l'inserimento fallisce i video esistenti restano
     let nuoviId = [];
@@ -1989,7 +2012,11 @@
   async function caricaVideoCommenti(user_id) {
     const box = document.getElementById('vc-admin');
     if (!user_id) { box.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p>'; return; }
-    const { data, error } = await client.from('video_commenti').select('*').eq('user_id', user_id).order('created_at', { ascending: true });
+    const [{ data, error }, rn] = await Promise.all([
+      client.from('video_commenti').select('*').eq('user_id', user_id).order('created_at', { ascending: true }),
+      client.from('video_cliente').select('chiave, nome').eq('user_id', user_id)
+    ]);
+    const nomiVideo = {}; (rn.data || []).forEach(x => { if (x.chiave && x.nome) nomiVideo[x.chiave] = x.nome; });
     if (error) { box.innerHTML = '<p style="font-size:0.85rem; color:#c0392b;">Errore nel caricamento: ' + vcEsc(error.message) + '</p>'; return; }
     if (!data || data.length === 0) { box.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun commento ancora.</p>'; return; }
     const gruppi = {};
@@ -2006,7 +2033,7 @@
     box.innerHTML = Object.keys(gruppi).map(vid => `
       <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.7rem 0.85rem; margin-bottom:0.75rem;">
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.4rem;">
-          ${vid.startsWith('db_') ? 'Video Dropbox' : `Video <a href="https://vimeo.com/${vid}" target="_blank" rel="noopener" style="color:var(--ink);">${vid}</a>`}
+          ${nomiVideo[vid] ? vcEsc(nomiVideo[vid]) : vid.startsWith('db_') ? 'Video Dropbox' : `Video <a href="https://vimeo.com/${vid}" target="_blank" rel="noopener" style="color:var(--ink);">${vid}</a>`}
         </div>
         ${gruppi[vid].map(c => `
           <div style="font-size:0.82rem; padding:0.4rem 0; border-top:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; gap:0.5rem;${c.risposta_a ? ' margin-left:1.1rem; padding-left:0.6rem; border-left:2px solid rgba(0,0,0,0.12);' : ''}">
