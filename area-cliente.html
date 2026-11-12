@@ -260,11 +260,6 @@
   .vc-ts .ic, .vc-chip .ic { width: 13px; height: 13px; }
   .vc-chip { padding: 0.35rem 0.7rem; background: none; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; font: inherit; font-size: 0.75rem; font-weight: 600; color: var(--grey); cursor: pointer; }
   .vc-chip.attivo { background: rgba(26,26,230,0.08); border-color: rgba(26,26,230,0.3); color: var(--ink); }
-  .vc-stato { display: inline-block; padding: 0.05rem 0.5rem; border-radius: 100px; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; vertical-align: 1px; margin-right: 0.3rem; }
-  .vc-stato-da_sistemare { background: #fff1d6; color: #9a5b00; }
-  .vc-stato-risolto { background: #dff5e3; color: #1d6b32; }
-  .vc-azioni .vc-flag-da_sistemare { color: #b36b00; border-color: #e0a33a; background: #fff8e8; }
-  .vc-azioni .vc-flag-risolto { color: #1d6b32; border-color: #7cc48e; background: #f1fbf3; }
   .vc-azioni { display: inline-flex; gap: 0.35rem; }
   .vc-azioni button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; background: #fff; border: 1px solid rgba(0,0,0,0.18); border-radius: 6px; color: var(--black); cursor: pointer; }
   .vc-azioni button svg { width: 15px; height: 15px; }
@@ -1004,10 +999,6 @@
     const radici = items.filter(c => !c.risposta_a).sort((a, b) => {
       const ta = new Date(a.created_at).getTime(), tb = new Date(b.created_at).getTime();
       if (ordine === 'recenti') return tb - ta;
-      if (ordine === 'da-sistemare') {
-        const pa = a.stato === 'da_sistemare' ? 0 : 1, pb = b.stato === 'da_sistemare' ? 0 : 1;
-        return pa - pb || ta - tb;
-      }
       if (ordine === 'minuto-asc' || ordine === 'minuto-desc') {
         const sa = a.secondi, sb = b.secondi;
         if (sa == null && sb == null) return ta - tb;
@@ -1024,18 +1015,12 @@
       const puoModificare = c.autore === mioRuolo;
       const puoEliminare = window.isPreviewMode || c.autore === 'cliente';
       const figli = isReply ? [] : risposteDi(c.id);
-      const puoStato = puoModificare || window.isPreviewMode;
-      const st = c.stato || '';
-      const stLabel = st === 'da_sistemare' ? 'Da sistemare' : st === 'risolto' ? 'Risolto' : '';
-      const stNext = st === '' ? 'Segna come da sistemare' : st === 'da_sistemare' ? 'Segna come risolto' : 'Togli il segno';
-      const badge = stLabel ? `<span class="vc-stato vc-stato-${st}">${stLabel}</span> ` : '';
       return `
       <div class="vc-item${isReply ? ' vc-reply' : ''}" data-id="${c.id}">
         <div class="vc-row">
           <div class="vc-left">${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">Vai a ${IC.play} ${fmtSecondi(c.secondi)}</button>` : ''}</div>
-          <div class="vc-testo">${badge}${escHtml(c.testo)} <span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span>${c.modificato ? ' <span class="vc-mod-tag">(modificato)</span>' : ''}</span></div>
+          <div class="vc-testo">${escHtml(c.testo)} <span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span>${c.modificato ? ' <span class="vc-mod-tag">(modificato)</span>' : ''}</span></div>
           <div class="vc-side"><span class="vc-azioni">
-            ${puoStato ? `<button type="button" class="vc-flag${st ? ' vc-flag-' + st : ''}" title="${stNext}"><svg ${SVG_ST}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></button>` : ''}
             ${isReply ? '' : `<button type="button" class="vc-rispondi" title="Rispondi"><svg ${SVG_ST}><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg></button>`}
             ${puoModificare ? `<button type="button" class="vc-mod" title="Modifica"><svg ${SVG_ST}><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>` : ''}
             ${puoEliminare ? `<button type="button" class="vc-del" title="Elimina"><svg ${SVG_ST}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>` : ''}
@@ -1052,8 +1037,8 @@
         <div class="vc-form-row vc-form-send"><span class="vc-hint"><kbd>Invio</kbd> invia · <kbd>Maiusc</kbd>+<kbd>Invio</kbd> va a capo</span><button type="button" class="vc-invia">Invia</button></div>
       </div>`;
     const sel = (v, t) => `<option value="${v}"${ordine === v ? ' selected' : ''}>${t}</option>`;
-    const ordinaUI = radici.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}${sel('da-sistemare', 'Da sistemare prima')}</select>` : '';
-    const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})${items.filter(x => x.stato === 'da_sistemare').length ? ` · ${items.filter(x => x.stato === 'da_sistemare').length} da sistemare` : ''}</span>${ordinaUI}</div>` : '';
+    const ordinaUI = radici.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
+    const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})</span>${ordinaUI}</div>` : '';
     box.innerHTML = `${form}<div class="vc-elenco">${testata}<div class="vc-lista">${lista}</div></div>`;
     const taBozza = box.querySelector('.vc-form textarea');
     if (taBozza && bozza) taBozza.value = bozza;
@@ -1084,15 +1069,6 @@
         }); }
       }).catch(() => {});
     }
-    box.querySelectorAll('.vc-flag').forEach(b => b.onclick = async () => {
-      const id = b.closest('.vc-item').dataset.id;
-      const c = items.find(x => x.id === id);
-      const next = !c.stato ? 'da_sistemare' : c.stato === 'da_sistemare' ? 'risolto' : null;
-      const { error } = await client.from('video_commenti').update({ stato: next }).eq('id', id);
-      if (error) { alert('Errore: ' + error.message); return; }
-      const agg = await fetchVideoCommenti(true);
-      document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg));
-    });
     box.querySelectorAll('.vc-del').forEach(b => b.onclick = async () => {
       const id = b.closest('.vc-item').dataset.id;
       const haRisposte = items.some(x => x.risposta_a === id);
