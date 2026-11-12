@@ -1288,7 +1288,8 @@
           } else out += run.map(c => itemHtml(c, false)).join('');
           run = [];
         };
-        normali.forEach(c => { if (risoltoVisto(c)) run.push(c); else { chiudiRun(); out += itemHtml(c, false); } });
+        // un risolto con risposte sotto resta sempre visibile
+        normali.forEach(c => { if (risoltoVisto(c) && !risposteDi(c.id).length) run.push(c); else { chiudiRun(); out += itemHtml(c, false); } });
         chiudiRun();
         return out;
       })();
