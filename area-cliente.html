@@ -1596,10 +1596,14 @@
     const targetUserId = isPreview ? previewId : user.id;
     window.isPreviewMode = isPreview;
 
-    if (isPreview) {
+    // Striscia in alto che dice con quale ruolo si sta guardando la pagina (solo per Gianluca)
+    const sonoOwner = user.id === OWNER_ID;
+    if (sonoOwner) {
       const banner = document.createElement('div');
-      banner.style.cssText = 'background:#0F0F0F; color:#fff; text-align:center; padding:0.6rem; font-size:0.75rem; letter-spacing:0.05em; text-transform:uppercase; position:fixed; top:0; left:0; right:0; z-index:200;';
-      banner.textContent = '🔍 Anteprima (sola lettura) — stai vedendo la vista di un cliente';
+      banner.id = 'banner-ruolo';
+      banner.style.cssText = 'background:' + (isPreview ? '#0F0F0F' : '#1A1AE6') + '; color:#fff; text-align:center; padding:0.55rem 0.8rem; font-size:0.75rem; letter-spacing:0.04em; position:fixed; top:0; left:0; right:0; z-index:200; display:flex; justify-content:center; align-items:center; gap:0.9rem; flex-wrap:wrap;';
+      banner.innerHTML = '<span id="banner-ruolo-testo">' + (isPreview ? '🔍 ANTEPRIMA — scrivi come Gianluca' : '👤 VISTA CLIENTE — sei dentro come cliente') + '</span>'
+        + '<a href="admin.html" style="color:#fff; text-decoration:underline; font-weight:600;">Torna all\'admin</a>';
       document.body.prepend(banner);
       document.getElementById('dashboard').style.marginTop = '2.5rem';
     }
@@ -1610,6 +1614,10 @@
 
     if (cliente) {
       window.clienteNome = cliente.nome || null;
+      const bt = document.getElementById('banner-ruolo-testo');
+      if (bt) bt.textContent = isPreview
+        ? '🔍 ANTEPRIMA di «' + (cliente.nome || '') + '» — stai scrivendo come Gianluca'
+        : '👤 VISTA CLIENTE — sei dentro come «' + (cliente.nome || '') + '»: commenti e pulsanti valgono come cliente';
       document.getElementById('cliente-nome-sidebar').textContent = cliente.nome;
       const iniziali = cliente.nome.replace(/[^a-zA-Z\s]/g, '').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
       document.getElementById('avatar-iniziali-sidebar').textContent = iniziali;
