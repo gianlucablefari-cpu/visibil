@@ -1086,7 +1086,7 @@
     if (error || !attive.length) { box.style.display = 'none'; el.innerHTML = ''; return; }
     box.style.display = 'block';
     const esc = escapeHtmlAnteprima;
-    el.innerHTML = attive.map(v => `<div style="padding:0.45rem 0; border-top:1px solid rgba(0,0,0,0.06); font-size:0.88rem;"><strong>${esc(nomeClienteById(v.user_id))}</strong> — ${esc(v.nome || 'Video')} <span style="color:var(--grey); font-size:0.78rem;">· ${esc(new Date(v.revisione_finita_il).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</span></div>`).join('');
+    el.innerHTML = attive.map(v => `<div style="padding:0.45rem 0; border-top:1px solid rgba(0,0,0,0.06); font-size:0.88rem;"><a href="area-cliente.html?preview=${esc(v.user_id)}" target="_blank" title="Apri l'area cliente in anteprima" style="color:inherit; text-decoration:none;"><strong>${esc(nomeClienteById(v.user_id))}</strong> — <span style="color:var(--ink); text-decoration:underline;">${esc(v.nome || 'Video')}</span> ↗</a> <span style="color:var(--grey); font-size:0.78rem;">· ${esc(new Date(v.revisione_finita_il).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</span></div>`).join('');
   }
 
   // --- Pagamenti Stripe da abbinare -------------------------------------
