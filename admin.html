@@ -3574,5 +3574,45 @@
   });
 </script>
 
+<style>
+  .pw-wrap { position: relative; display: block; }
+  .pw-wrap > input { width: 100%; padding-right: 2.8rem; box-sizing: border-box; margin-bottom: 0; }
+  .pw-wrap .pw-occhio { position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; margin: 0; padding: 0; background: none; border: 0; border-radius: 6px; color: #8A8A8A; cursor: pointer; box-shadow: none; }
+  .pw-wrap .pw-occhio:hover, .pw-wrap .pw-occhio:focus { background: rgba(0,0,0,0.05); color: #0F0F0F; }
+  .pw-wrap .pw-occhio svg { width: 18px; height: 18px; }
+</style>
+<script>
+  // Occhio per mostrare/nascondere la password + Invio nel login = Accedi
+  (function () {
+    const OCCHIO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    const BARRATO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+    document.querySelectorAll('input[type="password"]').forEach(inp => {
+      if (inp.dataset.occhio) return;
+      inp.dataset.occhio = '1';
+      const w = document.createElement('span');
+      w.className = 'pw-wrap';
+      w.style.marginBottom = getComputedStyle(inp).marginBottom;
+      inp.parentNode.insertBefore(w, inp);
+      w.appendChild(inp);
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'pw-occhio'; b.innerHTML = OCCHIO;
+      b.title = 'Mostra password'; b.setAttribute('aria-label', 'Mostra password');
+      b.onclick = () => {
+        const vis = inp.type === 'password';
+        inp.type = vis ? 'text' : 'password';
+        b.innerHTML = vis ? BARRATO : OCCHIO;
+        b.title = vis ? 'Nascondi password' : 'Mostra password'; b.setAttribute('aria-label', b.title);
+        inp.focus();
+      };
+      w.appendChild(b);
+    });
+    ['email', 'password'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.closest('#login-box')) el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); if (typeof login === 'function') login(); }
+      });
+    });
+  })();
+</script>
 </body>
 </html>
