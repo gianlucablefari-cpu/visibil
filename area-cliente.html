@@ -1603,6 +1603,9 @@
       banner.id = 'banner-ruolo';
       banner.style.cssText = 'background:' + (isPreview ? '#0F0F0F' : '#1A1AE6') + '; color:#fff; text-align:center; padding:0.55rem 0.8rem; font-size:0.75rem; letter-spacing:0.04em; position:fixed; top:0; left:0; right:0; z-index:200; display:flex; justify-content:center; align-items:center; gap:0.9rem; flex-wrap:wrap;';
       banner.innerHTML = '<span id="banner-ruolo-testo">' + (isPreview ? '🔍 ANTEPRIMA — scrivi come Gianluca' : '👤 VISTA CLIENTE — sei dentro come cliente') + '</span>'
+        // Passa all'altra vista dello stesso cliente (possibile solo sul proprio account di prova)
+        + (!isPreview ? '<a href="area-cliente.html?preview=' + OWNER_ID + '" style="color:#fff; text-decoration:underline; font-weight:600;">Passa all\'anteprima</a>'
+           : previewId === OWNER_ID ? '<a href="area-cliente.html" style="color:#fff; text-decoration:underline; font-weight:600;">Passa alla vista cliente</a>' : '')
         + '<a href="admin.html" style="color:#fff; text-decoration:underline; font-weight:600;">Torna all\'admin</a>';
       document.body.prepend(banner);
       document.getElementById('dashboard').style.marginTop = '2.5rem';
