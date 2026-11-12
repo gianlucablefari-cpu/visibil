@@ -852,14 +852,7 @@
           const btnQ = (txt, tit, on, dis, dati) => `<button type="button" class="video-toggle video-q${on ? ' attiva' : ''}"${dati || ''}${dis ? ' disabled' : ''} title="${tit}" aria-label="${tit}">${txt}</button>`;
           let qualita = '';
           if (varianti.length < 2) {
-            const l = v0.label;
-            if (l === 'Bassa' || l === 'Alta') {
-              const alta = l === 'Alta';
-              qualita = btnQ('LOW', alta ? 'Bassa risoluzione non disponibile' : 'Bassa risoluzione (in riproduzione)', !alta, alta)
-                + btnQ('HD', alta ? 'Alta risoluzione (in riproduzione)' : 'Alta risoluzione non ancora disponibile', alta, !alta);
-            } else if (l === '4K') {
-              qualita = btnQ('4K', '4K (in riproduzione)', true, false);
-            }
+            qualita = ''; // un solo video: nessun pulsante di qualità
           } else {
             qualita = [...varianti].sort((a, b) => rango[a.label] - rango[b.label]).map(v =>
               btnQ(corto[v.label], v.label === '4K' ? '4K' : v.label === 'Alta' ? 'Alta risoluzione' : 'Bassa risoluzione', v === v0, false,
