@@ -452,6 +452,12 @@
         <div id="home-stripe-abbinare"></div>
       </div>
 
+      <div id="home-revisioni-box" style="display:none; margin-top:1.5rem; padding:1rem 1.1rem; border:1px solid #1d6b32; border-radius:6px; background:#f3faf5;">
+        <div class="section-label" style="margin-top:0; color:#1d6b32;">Revisioni video completate</div>
+        <p class="desc" style="margin-top:0;">Il cliente ha finito di rivedere: puoi partire con le correzioni. Sparisce quando carichi la nuova versione.</p>
+        <div id="home-revisioni"></div>
+      </div>
+
       <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
         <div class="section-label" style="margin-top:0;">Da fare — tutti i clienti</div>
         <div id="home-da-fare-generale"><p style="font-size:0.85rem; color:var(--grey);">Caricamento...</p></div>
@@ -1041,6 +1047,7 @@
     renderListaHome('home-da-fare-generale', daFareGenerale, c => `<strong>${c.nome || c.user_id}</strong>: ${c.prossimo_passo}`);
 
     caricaStripeDaAbbinare();
+    caricaRevisioniVideo();
 
     const { data: pagamentiSospesi } = await client.from('pagamenti').select('*').neq('stato', 'Pagato').order('data', { ascending: true });
     document.getElementById('stat-pagamenti').textContent = (pagamentiSospesi || []).length;
@@ -1068,6 +1075,18 @@
     renderListaHome('home-messaggi-recenti', (window.messaggiCache || []).slice(0, 5), m => `${nomeClienteById(m.user_id)} — ${m.tipo === 'contatto' ? 'Dal cliente' : 'Inviata da te'} — ${(m.contenuto || '').slice(0, 60)}${(m.contenuto || '').length > 60 ? '…' : ''}`);
 
     document.getElementById('home-admin-email').textContent = document.getElementById('admin-email').textContent;
+  }
+
+  // --- Revisioni video completate dai clienti (valgono per la versione attuale) ---
+  async function caricaRevisioniVideo() {
+    const box = document.getElementById('home-revisioni-box');
+    const el = document.getElementById('home-revisioni');
+    const { data, error } = await client.from('video_cliente').select('id, user_id, nome, aggiornato_il, revisione_finita_il').not('revisione_finita_il', 'is', null).order('revisione_finita_il', { ascending: true });
+    const attive = (data || []).filter(v => !v.aggiornato_il || new Date(v.revisione_finita_il) > new Date(v.aggiornato_il));
+    if (error || !attive.length) { box.style.display = 'none'; el.innerHTML = ''; return; }
+    box.style.display = 'block';
+    const esc = escapeHtmlAnteprima;
+    el.innerHTML = attive.map(v => `<div style="padding:0.45rem 0; border-top:1px solid rgba(0,0,0,0.06); font-size:0.88rem;"><strong>${esc(nomeClienteById(v.user_id))}</strong> — ${esc(v.nome || 'Video')} <span style="color:var(--grey); font-size:0.78rem;">· ${esc(new Date(v.revisione_finita_il).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }))}</span></div>`).join('');
   }
 
   // --- Pagamenti Stripe da abbinare -------------------------------------
@@ -1971,7 +1990,7 @@
     ]);
     if (r1.error) { showMsg('vid-msg', 'Errore nel caricamento video: ' + r1.error.message, false); }
     const firmaLink = vv => (vv || []).map(x => (x.link || '').trim()).filter(Boolean).join('\n');
-    vidDati = (r1.data || []).map(r => ({ id: r.id, aggiornato_il: r.aggiornato_il || null, linkOrig: firmaLink(r.versioni), nome: r.nome || vidNomeDaLink(((r.versioni || [])[0] || {}).link || ''), chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
+    vidDati = (r1.data || []).map(r => ({ id: r.id, aggiornato_il: r.aggiornato_il || null, revisione_finita_il: r.revisione_finita_il || null, linkOrig: firmaLink(r.versioni), nome: r.nome || vidNomeDaLink(((r.versioni || [])[0] || {}).link || ''), chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
       versioni: (Array.isArray(r.versioni) ? r.versioni : []).map(x => ({ link: x.link || '', qualita: x.qualita || '', info: x.info || '' })) }));
     (r2.data || []).forEach(c => { if (c.video_id) vidConteggi[c.video_id] = (vidConteggi[c.video_id] || 0) + 1; });
     vidChiaviEsistenti = Object.keys(vidConteggi).filter(k => k.startsWith('db_'));
@@ -1996,7 +2015,7 @@
       // "Nuova versione": solo se su un video già esistente sono cambiati i link
       const linkCambiati = v.id && v.linkOrig !== undefined && v.linkOrig !== versioni.map(x => x.link).join('\n');
       const aggiornato_il = linkCambiati ? new Date().toISOString() : (v.aggiornato_il || null);
-      righe.push({ cliente_id, user_id, nome: v.nome, aggiornato_il, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
+      righe.push({ cliente_id, user_id, nome: v.nome, aggiornato_il, revisione_finita_il: v.revisione_finita_il || null, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
     }
     // Prima inserisco le righe nuove, poi tolgo le vecchie: se l'inserimento fallisce i video esistenti restano
     let nuoviId = [];

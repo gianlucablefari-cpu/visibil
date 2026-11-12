@@ -265,6 +265,10 @@
   .vc-toggle { display: inline-flex; align-items: center; gap: 0.4rem; height: 28px; min-width: 30px; justify-content: center; padding: 0 0.45rem; background: #fff; border: 1px solid rgba(0,0,0,0.18); border-radius: 6px; color: var(--black); font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer; }
   .vc-stato-tutti { text-transform: none; letter-spacing: 0; display: inline-flex; align-items: center; gap: 0.3rem; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: rgba(0,0,0,0.05); color: var(--grey); font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
   .vc-stato-tutti svg { width: 14px; height: 14px; }
+  .vc-rev { display: inline-flex; align-items: center; gap: 0.3rem; height: 28px; padding: 0 0.8rem; border-radius: 100px; background: var(--ink); color: #fff; border: 1px solid var(--ink); font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; cursor: pointer; }
+  .vc-rev svg { width: 14px; height: 14px; }
+  .vc-rev.vc-rev-ok { background: #e3f3e8; color: #1d6b32; border-color: #e3f3e8; }
+  .vc-rev:disabled { cursor: default; opacity: 1; }
   .vc-stati { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
   .vc-stato-attesa { display: inline-flex; align-items: center; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; }
   .vc-item.vc-attesa > .vc-row .vc-fatto-btn.attivo { background: #b7791f; border-color: #b7791f; }
@@ -812,7 +816,7 @@
     opz = opz || {};
     const scarica = opz.scarica ? `<a class="video-toggle video-dl" href="${opz.scarica}" download title="Scarica il video" aria-label="Scarica il video">${IC.download}</a>` : '';
     const agg = opz.aggiornato ? (() => { const d = new Date(opz.aggiornato); return isNaN(d) ? '' : `<span class="video-aggiornato" title="${d.toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">Nuova versione caricata il ${d.toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>`; })() : '';
-    return `<div class="video-cq">${opz.intestazione || agg ? `<div class="video-testa">${opz.intestazione ? `<h3 class="video-intestazione">${opz.intestazione}</h3>` : ''}${agg}</div>` : ''}<div class="video-block"><div class="video-wrap"><div class="video-titolo"><span class="video-right"><button type="button" class="video-toggle video-exp" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button>${scarica}${opz.qualita || ''}</span>${opz.titolo || ''}<span class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || '')}</span></div><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-60)" title="Indietro di 60 secondi">${IC.back3}<span>60</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,60)" title="Avanti di 60 secondi"><span>60</span>${IC.fwd3}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}" data-agg="${opz.aggiornato || ''}"></div>`}</div></div>`;
+    return `<div class="video-cq">${opz.intestazione || agg ? `<div class="video-testa">${opz.intestazione ? `<h3 class="video-intestazione">${opz.intestazione}</h3>` : ''}${agg}</div>` : ''}<div class="video-block"><div class="video-wrap"><div class="video-titolo"><span class="video-right"><button type="button" class="video-toggle video-exp" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button>${scarica}${opz.qualita || ''}</span>${opz.titolo || ''}<span class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || '')}</span></div><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-60)" title="Indietro di 60 secondi">${IC.back3}<span>60</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,60)" title="Avanti di 60 secondi"><span>60</span>${IC.fwd3}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}" data-agg="${opz.aggiornato || ''}" data-row="${opz.row || ''}" data-finita="${opz.finita || ''}" data-nome="${opz.nomeTxt || ''}"></div>`}</div></div>`;
   }
   // Se un video Dropbox non si carica, mostra il link di riserva
   document.addEventListener('error', e => {
@@ -824,7 +828,8 @@
 
   // Video Dropbox con eventuali versioni (LOW/HD/4K). versioniIn: [{link, label:'Bassa'|'Alta'|'4K'|'', info}]
   // chiave: codice dei commenti (db_xxx, link o codice vecchio); vuoto = ricavato dal primo link
-  function videoDropboxHtml(versioniIn, chiave, senzaCommenti, nomeVideo, aggiornato) {
+  function videoDropboxHtml(versioniIn, chiave, senzaCommenti, nomeVideo, aggiornato, meta) {
+    meta = meta || {};
     const escOnly = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const varianti = [];
     versioniIn.forEach((vi, i) => {
@@ -863,6 +868,7 @@
       `<a class="video-fallback" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
       { scarica: q(v0.dl), senzaCommenti, qualita, info: v0.info,
         intestazione: nomeVideo ? escOnly(nomeVideo) : '', aggiornato: aggiornato || '',
+        row: meta.id ? q(meta.id) : '', finita: meta.finita ? q(meta.finita) : '', nomeTxt: nomeVideo ? q(nomeVideo) : '',
         titolo: `<a class="video-nome" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" title="Apri su Dropbox">${escOnly(v0.nome)}</a>` });
   }
 
@@ -1226,13 +1232,42 @@
     const statoUI = !radici.length ? '' : nRisolti === radici.length
       ? `<span class="vc-stato-tutti vc-stato-ok" title="Tutti i commenti sono stati sistemati"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg>Tutti i commenti risolti</span>`
       : nRisolti ? `<span class="vc-stato-tutti" title="Commenti sistemati">${nRisolti} di ${radici.length} risolti</span>` : '';
+    // "Ho finito di rivedere": vale per la versione attuale del video (si azzera con una nuova versione)
+    const rowId = box.dataset.row || '';
+    const finitaIl = box.dataset.finita ? new Date(box.dataset.finita) : null;
+    const revFinita = !!finitaIl && (!aggVideo || finitaIl > aggVideo);
+    const dataBreve = d => d.toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const revisioneUI = !rowId ? '' : revFinita
+      ? `<button type="button" class="vc-rev vc-rev-ok"${window.isPreviewMode ? ' disabled' : ''} title="${window.isPreviewMode ? 'Il cliente ha finito di rivedere questa versione' : 'Clicca per annullare'}"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg>${window.isPreviewMode ? 'Revisione completata dal cliente' : 'Revisione inviata'} il ${dataBreve(finitaIl)}</button>`
+      : (window.isPreviewMode ? '' : `<button type="button" class="vc-rev" title="Avvisa Gianluca che hai finito di guardare il video e può iniziare con le correzioni">Ho finito di rivedere</button>`);
     const attesaUI = nAttesa ? `<span class="vc-stato-attesa" title="Il cliente li vedrà risolti quando carichi la nuova versione del video">${nAttesa} in attesa della nuova versione</span>` : '';
-    const testata = items.length ? `<div class="vc-title">${toggleUI}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span>${statoUI || attesaUI ? `<span class="vc-stati">${statoUI}${attesaUI}</span>` : ''}</div>` : '';
+    const testata = (items.length || revisioneUI) ? `<div class="vc-title">${items.length ? toggleUI : ''}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span>${statoUI || attesaUI || revisioneUI ? `<span class="vc-stati">${statoUI}${attesaUI}${revisioneUI}</span>` : ''}</div>` : '';
     box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${testata}<div class="vc-lista">${lista}</div></div>`;
     box._oraIds = null; if (box._sec != null) evidenziaOra(box, box._sec);
     posizionaMarker(box, box._sec || 0);
     const taBozza = box.querySelector('.vc-form textarea');
     if (taBozza && bozza) taBozza.value = bozza;
+    const rev = box.querySelector('.vc-rev:not([disabled])');
+    if (rev) rev.onclick = async () => {
+      const annulla = revFinita;
+      if (!confirm(annulla ? 'Annullare "Revisione inviata"?' : 'Hai finito di rivedere il video?\n\nGianluca riceverà un avviso e inizierà con le correzioni. Potrai comunque continuare a commentare.')) return;
+      rev.disabled = true;
+      const { data: quando, error } = await client.rpc('video_revisione_finita', { p_id: rowId, p_finita: !annulla });
+      if (error) { rev.disabled = false; alert('Errore: ' + error.message); return; }
+      document.querySelectorAll('.video-comments[data-row="' + rowId + '"]').forEach(x => { x.dataset.finita = quando || ''; renderVideoComments(x, tutti); });
+      if (!annulla && !window.isPreviewMode) {
+        const nome = box.dataset.nome || 'video';
+        const aperti = radici.filter(c => !risoltoVisto(c)).length;
+        try {
+          await fetch('/api/contatto-cliente', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+            user_id: window.currentUserId, from_name: window.clienteNome || '',
+            from_email: (document.getElementById('account-email') || {}).textContent || '',
+            subject: 'Revisione completata: ' + nome,
+            message: (window.clienteNome || 'Il cliente') + ' ha finito di rivedere il video "' + nome + '".\nCommenti da sistemare: ' + aperti + ' su ' + radici.length + '.'
+          }) });
+        } catch (e) {}
+      }
+    };
     const tgl = box.querySelector('.vc-toggle');
     if (tgl) tgl.onclick = () => {
       window.vcChiusiMem[videoId] = !chiuso;
@@ -1494,7 +1529,7 @@
     // Video strutturati (sezione "Video" dell'admin), mostrati sotto il testo della nota
     const videoStrutturatiHtml = (window.videoCliente || []).map(v => {
       const vers = (Array.isArray(v.versioni) ? v.versioni : []).filter(x => x && x.link).map(x => ({ link: x.link, label: x.qualita || '', info: x.info || '' }));
-      return videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false, v.nome || '', v.aggiornato_il || '');
+      return videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false, v.nome || '', v.aggiornato_il || '', { id: v.id, finita: v.revisione_finita_il || '' });
     }).join('');
     if (window.progettoTesto || videoStrutturatiHtml) {
       hasItems = true;
