@@ -300,13 +300,16 @@
   .vc-gruppo-risolti.aperto .vc-gruppo-corpo { display: block; }
   .video-comments.vc-simulato .vc-form, .video-comments.vc-simulato .vc-azioni, .video-comments.vc-simulato .vc-rev { pointer-events: none; opacity: 0.55; }
   .video-comments.vc-simulato .vc-elenco::before { content: '👁 Vista come cliente — sola lettura'; display: block; margin-bottom: 0.6rem; padding: 0.35rem 0.7rem; border-radius: 6px; background: rgba(26,26,230,0.07); color: var(--ink); font-size: 0.75rem; font-weight: 600; text-align: center; }
+  .vc-mostra-risolti { margin-left: auto; display: inline-flex; align-items: center; gap: 0.35rem; height: 28px; padding: 0 0.7rem; background: #fff; border: 1px solid rgba(0,0,0,0.18); border-radius: 100px; color: var(--grey); font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; cursor: pointer; }
+  .vc-mostra-risolti svg { width: 14px; height: 14px; }
+  .vc-mostra-risolti:hover { color: #1d6b32; border-color: #1d6b32; background: #f3faf5; }
   .vc-stati.vc-stati-fondo { margin: 0.9rem 0 0; display: flex; justify-content: center; }
   .vc-stati { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
   .vc-stato-attesa { display: inline-flex; align-items: center; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; }
   .vc-arrivo { display: inline-block; margin-right: 0.4rem; padding: 0.05rem 0.45rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.68rem; font-weight: 600; white-space: nowrap; text-decoration: none; }
   .vc-item.vc-attesa > .vc-row .vc-fatto-btn.attivo { background: #b7791f; border-color: #b7791f; }
   .vc-stato-tutti.vc-stato-ok { background: #e3f3e8; color: #1d6b32; }
-  .vc-toggle:hover { color: var(--ink); border-color: var(--ink); }
+  .vc-toggle:hover { color: var(--ink); border-color: var(--ink); background: #fff; }
   .vc-toggle svg { width: 15px; height: 15px; }
   .vc-elenco.vc-chiuso .vc-title-dx, .vc-elenco.vc-chiuso .vc-lista { display: none; }
   .vc-elenco.vc-chiuso .vc-title { margin-bottom: 0; }
@@ -1284,6 +1287,12 @@
         ${isReply ? '' : `<div class="vc-risposte">${figli.map(f => itemHtml(f, true)).join('')}</div>`}
       </div>`;
     };
+    // Mostra / nascondi i risolti (scelta ricordata per video)
+    window.vcNascondiMem = window.vcNascondiMem || {};
+    let nascondiRisolti = window.vcNascondiMem[videoId];
+    if (nascondiRisolti === undefined) { nascondiRisolti = false; try { nascondiRisolti = localStorage.getItem('vcNascondi:' + videoId) === '1'; } catch (e) {} }
+    const risoltoChiuso = c => risoltoVisto(c) && risposteDi(c.id).every(risoltoVisto);
+    const nRisoltiChiusi = radici.filter(c => !c.fissato && risoltoChiuso(c)).length;
     const fissati = radici.filter(c => c.fissato).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     const lista = (fissati.length ? `<div class="vc-fissati">${fissati.map(c => itemHtml(c, false)).join('')}</div>` : '')
       + (() => {
@@ -1299,7 +1308,7 @@
           run = [];
         };
         // un risolto con risposte sotto resta visibile, a meno che anche tutte le risposte siano risolte
-        normali.forEach(c => { if (risoltoVisto(c) && risposteDi(c.id).every(risoltoVisto)) run.push(c); else { chiudiRun(); out += itemHtml(c, false); } });
+        normali.forEach(c => { if (risoltoChiuso(c)) { if (!nascondiRisolti) run.push(c); return; } chiudiRun(); out += itemHtml(c, false); });
         chiudiRun();
         return out;
       })();
@@ -1336,7 +1345,7 @@
       : `<span class="vc-stato-attesa" title="Corretti da Gianluca: li vedrai nel video con la prossima versione">${nAttesa} ${nAttesa === 1 ? 'sistemato, in arrivo' : 'sistemati, in arrivo'} con la nuova versione</span>`) : '';
     const pillaInAlto = revFinita && items.length && revisioneUI;
     const copiaTuttiUI = vcAdmin && radici.some(c => c.secondi != null) ? `<button type="button" class="vc-copia-tutti" title="Copia l'elenco dei timecode da sistemare, per Premiere"><svg ${SVG_ST}><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Timecode</span></button>` : '';
-    const testata = items.length ? `<div class="vc-title">${toggleUI}${pillaInAlto ? `<span class="vc-rev-centro">${revisioneUI}</span>` : ''}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}${copiaTuttiUI}</span></div>` : '';
+    const testata = items.length ? `<div class="vc-title">${toggleUI}${pillaInAlto ? `<span class="vc-rev-centro">${revisioneUI}</span>` : ''}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}${copiaTuttiUI}</span>${nRisoltiChiusi ? `<button type="button" class="vc-mostra-risolti${nascondiRisolti ? '' : ' attivo'}" title="${nascondiRisolti ? 'Mostra i commenti risolti' : 'Nascondi i commenti risolti'}"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg>${nascondiRisolti ? 'Mostra' : 'Nascondi'} risolti (${nRisoltiChiusi})</button>` : ''}</div>` : '';
     const statiFondo = statoUI || attesaUI ? `<div class="vc-stati vc-stati-fondo">${statoUI}${attesaUI}</div>` : '';
     const avviso = box._avviso === 'ok' ? '<div class="vc-rev-nota">Messaggio inviato: Gianluca è stato avvisato e inizierà con le correzioni.</div>'
       : box._avviso === 'errore' ? '<div class="vc-rev-nota vc-rev-err">Revisione segnata, ma il messaggio a Gianluca non è partito: scrivigli da "Contattami".</div>' : '';
@@ -1386,6 +1395,12 @@
       if (ap) box._gruppiAperti.add(g.dataset.k); else box._gruppiAperti.delete(g.dataset.k);
       aggiornaPiu(box);
     });
+    const bmr = box.querySelector('.vc-mostra-risolti');
+    if (bmr) bmr.onclick = () => {
+      window.vcNascondiMem[videoId] = !nascondiRisolti;
+      try { if (nascondiRisolti) localStorage.removeItem('vcNascondi:' + videoId); else localStorage.setItem('vcNascondi:' + videoId, '1'); } catch (e) {}
+      renderVideoComments(box, tutti);
+    };
     const tgl = box.querySelector('.vc-toggle');
     if (tgl) tgl.onclick = () => {
       window.vcChiusiMem[videoId] = !chiuso;
