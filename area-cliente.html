@@ -270,6 +270,9 @@
   .vc-rev.vc-rev-ok { background: #e3f3e8; color: #1d6b32; border-color: #e3f3e8; }
   .vc-rev:disabled { cursor: default; opacity: 1; }
   .vc-rev-wrap { display: flex; justify-content: center; margin: 0.2rem 0 0.9rem; }
+  .vc-rev-wrap { flex-direction: column; align-items: center; gap: 0.4rem; }
+  .vc-rev-nota { font-size: 0.78rem; color: #1d6b32; text-align: center; }
+  .vc-rev-nota.vc-rev-err { color: #A32D2D; }
   .vc-rev-wrap.vc-rev-fondo { margin: 0.9rem 0 0.1rem; }
   .vc-elenco.vc-chiuso .vc-rev-fondo { display: none; }
   .vc-rev-wrap .vc-rev { height: 36px; padding: 0 1.2rem; font-size: 0.82rem; }
@@ -1243,11 +1246,14 @@
     const dataBreve = d => d.toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
     const revisioneUI = !rowId ? '' : revFinita
       ? `<button type="button" class="vc-rev vc-rev-ok"${window.isPreviewMode ? ' disabled' : ''} title="${window.isPreviewMode ? 'Il cliente ha finito di rivedere questa versione' : 'Clicca per annullare'}"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg>${window.isPreviewMode ? 'Revisione completata dal cliente' : 'Revisione inviata'} il ${dataBreve(finitaIl)}</button>`
-      : (window.isPreviewMode ? '' : `<button type="button" class="vc-rev" title="Avvisa Gianluca che hai finito di guardare il video e può iniziare con le correzioni">Ho finito di rivedere</button>`);
+      : (window.isPreviewMode ? '' : `<button type="button" class="vc-rev" title="Avvisa Gianluca che hai finito di guardare il video e può iniziare con le correzioni"><svg ${SVG_ST}><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>Ho finito di rivedere</button>`);
     const attesaUI = nAttesa ? `<span class="vc-stato-attesa" title="Il cliente li vedrà risolti quando carichi la nuova versione del video">${nAttesa} in attesa della nuova versione</span>` : '';
     const testata = items.length ? `<div class="vc-title">${toggleUI}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span>${statoUI || attesaUI ? `<span class="vc-stati">${statoUI}${attesaUI}</span>` : ''}</div>` : '';
+    const avviso = box._avviso === 'ok' ? '<div class="vc-rev-nota">Messaggio inviato: Gianluca è stato avvisato e inizierà con le correzioni.</div>'
+      : box._avviso === 'errore' ? '<div class="vc-rev-nota vc-rev-err">Revisione segnata, ma il messaggio a Gianluca non è partito: scrivigli da "Contattami".</div>' : '';
     const revBlocco = revisioneUI ? `<div class="vc-rev-wrap">${revisioneUI}</div>` : '';
-    box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${revBlocco}${testata}<div class="vc-lista">${lista}</div>${items.length > 2 ? revBlocco.replace('vc-rev-wrap', 'vc-rev-wrap vc-rev-fondo') : ''}</div>`;
+    const revBloccoTop = revisioneUI ? `<div class="vc-rev-wrap">${revisioneUI}${revFinita ? avviso : ''}</div>` : '';
+    box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${revBloccoTop}${testata}<div class="vc-lista">${lista}</div>${items.length > 2 ? revBlocco.replace('vc-rev-wrap', 'vc-rev-wrap vc-rev-fondo') : ''}</div>`;
     box._oraIds = null; if (box._sec != null) evidenziaOra(box, box._sec);
     posizionaMarker(box, box._sec || 0);
     const taBozza = box.querySelector('.vc-form textarea');
@@ -1258,19 +1264,22 @@
       rev.disabled = true;
       const { data: quando, error } = await client.rpc('video_revisione_finita', { p_id: rowId, p_finita: !annulla });
       if (error) { rev.disabled = false; alert('Errore: ' + error.message); return; }
-      document.querySelectorAll('.video-comments[data-row="' + rowId + '"]').forEach(x => { x.dataset.finita = quando || ''; renderVideoComments(x, tutti); });
+      let esito = '';
       if (!annulla && !window.isPreviewMode) {
         const nome = box.dataset.nome || 'video';
         const aperti = radici.filter(c => !risoltoVisto(c)).length;
         try {
-          await fetch('/api/contatto-cliente', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+          const res = await fetch('/api/contatto-cliente', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
             user_id: window.currentUserId, from_name: window.clienteNome || '',
             from_email: (document.getElementById('account-email') || {}).textContent || '',
             subject: 'Revisione completata: ' + nome,
             message: (window.clienteNome || 'Il cliente') + ' ha finito di rivedere il video "' + nome + '".\nCommenti da sistemare: ' + aperti + ' su ' + radici.length + '.'
           }) });
-        } catch (e) {}
+          const d = await res.json().catch(() => ({}));
+          esito = res.ok && d.success ? 'ok' : 'errore';
+        } catch (e) { esito = 'errore'; }
       }
+      document.querySelectorAll('.video-comments[data-row="' + rowId + '"]').forEach(x => { x.dataset.finita = quando || ''; x._avviso = esito; renderVideoComments(x, tutti); });
     });
     const tgl = box.querySelector('.vc-toggle');
     if (tgl) tgl.onclick = () => {
