@@ -258,6 +258,8 @@
   .vc-form-send { justify-content: flex-end; }
   .vc-ts, .vc-chip { display: inline-flex; align-items: center; gap: 0.35rem; }
   .vc-ts .ic, .vc-chip .ic { width: 13px; height: 13px; }
+  .vc-chip-no, .vc-chip-pin { padding: 0.3rem 0.55rem; }
+  .vc-chip-no .ic, .vc-chip-pin .ic { width: 16px; height: 16px; }
   .vc-chip { padding: 0.35rem 0.7rem; background: none; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; font: inherit; font-size: 0.75rem; font-weight: 600; color: var(--grey); cursor: pointer; }
   .vc-chip.attivo { background: rgba(26,26,230,0.08); border-color: rgba(26,26,230,0.3); color: var(--ink); }
   .vc-title-dx { display: inline-flex; align-items: center; gap: 0.5rem; }
@@ -778,6 +780,7 @@
   const SVG_ATTR = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ic"';
   const IC = {
     play:  `<svg ${SVG_ATTR}><polygon points="6 4 20 12 6 20 6 4" fill="currentColor"></polygon></svg>`,
+    clockOff: `<svg ${SVG_ATTR}><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline><line x1="3" y1="3" x2="21" y2="21"></line></svg>`,
     clock: `<svg ${SVG_ATTR}><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>`,
     back:  `<svg ${SVG_ATTR}><polyline points="15 18 9 12 15 6"></polyline></svg>`,
     fwd:   `<svg ${SVG_ATTR}><polyline points="9 18 15 12 9 6"></polyline></svg>`,
@@ -1186,7 +1189,7 @@
       + radici.filter(c => !c.fissato).map(c => itemHtml(c, false)).join('');
     const form = `
       <div class="vc-form">
-        <div class="vc-form-top"><button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">${IC.clock}<span class="vc-chip-t">0:00</span></button><button type="button" class="vc-chip vc-chip-no" title="Invia il commento senza minuto del video">Senza minuto</button>${window.isPreviewMode ? `<button type="button" class="vc-chip vc-chip-pin" title="Commento senza minuto, fissato in cima all'elenco"><svg class="ic" ${SVG_ST}><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>Fissa in alto</button>` : ''}</div>
+        <div class="vc-form-top"><button type="button" class="vc-chip attivo" title="Tocca per includere o no il minuto del video">${IC.clock}<span class="vc-chip-t">0:00</span></button><button type="button" class="vc-chip vc-chip-no" title="Senza minuto: il commento non viene legato a un punto del video" aria-label="Senza minuto">${IC.clockOff}</button>${window.isPreviewMode ? `<button type="button" class="vc-chip vc-chip-pin" title="Fissa in alto: commento senza minuto, in cima all'elenco" aria-label="Fissa in alto"><svg class="ic" ${SVG_ST}><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg></button>` : ''}</div>
         <textarea placeholder="Scrivi un commento…" maxlength="2000"></textarea>
         <div class="vc-form-row vc-form-send"><span class="vc-hint"><kbd>Invio</kbd> invia · <kbd>Maiusc</kbd>+<kbd>Invio</kbd> va a capo</span><button type="button" class="vc-invia">Invia</button></div>
       </div>`;
