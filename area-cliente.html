@@ -260,6 +260,13 @@
   .vc-ts .ic, .vc-chip .ic { width: 13px; height: 13px; }
   .vc-chip { padding: 0.35rem 0.7rem; background: none; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; font: inherit; font-size: 0.75rem; font-weight: 600; color: var(--grey); cursor: pointer; }
   .vc-chip.attivo { background: rgba(26,26,230,0.08); border-color: rgba(26,26,230,0.3); color: var(--ink); }
+  .vc-title-dx { display: inline-flex; align-items: center; gap: 0.5rem; }
+  .vc-nav { display: inline-flex; gap: 0.25rem; }
+  .vc-nav button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 28px; padding: 0; background: #fff; border: 1px solid rgba(0,0,0,0.18); border-radius: 6px; color: var(--black); cursor: pointer; }
+  .vc-nav button:hover { color: var(--ink); border-color: var(--ink); }
+  .vc-nav button svg { width: 14px; height: 14px; }
+  @keyframes vcFlash { from { background: rgba(26,26,230,0.14); } to { background: transparent; } }
+  .vc-item.vc-flash { animation: vcFlash 1.4s ease-out; }
   .vc-azioni { display: inline-flex; gap: 0.35rem; }
   .vc-azioni button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; background: #fff; border: 1px solid rgba(0,0,0,0.18); border-radius: 6px; color: var(--black); cursor: pointer; }
   .vc-azioni button svg { width: 15px; height: 15px; }
@@ -1038,7 +1045,7 @@
       </div>`;
     const sel = (v, t) => `<option value="${v}"${ordine === v ? ' selected' : ''}>${t}</option>`;
     const ordinaUI = radici.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
-    const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})</span>${ordinaUI}</div>` : '';
+    const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})</span><span class="vc-title-dx">${items.some(x => x.secondi != null) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="Vai al commento precedente (minuto)" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="Vai al commento successivo (minuto)" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span></div>` : '';
     box.innerHTML = `${form}<div class="vc-elenco">${testata}<div class="vc-lista">${lista}</div></div>`;
     const taBozza = box.querySelector('.vc-form textarea');
     if (taBozza && bozza) taBozza.value = bozza;
@@ -1069,6 +1076,27 @@
         }); }
       }).catch(() => {});
     }
+    // Salta da un commento (minuto) al precedente / successivo
+    const secs = [...new Set(items.filter(x => x.secondi != null).map(x => x.secondi))].sort((a, b) => a - b);
+    const vaAlCommento = async dir => {
+      try {
+        await loadVimeoApi();
+        const pl = getVideoPlayer(box); if (!pl) return;
+        const t = await pl.getCurrentTime();
+        const target = dir > 0 ? secs.find(x => x > t + 0.75) : [...secs].reverse().find(x => x < t - 1.5);
+        if (target == null) return;
+        await pl.setCurrentTime(target);
+        const it = [...box.querySelectorAll('.vc-ts')].find(x => Number(x.dataset.sec) === target);
+        const row = it && it.closest('.vc-item');
+        if (row) {
+          row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          row.classList.remove('vc-flash'); void row.offsetWidth; row.classList.add('vc-flash');
+        }
+      } catch (e) {}
+    };
+    const bp = box.querySelector('.vc-nav-prev'), bn = box.querySelector('.vc-nav-next');
+    if (bp) bp.onclick = () => vaAlCommento(-1);
+    if (bn) bn.onclick = () => vaAlCommento(1);
     box.querySelectorAll('.vc-del').forEach(b => b.onclick = async () => {
       const id = b.closest('.vc-item').dataset.id;
       const haRisposte = items.some(x => x.risposta_a === id);
