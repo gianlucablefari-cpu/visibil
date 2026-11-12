@@ -278,6 +278,7 @@
   .vc-title { position: relative; }
   .vc-rev-centro { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
   @media (max-width: 900px) { .vc-rev-centro { position: static; transform: none; order: 10; flex: 1 1 100%; display: flex; justify-content: center; } }
+  .vc-stati.vc-stati-fondo { margin: 0.9rem 0 0; display: flex; justify-content: center; }
   .vc-stati { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
   .vc-stato-attesa { display: inline-flex; align-items: center; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; }
   .vc-item.vc-attesa > .vc-row .vc-fatto-btn.attivo { background: #b7791f; border-color: #b7791f; }
@@ -1251,12 +1252,13 @@
       : (window.isPreviewMode ? '' : `<button type="button" class="vc-rev" title="Avvisa Gianluca che hai finito di guardare il video e può iniziare con le correzioni"><svg ${SVG_ST}><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>Ho finito di rivedere</button>`);
     const attesaUI = nAttesa ? `<span class="vc-stato-attesa" title="Il cliente li vedrà risolti quando carichi la nuova versione del video">${nAttesa} in attesa della nuova versione</span>` : '';
     const pillaInAlto = revFinita && items.length && revisioneUI;
-    const testata = items.length ? `<div class="vc-title">${toggleUI}${pillaInAlto ? `<span class="vc-rev-centro">${revisioneUI}</span>` : ''}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span>${statoUI || attesaUI ? `<span class="vc-stati">${statoUI}${attesaUI}</span>` : ''}</div>` : '';
+    const testata = items.length ? `<div class="vc-title">${toggleUI}${pillaInAlto ? `<span class="vc-rev-centro">${revisioneUI}</span>` : ''}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span></div>` : '';
+    const statiFondo = statoUI || attesaUI ? `<div class="vc-stati vc-stati-fondo">${statoUI}${attesaUI}</div>` : '';
     const avviso = box._avviso === 'ok' ? '<div class="vc-rev-nota">Messaggio inviato: Gianluca è stato avvisato e inizierà con le correzioni.</div>'
       : box._avviso === 'errore' ? '<div class="vc-rev-nota vc-rev-err">Revisione segnata, ma il messaggio a Gianluca non è partito: scrivigli da "Contattami".</div>' : '';
     const revBlocco = revisioneUI ? `<div class="vc-rev-wrap">${revisioneUI}</div>` : '';
     const revBloccoTop = !revisioneUI ? '' : pillaInAlto ? (avviso ? `<div class="vc-rev-wrap">${avviso}</div>` : '') : `<div class="vc-rev-wrap">${revisioneUI}${revFinita ? avviso : ''}</div>`;
-    box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${testata}<div class="vc-lista">${lista}</div>${revBloccoTop.replace('vc-rev-wrap', 'vc-rev-wrap vc-rev-fondo')}</div>`;
+    box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${testata}<div class="vc-lista">${lista}</div>${statiFondo}${revBloccoTop.replace('vc-rev-wrap', 'vc-rev-wrap vc-rev-fondo')}</div>`;
     box._oraIds = null; if (box._sec != null) evidenziaOra(box, box._sec);
     posizionaMarker(box, box._sec || 0);
     const taBozza = box.querySelector('.vc-form textarea');
