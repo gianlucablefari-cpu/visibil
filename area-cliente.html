@@ -1034,6 +1034,8 @@
         getDuration: async () => el.duration || 0,
         setCurrentTime: async t => { el.currentTime = t; },
         play: () => el.play(),
+        pause: async () => el.pause(),
+        getPaused: async () => el.paused,
         on: (ev, cb) => { if (ev === 'timeupdate') el.addEventListener('timeupdate', () => cb({ seconds: el.currentTime })); }
       };
       return el._player;
@@ -1106,6 +1108,19 @@
   function syncPlayIcon(el, playing) {
     const b = el.closest('.video-wrap') && el.closest('.video-wrap').querySelector('.video-playbtn');
     if (b) b.innerHTML = playing ? IC.pause : IC.play;
+    const blk = el.closest('.video-block');
+    const box = blk && blk.querySelector('.video-comments');
+    if (box) aggiornaTsIcone(box, playing);
+  }
+  // Il minuto cliccato per ultimo mostra ⏸ mentre il video va: un altro clic lo ferma
+  function aggiornaTsIcone(box, playing) {
+    if (playing !== undefined) box._playing = playing;
+    box.querySelectorAll('.vc-ts').forEach(b => {
+      const sec = Number(b.dataset.sec);
+      const attivo = box._playing && box._tsAttivo === sec;
+      b.innerHTML = (attivo ? IC.pause : IC.play) + ' ' + fmtSecondi(sec);
+      b.title = attivo ? 'Ferma il video' : 'Vai a questo punto del video';
+    });
   }
   document.addEventListener('play', e => { if (e.target.tagName === 'VIDEO') syncPlayIcon(e.target, true); }, true);
   document.addEventListener('pause', e => { if (e.target.tagName === 'VIDEO') syncPlayIcon(e.target, false); }, true);
@@ -1347,8 +1362,17 @@
       setTimeout(() => b.classList.remove('vc-ts-copiato', 'vc-ts-err'), 400);
     });
     box.querySelectorAll('.vc-ts').forEach(b => b.onclick = async () => {
-      try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) { await pl.setCurrentTime(Number(b.dataset.sec)); await pl.play().catch(() => {}); } } catch (e) {}
+      const sec = Number(b.dataset.sec);
+      try {
+        await loadVimeoApi(); const pl = getVideoPlayer(box); if (!pl) return;
+        const el = box.closest('.video-block') && box.closest('.video-block').querySelector('iframe, video');
+        if (box._playing && box._tsAttivo === sec) { await pl.pause(); if (el) syncPlayIcon(el, false); return; }
+        box._tsAttivo = sec;
+        await pl.setCurrentTime(sec); await pl.play().catch(() => {});
+        if (el) syncPlayIcon(el, true);
+      } catch (e) {}
     });
+    aggiornaTsIcone(box);
     const chip = box.querySelector('.vc-chip');
     if (chip) {
       const noBtn = box.querySelector('.vc-chip-no');
