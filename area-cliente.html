@@ -293,14 +293,16 @@
   .video-qualita button { height: 28px; padding: 0 0.7rem; background: none; border: 0; font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--grey); cursor: pointer; }
   .video-qualita button.attiva { background: var(--ink); color: #fff; }
   .video-dl { text-decoration: none; }
-  .video-info { margin-top: 0.45rem; font-size: 0.75rem; line-height: 1.4; color: var(--grey); }
+  .video-titolo { display: flex; align-items: baseline; gap: 0.5rem; height: 1.4rem; line-height: 1.4rem; margin-bottom: 0.4rem; white-space: nowrap; overflow: hidden; font-size: 0.8rem; }
+  .video-info { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 0.75rem; color: var(--grey); }
+  .video-info:not([hidden])::before { content: '·'; margin-right: 0.5rem; }
   .video-info[hidden] { display: none; }
   .video-hd { font-weight: 800; letter-spacing: 0.02em; }
   .video-hd.attiva { background: var(--ink); color: #fff; border-color: var(--ink); }
   .video-hd:disabled { opacity: 0.4; cursor: not-allowed; }
   .video-qualita { display: inline-flex; }
-  .video-nome { display: block; height: 1.4rem; line-height: 1.4rem; margin-bottom: 0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  @media (min-width: 900px) { .video-block:not(:has(.video-wrap.espanso)):has(.video-nome) .vc-form { margin-top: calc(0.6rem + 1.8rem); } }
+  .video-nome { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (min-width: 900px) { .video-block:not(:has(.video-wrap.espanso)):has(.video-titolo) .vc-form { margin-top: calc(0.6rem + 1.8rem); } }
   .video-nome:hover { text-decoration: underline; }
   .video-skip:hover, .video-toggle:hover { border-color: var(--ink); color: var(--ink); }
   .video-skip:active { background: rgba(26,26,230,0.08); }
@@ -727,7 +729,7 @@
   function videoWrapHtml(mediaHtml, id, extraHtml, opz) {
     opz = opz || {};
     const scarica = opz.scarica ? `<a class="video-toggle video-dl" href="${opz.scarica}" download title="Scarica il video" aria-label="Scarica il video">${IC.download}</a>` : '';
-    return `<div class="video-block"><div class="video-wrap">${opz.titolo || ''}<div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><span class="video-right">${opz.qualita || ''}${scarica}<button type="button" class="video-toggle" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button></span></div><div class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || "")}</div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}</div>`;
+    return `<div class="video-block"><div class="video-wrap">${(opz.titolo || opz.info) ? `<div class="video-titolo">${opz.titolo || ''}<span class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || '')}</span></div>` : ''}<div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span><span class="video-right">${opz.qualita || ''}${scarica}<button type="button" class="video-toggle" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}</div>`;
   }
   // Se un video Dropbox non si carica, mostra il link di riserva
   document.addEventListener('error', e => {
