@@ -278,8 +278,8 @@
   .vc-title { position: relative; }
   .vc-rev-centro { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
   @media (max-width: 900px) { .vc-rev-centro { position: static; transform: none; order: 10; flex: 1 1 100%; display: flex; justify-content: center; } }
-  @keyframes vcTsCopia { 0%, 50%, 100% { background: #1d6b32; } 25%, 75% { background: #2fa45a; box-shadow: 0 0 0 4px rgba(47,164,90,0.25); } }
-  .vc-ts.vc-ts-copiato { animation: vcTsCopia 0.9s ease-in-out; background: #1d6b32; }
+  @keyframes vcTsCopia { 0% { background: var(--ink); } 25% { background: #fff; color: var(--ink); box-shadow: 0 0 0 3px rgba(26,26,230,0.35); } 100% { background: var(--ink); } }
+  .vc-ts.vc-ts-copiato { animation: vcTsCopia 0.35s ease-out; }
   .vc-ts.vc-ts-err { background: #A32D2D; }
   .vc-copia-tutti { display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; height: 28px; min-width: 28px; padding: 0 0.4rem; background: #fff; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; color: var(--grey); font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer; }
   .vc-copia-tutti svg { width: 14px; height: 14px; }
@@ -1340,7 +1340,7 @@
       if (window.isPreviewMode) copiaTesto(tcPremiere(Number(b.dataset.sec))).then(ok => {
         b.classList.remove('vc-ts-copiato', 'vc-ts-err'); void b.offsetWidth;
         b.classList.add(ok ? 'vc-ts-copiato' : 'vc-ts-err');
-        setTimeout(() => b.classList.remove('vc-ts-copiato', 'vc-ts-err'), 1300);
+        setTimeout(() => b.classList.remove('vc-ts-copiato', 'vc-ts-err'), 400);
       });
       try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) { await pl.setCurrentTime(Number(b.dataset.sec)); await pl.play().catch(() => {}); } } catch (e) {}
     });
