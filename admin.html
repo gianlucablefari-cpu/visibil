@@ -1970,7 +1970,8 @@
       client.from('video_commenti').select('video_id').eq('user_id', user_id)
     ]);
     if (r1.error) { showMsg('vid-msg', 'Errore nel caricamento video: ' + r1.error.message, false); }
-    vidDati = (r1.data || []).map(r => ({ id: r.id, nome: r.nome || vidNomeDaLink(((r.versioni || [])[0] || {}).link || ''), chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
+    const firmaLink = vv => (vv || []).map(x => (x.link || '').trim()).filter(Boolean).join('\n');
+    vidDati = (r1.data || []).map(r => ({ id: r.id, aggiornato_il: r.aggiornato_il || null, linkOrig: firmaLink(r.versioni), nome: r.nome || vidNomeDaLink(((r.versioni || [])[0] || {}).link || ''), chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
       versioni: (Array.isArray(r.versioni) ? r.versioni : []).map(x => ({ link: x.link || '', qualita: x.qualita || '', info: x.info || '' })) }));
     (r2.data || []).forEach(c => { if (c.video_id) vidConteggi[c.video_id] = (vidConteggi[c.video_id] || 0) + 1; });
     vidChiaviEsistenti = Object.keys(vidConteggi).filter(k => k.startsWith('db_'));
@@ -1992,7 +1993,10 @@
       if (!versioni.length) continue;
       if (!v.nome) { showMsg('vid-msg', 'Dai un nome a ogni video.', false); return; }
       if (versioni.length > 1 && versioni.some(x => !x.qualita)) { showMsg('vid-msg', 'Con più versioni imposta la qualità (LOW/HD/4K) di ciascuna.', false); return; }
-      righe.push({ cliente_id, user_id, nome: v.nome, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
+      // "Nuova versione": solo se su un video già esistente sono cambiati i link
+      const linkCambiati = v.id && v.linkOrig !== undefined && v.linkOrig !== versioni.map(x => x.link).join('\n');
+      const aggiornato_il = linkCambiati ? new Date().toISOString() : (v.aggiornato_il || null);
+      righe.push({ cliente_id, user_id, nome: v.nome, aggiornato_il, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
     }
     // Prima inserisco le righe nuove, poi tolgo le vecchie: se l'inserimento fallisce i video esistenti restano
     let nuoviId = [];
