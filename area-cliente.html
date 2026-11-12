@@ -262,6 +262,11 @@
   .vc-chip-no .ic, .vc-chip-pin .ic { width: 16px; height: 16px; }
   .vc-chip { padding: 0.35rem 0.7rem; background: none; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; font: inherit; font-size: 0.75rem; font-weight: 600; color: var(--grey); cursor: pointer; }
   .vc-chip.attivo { background: rgba(26,26,230,0.08); border-color: rgba(26,26,230,0.3); color: var(--ink); }
+  .vc-toggle { display: inline-flex; align-items: center; gap: 0.4rem; height: 28px; min-width: 30px; justify-content: center; padding: 0 0.45rem; background: #fff; border: 1px solid rgba(0,0,0,0.18); border-radius: 6px; color: var(--black); font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer; }
+  .vc-toggle:hover { color: var(--ink); border-color: var(--ink); }
+  .vc-toggle svg { width: 15px; height: 15px; }
+  .vc-elenco.vc-chiuso .vc-title-dx, .vc-elenco.vc-chiuso .vc-lista { display: none; }
+  .vc-elenco.vc-chiuso .vc-title { margin-bottom: 0; }
   .vc-title-dx { display: inline-flex; align-items: center; gap: 0.5rem; }
   .vc-nav { display: inline-flex; gap: 0.25rem; }
   .vc-nav button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 28px; padding: 0; background: #fff; border: 1px solid rgba(0,0,0,0.18); border-radius: 6px; color: var(--black); cursor: pointer; }
@@ -1196,12 +1201,23 @@
     const sel = (v, t) => `<option value="${v}"${ordine === v ? ' selected' : ''}>${t}</option>`;
     const ordinaUI = radici.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
     const perMinuto = ordine === 'minuto-asc' || ordine === 'minuto-desc';
-    const testata = items.length ? `<div class="vc-title"><span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span></div>` : '';
-    box.innerHTML = `${form}<div class="vc-elenco">${testata}<div class="vc-lista">${lista}</div></div>`;
+    // Apri/chiudi l'elenco dei commenti (ricordato per ciascun video)
+    window.vcChiusiMem = window.vcChiusiMem || {};
+    let chiuso = window.vcChiusiMem[videoId];
+    if (chiuso === undefined) { chiuso = false; try { chiuso = localStorage.getItem('vcChiuso:' + videoId) === '1'; } catch (e) {} }
+    const toggleUI = `<button type="button" class="vc-toggle" aria-expanded="${!chiuso}" title="${chiuso ? 'Mostra i commenti' : 'Nascondi i commenti'}"><svg ${SVG_ST}>${chiuso ? '<polyline points="6 9 12 15 18 9"></polyline>' : '<polyline points="18 15 12 9 6 15"></polyline>'}</svg>${chiuso ? `<span>Mostra commenti (${items.length})</span>` : ''}</button>`;
+    const testata = items.length ? `<div class="vc-title">${toggleUI}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span></div>` : '';
+    box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${testata}<div class="vc-lista">${lista}</div></div>`;
     box._oraIds = null; if (box._sec != null) evidenziaOra(box, box._sec);
     posizionaMarker(box, box._sec || 0);
     const taBozza = box.querySelector('.vc-form textarea');
     if (taBozza && bozza) taBozza.value = bozza;
+    const tgl = box.querySelector('.vc-toggle');
+    if (tgl) tgl.onclick = () => {
+      window.vcChiusiMem[videoId] = !chiuso;
+      try { if (chiuso) localStorage.removeItem('vcChiuso:' + videoId); else localStorage.setItem('vcChiuso:' + videoId, '1'); } catch (e) {}
+      renderVideoComments(box, tutti);
+    };
     const selOrd = box.querySelector('.vc-sort');
     if (selOrd) selOrd.onchange = () => {
       setOrdineCommenti(selOrd.value);
