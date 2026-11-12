@@ -1268,50 +1268,8 @@
       document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(b => renderVideoComments(b, aggiornati));
     };
   }
-  // TEST TEMPORANEO (solo anteprima admin): verifica se Dropbox permette di catturare un fotogramma dal video (CORS)
-  function testMiniature() {
-    if (!window.isPreviewMode || window._testMin) return;
-    const vis = document.querySelector('.video-wrap video');
-    if (!vis) return;
-    window._testMin = true;
-    const att = document.querySelector('.video-qualita button.attiva');
-    const src = (att && att.dataset.src) || vis.getAttribute('src');
-    const toast = msg => {
-      console.log('[Test miniature]', msg);
-      const d = document.createElement('div');
-      d.textContent = 'Test miniature: ' + msg + ' (clicca per chiudere)';
-      d.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:99999;max-width:340px;padding:10px 12px;background:#111;color:#fff;font:12px/1.4 sans-serif;border-radius:8px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3)';
-      d.onclick = () => d.remove();
-      document.body.appendChild(d);
-    };
-    setTimeout(() => {
-      const t = document.createElement('video');
-      t.crossOrigin = 'anonymous'; t.muted = true; t.preload = 'auto'; t.playsInline = true;
-      const fine = () => { try { t.removeAttribute('src'); t.load(); } catch (e) {} };
-      const attendi = (ev) => new Promise((res, rej) => {
-        const to = setTimeout(() => rej(new Error('timeout')), 25000);
-        t.addEventListener(ev, () => { clearTimeout(to); res(); }, { once: true });
-        t.addEventListener('error', () => { clearTimeout(to); rej(new Error('video non caricabile con crossorigin')); }, { once: true });
-      });
-      (async () => {
-        try {
-          t.src = src;
-          await attendi('loadedmetadata');
-          t.currentTime = Math.min(5, (t.duration || 10) / 2);
-          await attendi('seeked');
-          const c = document.createElement('canvas'); c.width = 160; c.height = 90;
-          c.getContext('2d').drawImage(t, 0, 0, 160, 90);
-          const url = c.toDataURL('image/jpeg', 0.6);
-          toast('OK - fotogramma catturato (' + Math.round(url.length / 1024) + ' KB). Le miniature sono fattibili.');
-        } catch (e) {
-          toast('BLOCCATO - ' + (e && e.message ? e.message : e) + '. Le miniature non sono possibili con questo link Dropbox.');
-        } finally { fine(); }
-      })();
-    }, 2500);
-  }
   async function initVideoComments() {
     risolviPercorsiVideo();
-    testMiniature();
     const boxes = document.querySelectorAll('.video-comments:not([data-init])');
     if (!boxes.length || !window.currentUserId) return;
     boxes.forEach(b => b.setAttribute('data-init', '1'));
