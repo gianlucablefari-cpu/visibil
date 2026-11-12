@@ -992,7 +992,7 @@
   let ordineCommentiMem = null;
   function getOrdineCommenti() {
     if (ordineCommentiMem) return ordineCommentiMem;
-    try { return localStorage.getItem('vcOrdine') || 'scrittura'; } catch (e) { return 'scrittura'; }
+    try { return localStorage.getItem('vcOrdine') || 'recenti'; } catch (e) { return 'recenti'; }
   }
   function setOrdineCommenti(v) {
     ordineCommentiMem = v;
