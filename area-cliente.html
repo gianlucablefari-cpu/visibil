@@ -283,14 +283,18 @@
   .vc-form-row .vc-sec { background: none; color: var(--grey); border: 1px solid rgba(0,0,0,0.15); }
   .video-wrap { max-width: 420px; margin: 0.6rem 0; white-space: normal; transition: max-width 0.25s; }
   .video-wrap.espanso { max-width: 100%; }
-  /* Video piccolo su schermo largo: campo commento a destra del video, elenco sotto */
+  /* Video piccolo su schermo largo: a destra del video un unico box con controlli + campo commento; elenco sotto */
   @media (min-width: 900px) {
-    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 0 1.25rem; align-items: start; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 0 1.25rem; grid-template-rows: auto auto minmax(0, 1fr) auto auto; align-items: start; margin: 0.6rem 0; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) > .video-wrap,
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) > .video-comments { display: contents; }
-    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-form { grid-column: 2; grid-row: 1; margin: 0.6rem 0; box-sizing: border-box; height: calc(420px * 9 / 16); overflow: auto; padding: 1rem 1.1rem; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
-    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) > .video-wrap { grid-column: 1; grid-row: 1; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .video-titolo { grid-column: 1; grid-row: 1; min-width: 0; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .video-embed { grid-column: 1; grid-row: 2 / span 2; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .video-controls { grid-column: 2; grid-row: 2; margin: 0; padding: 0.75rem 1.1rem; background: #fff; border: 1px solid rgba(0,0,0,0.12); border-bottom: 1px solid rgba(0,0,0,0.08); border-radius: 10px 10px 0 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-form { grid-column: 2; grid-row: 3; align-self: stretch; margin: 0; padding: 0.9rem 1.1rem 1rem; border: 1px solid rgba(0,0,0,0.12); border-top: 0; border-radius: 0 0 10px 10px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .video-fallback { grid-column: 1; grid-row: 4; }
     .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-lista { max-height: max(240px, calc(100vh - 27rem)); overflow-y: auto; overscroll-behavior: contain; padding-right: 0.4rem; }
-    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-elenco { grid-column: 1 / -1; grid-row: 2; margin: 0.6rem 0 1rem; padding: 1rem 1.1rem 1.1rem; background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
+    .video-block:not(:has(.video-wrap.espanso)):has(.vc-form) .vc-elenco { grid-column: 1 / -1; grid-row: 5; margin: 0.9rem 0 1rem; padding: 1rem 1.1rem 1.1rem; background: #fff; border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); white-space: normal; text-align: left; }
   }
   .video-embed { position: relative; padding-top: 56.25%; border-radius: 8px; overflow: hidden; background: #000; }
   .video-controls { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
@@ -310,7 +314,6 @@
   .video-hd:disabled { opacity: 0.4; cursor: not-allowed; }
   .video-qualita { display: inline-flex; }
   .video-nome { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; font-size: 0.8rem; font-weight: 600; color: var(--ink); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  @media (min-width: 900px) { .video-block:not(:has(.video-wrap.espanso)):has(.video-titolo) .vc-form { margin-top: calc(0.6rem + 1.8rem); } }
   .video-nome:hover { text-decoration: underline; }
   .video-skip:hover, .video-toggle:hover { border-color: var(--ink); color: var(--ink); }
   .video-skip:active { background: rgba(26,26,230,0.08); }
