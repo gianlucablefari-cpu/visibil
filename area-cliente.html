@@ -821,11 +821,13 @@
       // "#nocommenti" o "[senza commenti]" subito dopo il video: niente commenti per questo video
       let senzaCommenti = false;
       // Dopo un video: "#nocommenti" e/o "#info testo" (nota fissa sul video, es. risoluzione), anche a capo
+      let chiaveCommenti = '';
       const tags = () => {
         let info = '', mt;
-        while ((mt = s.slice(last).match(/^[ \t]*(?:\r?\n[ \t]*)?(#nocommenti|\[senza commenti\]|#(?:info|nota)[ \t]+[^\r\n]*)/i)) !== null) {
+        while ((mt = s.slice(last).match(/^[ \t]*(?:\r?\n[ \t]*)?(#nocommenti|\[senza commenti\]|#commenti[ \t]+\S+|#(?:info|nota)[ \t]+[^\r\n]*)/i)) !== null) {
           last += mt[0].length;
-          if (/^#(?:info|nota)/i.test(mt[1])) {
+          if (/^#commenti/i.test(mt[1])) chiaveCommenti = mt[1].replace(/^#commenti[ \t]+/i, '');
+          else if (/^#(?:info|nota)/i.test(mt[1])) {
             info = mt[1].replace(/^#(?:info|nota)[ \t]+/i, '');
             if (/(?:#nocommenti|\[senza commenti\])\s*$/i.test(info)) { senzaCommenti = true; info = info.replace(/(?:#nocommenti|\[senza commenti\])\s*$/i, ''); }
             info = info.trim();
@@ -868,7 +870,19 @@
         });
         if (varianti.length) {
           const seg = varianti[0].u.pathname.split('/').filter(Boolean);
-          const dbId = 'db_' + (seg[0] === 's' ? seg[1] : seg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
+          let dbId = 'db_' + (seg[0] === 's' ? seg[1] : seg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
+          // "#commenti <link vecchio | codice>": usa i commenti di un altro file (es. nuova versione con altro nome)
+          if (chiaveCommenti) {
+            const kc = chiaveCommenti;
+            if (/^db_[A-Za-z0-9_-]+$/.test(kc)) dbId = kc;
+            else {
+              try {
+                const sg = new URL(kc).pathname.split('/').filter(Boolean);
+                const idv = (sg[0] === 's' ? sg[1] : sg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
+                if (idv) dbId = 'db_' + idv;
+              } catch (e) { if (/^[A-Za-z0-9_-]{8,}$/.test(kc)) dbId = 'db_' + kc; }
+            }
+          }
           const q = x => escOnly(x).replace(/"/g, '&quot;');
           const v0 = varianti[0];
           const corto = { Bassa: 'LOW', Alta: 'HD', '4K': '4K' };
