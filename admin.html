@@ -1077,6 +1077,19 @@
     document.getElementById('home-admin-email').textContent = document.getElementById('admin-email').textContent;
   }
 
+  // Copia i timecode (HH:MM:SS:FF) dei commenti con minuto non ancora fatti, per Premiere
+  async function copiaTimecodeVideo(vid, btn) {
+    const p2 = x => String(x).padStart(2, '0');
+    const tc = n => p2(Math.floor(n / 3600)) + ':' + p2(Math.floor((n % 3600) / 60)) + ':' + p2(n % 60) + ':00';
+    const rad = ((window._vcGruppi || {})[vid] || []).filter(c => !c.risposta_a && c.secondi != null);
+    const daFare = rad.filter(c => c.stato !== 'risolto');
+    const testo = (daFare.length ? daFare : rad).sort((a, b) => a.secondi - b.secondi)
+      .map(c => tc(c.secondi) + '  ' + String(c.testo || '').replace(/\s+/g, ' ').trim()).join('\n');
+    let ok = false;
+    try { await navigator.clipboard.writeText(testo); ok = true; } catch (e) {}
+    const t = btn.textContent; btn.textContent = ok ? 'Copiato ✓' : 'Errore'; setTimeout(() => { btn.textContent = t; }, 1300);
+  }
+
   // --- Revisioni video completate dai clienti (valgono per la versione attuale) ---
   async function caricaRevisioniVideo() {
     const box = document.getElementById('home-revisioni-box');
@@ -2053,6 +2066,7 @@
       tutti.filter(c => c.risposta_a && !radici.some(r => r.id === c.risposta_a)).forEach(c => ordinati.push(c));
       gruppi[v] = ordinati;
     });
+    window._vcGruppi = gruppi;
     box.innerHTML = Object.keys(gruppi).map(vid => `
       <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.7rem 0.85rem; margin-bottom:0.75rem;">
         <div style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.4rem;">
@@ -2060,6 +2074,7 @@
             return !rr.length || !n ? '' : n === rr.length
               ? ` <span style="margin-left:0.4rem; padding:0.1rem 0.5rem; border-radius:100px; background:#e3f3e8; color:#1d6b32; font-size:0.65rem; letter-spacing:0; text-transform:none;">✓ Tutti i commenti risolti</span>`
               : ` <span style="margin-left:0.4rem; color:var(--grey); font-weight:600; font-size:0.68rem; letter-spacing:0; text-transform:none;">${n} di ${rr.length} risolti</span>`; })()}
+          ${gruppi[vid].some(c => !c.risposta_a && c.secondi != null) ? `<button type="button" class="secondary btn-small" style="float:right; margin:0; padding:0.25rem 0.6rem; font-size:0.65rem;" title="Copia i timecode da sistemare, per Premiere" onclick="copiaTimecodeVideo('${vid}', this)">Copia timecode</button>` : ''}
         </div>
         ${gruppi[vid].map(c => `
           <div style="font-size:0.82rem; padding:0.4rem 0; border-top:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; gap:0.5rem;${c.risposta_a ? ' margin-left:1.1rem; padding-left:0.6rem; border-left:2px solid rgba(0,0,0,0.12);' : ''}">
