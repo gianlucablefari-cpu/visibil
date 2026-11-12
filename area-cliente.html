@@ -1037,7 +1037,7 @@
     if (ord !== 'minuto-asc' && ord !== 'minuto-desc') { if (m) m.remove(); return; }
     const timed = [...lista.children].filter(el => el.classList.contains('vc-item') && el.querySelector(':scope > .vc-row .vc-ts'));
     if (!timed.length) { if (m) m.remove(); return; }
-    if (!m) { m = document.createElement('div'); m.className = 'vc-marker'; m.innerHTML = '<span class="vc-marker-dot"></span><span class="vc-marker-line"></span><span class="vc-marker-t"></span>'; }
+    if (!m) { m = document.createElement('div'); m.className = 'vc-marker'; m.innerHTML = '<span class="vc-marker-dot"></span><span class="vc-marker-t"></span><span class="vc-marker-line"></span>'; }
     const sec = el => Number(el.querySelector(':scope > .vc-row .vc-ts').dataset.sec);
     const prima = ord === 'minuto-asc' ? timed.find(el => sec(el) > t) : timed.find(el => sec(el) <= t);
     const dopo = prima ? null : timed[timed.length - 1];
