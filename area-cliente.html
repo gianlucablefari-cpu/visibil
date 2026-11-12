@@ -266,6 +266,7 @@
   .vc-nav button:hover { color: var(--ink); border-color: var(--ink); }
   .vc-nav button svg { width: 14px; height: 14px; }
   @keyframes vcFlash { from { background: rgba(26,26,230,0.14); } to { background: transparent; } }
+  .vc-item.vc-corrente { box-shadow: inset 3px 0 0 var(--ink); }
   .vc-item.vc-flash { animation: vcFlash 1.4s ease-out; }
   .vc-azioni { display: inline-flex; gap: 0.35rem; }
   .vc-azioni button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; padding: 0; background: #fff; border: 1px solid rgba(0,0,0,0.18); border-radius: 6px; color: var(--black); cursor: pointer; }
@@ -1045,7 +1046,8 @@
       </div>`;
     const sel = (v, t) => `<option value="${v}"${ordine === v ? ' selected' : ''}>${t}</option>`;
     const ordinaUI = radici.length > 1 ? `<select class="vc-sort" title="Ordina i commenti">${sel('scrittura', 'Meno recenti prima')}${sel('recenti', 'Più recenti prima')}${sel('minuto-asc', 'Minuto crescente')}${sel('minuto-desc', 'Minuto decrescente')}</select>` : '';
-    const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})</span><span class="vc-title-dx">${items.some(x => x.secondi != null) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="Vai al commento precedente (minuto)" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="Vai al commento successivo (minuto)" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span></div>` : '';
+    const perMinuto = ordine === 'minuto-asc' || ordine === 'minuto-desc';
+    const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})</span><span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span></div>` : '';
     box.innerHTML = `${form}<div class="vc-elenco">${testata}<div class="vc-lista">${lista}</div></div>`;
     const taBozza = box.querySelector('.vc-form textarea');
     if (taBozza && bozza) taBozza.value = bozza;
@@ -1076,21 +1078,36 @@
         }); }
       }).catch(() => {});
     }
-    // Salta da un commento (minuto) al precedente / successivo
+    // Frecce: con ordine per minuto saltano al commento col minuto precedente/successivo;
+    // con ordine per data (meno recenti / più recenti) scorrono i commenti nell'ordine dell'elenco
     const secs = [...new Set(items.filter(x => x.secondi != null).map(x => x.secondi))].sort((a, b) => a - b);
+    const evidenzia = row => {
+      if (!row) return;
+      box.querySelectorAll('.vc-corrente').forEach(x => x.classList.remove('vc-corrente'));
+      row.classList.add('vc-corrente');
+      row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      row.classList.remove('vc-flash'); void row.offsetWidth; row.classList.add('vc-flash');
+    };
     const vaAlCommento = async dir => {
       try {
-        await loadVimeoApi();
-        const pl = getVideoPlayer(box); if (!pl) return;
-        const t = await pl.getCurrentTime();
-        const target = dir > 0 ? secs.find(x => x > t + 0.75) : [...secs].reverse().find(x => x < t - 1.5);
-        if (target == null) return;
-        await pl.setCurrentTime(target);
-        const it = [...box.querySelectorAll('.vc-ts')].find(x => Number(x.dataset.sec) === target);
-        const row = it && it.closest('.vc-item');
-        if (row) {
-          row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-          row.classList.remove('vc-flash'); void row.offsetWidth; row.classList.add('vc-flash');
+        if (perMinuto) {
+          await loadVimeoApi();
+          const pl = getVideoPlayer(box); if (!pl) return;
+          const t = await pl.getCurrentTime();
+          const target = dir > 0 ? secs.find(x => x > t + 0.75) : [...secs].reverse().find(x => x < t - 1.5);
+          if (target == null) return;
+          await pl.setCurrentTime(target);
+          const it = [...box.querySelectorAll('.vc-ts')].find(x => Number(x.dataset.sec) === target);
+          evidenzia(it && it.closest('.vc-item'));
+        } else {
+          const ids = radici.map(x => x.id);
+          let pos = ids.indexOf(box._cur);
+          pos = pos === -1 ? (dir > 0 ? 0 : ids.length - 1) : pos + dir;
+          if (pos < 0 || pos >= ids.length) return;
+          box._cur = ids[pos];
+          const c = radici[pos];
+          evidenzia(box.querySelector('.vc-item[data-id="' + c.id + '"]'));
+          if (c.secondi != null) { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) await pl.setCurrentTime(c.secondi); }
         }
       } catch (e) {}
     };
