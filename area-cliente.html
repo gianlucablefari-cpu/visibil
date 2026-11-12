@@ -1229,6 +1229,8 @@
   }
   async function renderVideoComments(box, tutti) {
     const videoId = box.dataset.video;
+    const listaPrima = box.querySelector('.vc-lista');
+    const scrollLista = listaPrima ? listaPrima.scrollTop : 0;
     const bozzaEl = box.querySelector('.vc-form textarea');
     const bozza = bozzaEl ? bozzaEl.value : '';
     const ordine = getOrdineCommenti();
@@ -1331,6 +1333,7 @@
     const revBlocco = revisioneUI ? `<div class="vc-rev-wrap">${revisioneUI}</div>` : '';
     const revBloccoTop = !revisioneUI ? '' : pillaInAlto ? (avviso ? `<div class="vc-rev-wrap">${avviso}</div>` : '') : `<div class="vc-rev-wrap">${revisioneUI}${revFinita ? avviso : ''}</div>`;
     box.innerHTML = `${form}<div class="vc-elenco${chiuso && items.length ? ' vc-chiuso' : ''}">${testata}<div class="vc-lista">${lista}</div>${statiFondo}${revBloccoTop.replace('vc-rev-wrap', 'vc-rev-wrap vc-rev-fondo')}</div>`;
+    { const ln = box.querySelector('.vc-lista'); if (ln && scrollLista) ln.scrollTop = scrollLista; }
     box._oraIds = null; if (box._sec != null) evidenziaOra(box, box._sec);
     posizionaMarker(box, box._sec || 0);
     const taBozza = box.querySelector('.vc-form textarea');
@@ -1503,8 +1506,23 @@
         ? { stato: null, risolto_il: null, risolto_da: null }
         : { stato: 'risolto', risolto_il: new Date().toISOString(), risolto_da: window.isPreviewMode ? 'admin' : 'cliente' }).eq('id', id);
       if (error) { alert('Errore: ' + error.message); return; }
+      // Resta allo stesso punto della lista: il commento (o il blocco dei risolti che lo contiene) torna dov'era sullo schermo
+      const prima = b.closest('.vc-item').getBoundingClientRect().top;
       const agg = await fetchVideoCommenti(true);
       document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg));
+      let el = box.querySelector('.vc-item[data-id="' + id + '"]');
+      const g = el && el.closest('.vc-gruppo-risolti');
+      if (g && !g.classList.contains('aperto')) el = g;
+      if (el) {
+        const delta = el.getBoundingClientRect().top - prima;
+        const ls = box.querySelector('.vc-lista');
+        if (ls && ls.scrollHeight > ls.clientHeight + 1 && ls.contains(el)) ls.scrollTop += delta;
+        else {
+          let sc = box.parentElement;
+          while (sc && sc !== document.body && !(/(auto|scroll)/.test(getComputedStyle(sc).overflowY) && sc.scrollHeight > sc.clientHeight + 1)) sc = sc.parentElement;
+          if (sc && sc !== document.body) sc.scrollTop += delta; else window.scrollBy(0, delta);
+        }
+      }
     });
     box.querySelectorAll('.vc-del').forEach(b => b.onclick = async () => {
       const id = b.closest('.vc-item').dataset.id;
