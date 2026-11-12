@@ -689,19 +689,38 @@
         <label for="pr-titolo">Titolo</label>
         <input type="text" id="pr-titolo" placeholder="es. Mese 1 — Consulenza Instagram">
 
-        <div style="display:flex; gap:0.75rem;">
+        <label for="pr-modalita">Come mostrarlo al cliente</label>
+        <select id="pr-modalita" onchange="aggiornaModalitaProgetto()">
+          <option value="avanzamento">Avanzamento: ore fatte su ore stimate (barra e %)</option>
+          <option value="pacchetto">Pacchetto ore: ore rimaste su quelle acquistate</option>
+          <option value="da_saldare">Ore da saldare: quante ore restano da pagare</option>
+          <option value="testo">Solo stato e note, senza ore</option>
+        </select>
+
+        <div id="pr-campi-dasaldare" style="display:none; gap:0.75rem;">
           <div style="flex:1;">
-            <label for="pr-ore-stimate">Ore stimate</label>
+            <label for="pr-ore-saldare">Ore da saldare</label>
+            <input type="number" id="pr-ore-saldare" min="0" step="0.25" placeholder="es. 5" oninput="aggiornaAnteprimaPercentuale()">
+          </div>
+          <div style="flex:1;">
+            <label for="pr-tariffa">Tariffa CHF/ora (facoltativa)</label>
+            <input type="number" id="pr-tariffa" min="0" step="1" placeholder="es. 80" oninput="aggiornaAnteprimaPercentuale()">
+          </div>
+        </div>
+
+        <div id="pr-campi-ore" style="display:flex; gap:0.75rem;">
+          <div style="flex:1;">
+            <label for="pr-ore-stimate" id="pr-lbl-stimate">Ore stimate</label>
             <input type="number" id="pr-ore-stimate" min="0" step="0.5" placeholder="es. 20" oninput="aggiornaAnteprimaPercentuale()">
           </div>
           <div style="flex:1;">
-            <label for="pr-ore-fatte">Ore gia' fatte</label>
+            <label for="pr-ore-fatte" id="pr-lbl-fatte">Ore gia' fatte</label>
             <input type="number" id="pr-ore-fatte" min="0" step="0.5" placeholder="es. 12" oninput="aggiornaAnteprimaPercentuale()">
           </div>
         </div>
         <div id="pr-percentuale-anteprima" style="font-size:0.8rem; color:var(--grey); margin-top:0.4rem;"></div>
 
-        <label style="display:flex; align-items:center; gap:0.5rem; font-weight:400; margin-top:0.75rem;">
+        <label id="pr-lbl-extra" style="display:flex; align-items:center; gap:0.5rem; font-weight:400; margin-top:0.75rem;">
           <input type="checkbox" id="pr-extra-gratuito" style="width:auto;">
           Le ore oltre la stima sono gratuite (non fatturate)
         </label>
@@ -1889,7 +1908,31 @@
     showSubDoc(prefix === 'p' ? 'preventivo' : 'pagamento');
   }
 
+  function aggiornaModalitaProgetto() {
+    const m = document.getElementById('pr-modalita').value;
+    document.getElementById('pr-campi-ore').style.display = (m === 'avanzamento' || m === 'pacchetto') ? 'flex' : 'none';
+    document.getElementById('pr-campi-dasaldare').style.display = m === 'da_saldare' ? 'flex' : 'none';
+    document.getElementById('pr-lbl-extra').style.display = m === 'avanzamento' ? 'flex' : 'none';
+    document.getElementById('pr-lbl-stimate').textContent = m === 'pacchetto' ? 'Ore acquistate' : 'Ore stimate';
+    document.getElementById('pr-lbl-fatte').textContent = m === 'pacchetto' ? 'Ore usate' : "Ore gia' fatte";
+    aggiornaAnteprimaPercentuale();
+  }
   function aggiornaAnteprimaPercentuale() {
+    const m = document.getElementById('pr-modalita') ? document.getElementById('pr-modalita').value : 'avanzamento';
+    const boxM = document.getElementById('pr-percentuale-anteprima');
+    if (m === 'testo') { boxM.textContent = ''; return; }
+    if (m === 'da_saldare') {
+      const o = Number(document.getElementById('pr-ore-saldare').value) || 0, t = Number(document.getElementById('pr-tariffa').value) || 0;
+      boxM.style.color = 'var(--grey)';
+      boxM.textContent = o ? `Il cliente vedrà: ${o} ${o === 1 ? 'ora' : 'ore'} da saldare${t ? ` · CHF ${Math.round(o * t)}.–` : ''}` : '';
+      return;
+    }
+    if (m === 'pacchetto') {
+      const a = Number(document.getElementById('pr-ore-stimate').value) || 0, u = Number(document.getElementById('pr-ore-fatte').value) || 0;
+      boxM.style.color = a - u < 0 ? '#A32D2D' : 'var(--grey)';
+      boxM.textContent = a ? `Il cliente vedrà: ${a - u}h rimaste su ${a}h` : '';
+      return;
+    }
     const stimate = Number(document.getElementById('pr-ore-stimate').value) || 0;
     const fatte = Number(document.getElementById('pr-ore-fatte').value) || 0;
     const box = document.getElementById('pr-percentuale-anteprima');
@@ -2154,7 +2197,10 @@
       <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
         <span style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;"><button type="button" onclick="spostaProgetto('${p.id}', -1)" ${idx === 0 ? 'disabled' : ''} title="Sposta su" class="mv-btn">▲</button><button type="button" onclick="spostaProgetto('${p.id}', 1)" ${idx === window.progettiCache.length - 1 ? 'disabled' : ''} title="Sposta giù" class="mv-btn">▼</button></span>
         <span onclick="caricaProgettoNelForm('${p.id}')" style="cursor:pointer; flex:1;">${p.titolo || '(senza titolo)'}
-          <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%${extraTag}` : ''}</span>
+          <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${(p.modalita || 'avanzamento') === 'da_saldare' ? `${p.ore_da_saldare || 0}h da saldare${p.tariffa_oraria ? ` · CHF ${Math.round((p.ore_da_saldare || 0) * p.tariffa_oraria)}.–` : ''}`
+            : p.modalita === 'pacchetto' ? `${(p.ore_stimate || 0) - (p.ore_fatte || 0)}h rimaste su ${p.ore_stimate || 0}h`
+            : p.modalita === 'testo' ? 'Solo stato e note'
+            : `${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%${extraTag}` : ''}`}</span>
           <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}</span>
         </span>
         <button type="button" onclick="eliminaProgetto('${p.id}', '${(p.titolo || '').replace(/'/g, "\\'")}')"  title="Elimina" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">
@@ -2180,7 +2226,10 @@
     document.getElementById('pr-data').value = p.data || '';
     document.getElementById('pr-note').value = p.note || '';
     document.getElementById('pr-extra-gratuito').checked = !!p.extra_gratuito;
-    aggiornaAnteprimaPercentuale();
+    document.getElementById('pr-modalita').value = p.modalita || 'avanzamento';
+    document.getElementById('pr-ore-saldare').value = p.ore_da_saldare != null ? p.ore_da_saldare : '';
+    document.getElementById('pr-tariffa').value = p.tariffa_oraria != null ? p.tariffa_oraria : '';
+    aggiornaModalitaProgetto();
 
     window.scrollTo({ top: document.getElementById('subpanel-progetto').offsetTop, behavior: 'smooth' });
   }
@@ -2197,6 +2246,10 @@
     document.getElementById('pr-data').value = '';
     document.getElementById('pr-note').value = '';
     document.getElementById('pr-extra-gratuito').checked = false;
+    document.getElementById('pr-modalita').value = 'avanzamento';
+    document.getElementById('pr-ore-saldare').value = '';
+    document.getElementById('pr-tariffa').value = '';
+    aggiornaModalitaProgetto();
     document.getElementById('pr-percentuale-anteprima').textContent = '';
     document.getElementById('progetto-msg').textContent = '';
   }
@@ -2242,7 +2295,10 @@
       stato: document.getElementById('pr-stato').value,
       data: document.getElementById('pr-data').value || new Date().toISOString().slice(0,10),
       note: document.getElementById('pr-note').value || null,
-      extra_gratuito: document.getElementById('pr-extra-gratuito').checked
+      extra_gratuito: document.getElementById('pr-extra-gratuito').checked,
+      modalita: document.getElementById('pr-modalita').value,
+      ore_da_saldare: document.getElementById('pr-ore-saldare').value === '' ? null : Number(document.getElementById('pr-ore-saldare').value),
+      tariffa_oraria: document.getElementById('pr-tariffa').value === '' ? null : Number(document.getElementById('pr-tariffa').value)
     };
 
     if (!isEditing) payload.ordine = Math.max(0, ...(window.progettiCache || []).map(x => x.ordine || 0)) + 1;

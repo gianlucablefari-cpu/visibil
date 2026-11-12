@@ -213,6 +213,9 @@
   .progetto-item.in-pausa .progetto-bar-fill { background: var(--grey); }
   .progetto-item.sforato .progetto-bar-fill { background: #A32D2D; }
   .progetto-item.sforato .progetto-item-pct { color: #A32D2D; }
+  .progetto-item.da-saldare { border-color: rgba(163,45,45,0.25); background: rgba(163,45,45,0.03); }
+  .progetto-item.da-saldare .progetto-item-pct { color: #A32D2D; }
+  .progetto-item.saldato .progetto-item-pct { color: #1E6B3C; }
   .progetto-item-meta { font-size: 0.75rem; color: var(--grey); margin-top: 0.5rem; display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
   .progetto-item-extra { font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem; }
   .progetto-item-extra-fatturato { color: #A32D2D; }
@@ -1663,6 +1666,48 @@
     }
     section.style.display = 'block';
     list.innerHTML = progetti.map(p => {
+      const modalita = p.modalita || 'avanzamento';
+      const titolo = p.titolo || '(senza titolo)';
+      const noteHtml = p.note ? `<div class="progetto-item-note">${renderNota(p.note)}</div>` : '';
+      const statoCls = p.stato === 'Completato' ? 'completato' : p.stato === 'In pausa' ? 'in-pausa' : '';
+      if (modalita === 'da_saldare') {
+        const o = Number(p.ore_da_saldare) || 0, t = Number(p.tariffa_oraria) || 0;
+        const fmtOre = x => String(x).replace('.', ',');
+        return `
+        <div class="progetto-item ${o > 0 ? 'da-saldare' : 'saldato'}">
+          <div class="progetto-item-top">
+            <div class="progetto-item-titolo">${titolo}</div>
+            <div class="progetto-item-pct">${o > 0 ? `${fmtOre(o)} ${o === 1 ? 'ora' : 'ore'} da saldare` : 'Saldato ✓'}</div>
+          </div>
+          ${o > 0 && t ? `<div class="progetto-item-meta"><span>Importo: CHF ${Math.round(o * t)}.–</span><span>${p.stato || ''}</span></div>` : `<div class="progetto-item-meta"><span></span><span>${p.stato || ''}</span></div>`}
+          ${noteHtml}
+        </div>`;
+      }
+      if (modalita === 'pacchetto') {
+        const acq = Number(p.ore_stimate) || 0, usate = Number(p.ore_fatte) || 0, rim = acq - usate;
+        const h = x => String(Math.round(x * 100) / 100).replace('.', ',');
+        const pctRim = acq > 0 ? Math.max(0, Math.min(100, Math.round((rim / acq) * 100))) : 0;
+        return `
+        <div class="progetto-item ${rim < 0 ? 'sforato' : statoCls}">
+          <div class="progetto-item-top">
+            <div class="progetto-item-titolo">${titolo}</div>
+            <div class="progetto-item-pct">${rim >= 0 ? `${h(rim)}h rimaste` : `${h(-rim)}h oltre il pacchetto`}</div>
+          </div>
+          <div class="progetto-bar-track"><div class="progetto-bar-fill" style="width:${pctRim}%;"></div></div>
+          <div class="progetto-item-meta"><span>${h(usate)}h usate su ${h(acq)}h</span><span>${p.stato || ''}</span></div>
+          ${noteHtml}
+        </div>`;
+      }
+      if (modalita === 'testo') {
+        return `
+        <div class="progetto-item ${statoCls}">
+          <div class="progetto-item-top">
+            <div class="progetto-item-titolo">${titolo}</div>
+            <div class="progetto-item-pct">${p.stato || ''}</div>
+          </div>
+          ${noteHtml}
+        </div>`;
+      }
       const stimate = Number(p.ore_stimate) || 0;
       const fatte = Number(p.ore_fatte) || 0;
       const pct = stimate > 0 ? Math.round((fatte / stimate) * 100) : 0;
