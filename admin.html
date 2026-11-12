@@ -2043,7 +2043,7 @@
                 · ${new Date(c.created_at).toLocaleString('it-CH', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
                 ${c.risposta_a ? ' · ↳ risposta' : ''}${c.secondi != null ? (vid.startsWith('db_') ? ` · ▶ ${vcFmt(c.secondi)}` : ` · <a href="https://vimeo.com/${vid}#t=${c.secondi}s" target="_blank" rel="noopener" style="color:var(--ink);">▶ ${vcFmt(c.secondi)}</a>`) : ''}
               </div>
-              <div style="white-space:pre-wrap; word-break:break-word;">${c.fissato && !c.risposta_a ? '<span style="display:inline-block; margin-right:0.35rem; padding:0 0.4rem; border-radius:100px; background:var(--ink, #1A1AE6); color:#fff; font-size:0.62rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;">Fissato in alto</span>' : ''}${vcEsc(c.testo)}</div>
+              <div style="white-space:pre-wrap; word-break:break-word;">${vcEsc(c.testo)}</div>
             </div>
             ${c.autore === 'admin' ? `<button type="button" onclick="modificaVideoCommento('${c.id}')" title="Modifica" style="width:26px; height:26px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; cursor:pointer; flex-shrink:0;">✎</button>` : ''}
             <button type="button" onclick="eliminaVideoCommento('${c.id}')" title="Elimina" style="width:26px; height:26px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">×</button>
