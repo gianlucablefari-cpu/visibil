@@ -1359,7 +1359,7 @@
     box.querySelectorAll('.vc-ok-btn').forEach(b => b.onclick = async () => {
       const id = b.closest('.vc-item').dataset.id;
       const c = items.find(x => x.id === id);
-      const { error } = await client.rpc('video_commento_ok', { p_id: id, p_ok: !(c && c.ok_da) });
+      const { error } = await client.rpc('video_commento_ok', { p_id: id, p_ok: !(c && c.ok_da), p_come: window.isPreviewMode ? 'admin' : 'cliente' });
       if (error) { alert('Errore: ' + error.message); return; }
       const agg = await fetchVideoCommenti(true);
       document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg));
