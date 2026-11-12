@@ -269,6 +269,10 @@
   .vc-nav button:hover { color: var(--ink); border-color: var(--ink); }
   .vc-nav button svg { width: 14px; height: 14px; }
   @keyframes vcFlash { from { background: rgba(26,26,230,0.14); } to { background: transparent; } }
+  .vc-lista-min { padding-left: 1.1rem; }
+  .vc-marker { display: flex; align-items: center; gap: 0.4rem; margin: 0.1rem 0 0.1rem -1.1rem; color: var(--ink); font-size: 0.7rem; font-weight: 700; pointer-events: none; }
+  .vc-marker-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px rgba(26,26,230,0.18); flex: none; }
+  .vc-marker-line { flex: 1; height: 2px; background: var(--ink); opacity: 0.35; border-radius: 2px; }
   .vc-item.vc-ora { background: rgba(26,26,230,0.09); box-shadow: inset 3px 0 0 var(--ink); transition: background 0.2s; }
   .vc-item.vc-corrente { box-shadow: inset 3px 0 0 var(--ink); }
   .vc-item.vc-flash { animation: vcFlash 1.4s ease-out; }
@@ -1023,6 +1027,24 @@
     } catch (e) { iframe._skipBase = null; }
   }
   // Durante la riproduzione evidenzia i commenti il cui minuto è appena passato (ultimi 6 secondi)
+  // Con ordine per minuto: pallina + linea che mostra a che punto del video si è, tra i commenti
+  function posizionaMarker(box, t) {
+    const lista = box.querySelector('.vc-lista');
+    if (!lista) return;
+    const ord = getOrdineCommenti();
+    let m = lista.querySelector('.vc-marker');
+    lista.classList.toggle('vc-lista-min', ord === 'minuto-asc' || ord === 'minuto-desc');
+    if (ord !== 'minuto-asc' && ord !== 'minuto-desc') { if (m) m.remove(); return; }
+    const timed = [...lista.children].filter(el => el.classList.contains('vc-item') && el.querySelector(':scope > .vc-row .vc-ts'));
+    if (!timed.length) { if (m) m.remove(); return; }
+    if (!m) { m = document.createElement('div'); m.className = 'vc-marker'; m.innerHTML = '<span class="vc-marker-dot"></span><span class="vc-marker-line"></span><span class="vc-marker-t"></span>'; }
+    const sec = el => Number(el.querySelector(':scope > .vc-row .vc-ts').dataset.sec);
+    const prima = ord === 'minuto-asc' ? timed.find(el => sec(el) > t) : timed.find(el => sec(el) <= t);
+    const dopo = prima ? null : timed[timed.length - 1];
+    const ref = prima || (dopo && dopo.nextSibling);
+    if (m.parentNode !== lista || (prima ? m.nextSibling !== prima : m.previousSibling !== dopo)) lista.insertBefore(m, ref);
+    m.querySelector('.vc-marker-t').textContent = fmtSecondi(Math.floor(t));
+  }
   let seguiMem = null;
   function getSegui() {
     if (seguiMem !== null) return seguiMem;
@@ -1109,6 +1131,7 @@
     const testata = items.length ? `<div class="vc-title"><span>Commenti (${items.length})</span><span class="vc-title-dx"><button type="button" class="vc-segui${getSegui() ? ' attivo' : ''}" title="${getSegui() ? 'Evidenziazione durante la riproduzione: attiva (clicca per spegnere)' : 'Evidenziazione durante la riproduzione: spenta (clicca per accendere)'}" aria-label="Evidenzia i commenti durante la riproduzione"><svg ${SVG_ST}><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}</span></div>` : '';
     box.innerHTML = `${form}<div class="vc-elenco">${testata}<div class="vc-lista">${lista}</div></div>`;
     box._oraIds = null; if (box._sec != null) evidenziaOra(box, box._sec);
+    posizionaMarker(box, box._sec || 0);
     const taBozza = box.querySelector('.vc-form textarea');
     if (taBozza && bozza) taBozza.value = bozza;
     const selOrd = box.querySelector('.vc-sort');
@@ -1134,7 +1157,7 @@
         const pl = getVideoPlayer(box);
         if (pl && !box._tl) { box._tl = true; pl.on('timeupdate', d => {
           box._tempo = fmtSecondi(d.seconds);
-          box._sec = d.seconds; evidenziaOra(box, d.seconds);
+          box._sec = d.seconds; evidenziaOra(box, d.seconds); posizionaMarker(box, d.seconds);
           const t = box.querySelector('.vc-chip .vc-chip-t'); if (t) t.textContent = box._tempo;
         }); }
       }).catch(() => {});
