@@ -279,8 +279,12 @@
   .vc-rev-centro { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
   @media (max-width: 900px) { .vc-rev-centro { position: static; transform: none; order: 10; flex: 1 1 100%; display: flex; justify-content: center; } }
   @keyframes vcTsCopia { 0% { background: var(--ink); } 25% { background: #fff; color: var(--ink); box-shadow: 0 0 0 3px rgba(26,26,230,0.35); } 100% { background: var(--ink); } }
-  .vc-ts.vc-ts-copiato { animation: vcTsCopia 0.35s ease-out; }
-  .vc-ts.vc-ts-err { background: #A32D2D; }
+  .vc-ts-grp { display: inline-flex; align-items: stretch; }
+  .vc-tc-copia { display: inline-flex; align-items: center; justify-content: center; padding: 0 0.5rem; background: var(--ink); color: #fff; border: 0; border-right: 1px solid rgba(255,255,255,0.35); border-radius: 6px 0 0 6px; cursor: pointer; }
+  .vc-tc-copia .ic { width: 14px; height: 14px; }
+  .vc-tc-copia + .vc-ts { border-radius: 0 6px 6px 0; }
+  .vc-tc-copia.vc-ts-copiato { animation: vcTsCopia 0.35s ease-out; }
+  .vc-tc-copia.vc-ts-err { background: #A32D2D; }
   .vc-copia-tutti { display: inline-flex; align-items: center; justify-content: center; gap: 0.3rem; height: 28px; min-width: 28px; padding: 0 0.4rem; background: #fff; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; color: var(--grey); font: inherit; font-size: 0.72rem; font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer; }
   .vc-copia-tutti svg { width: 14px; height: 14px; }
   .vc-copia-tutti:hover { color: var(--ink); border-color: var(--ink); }
@@ -1233,7 +1237,7 @@
       return `
       <div class="vc-item${isReply ? ' vc-reply' : ''}${!isReply && c.fissato ? ' vc-fissato' : ''}${risoltoVisto(c) ? ' vc-fatto' : ''}${inAttesa(c) ? ' vc-attesa' : ''}${box._aperti && box._aperti.has(c.id) ? ' vc-aperto' : ''}" data-id="${c.id}">
         <div class="vc-row">
-          <div class="vc-left">${c.secondi != null ? `<button type="button" class="vc-ts" data-sec="${c.secondi}" title="${window.isPreviewMode ? 'Vai a questo punto e copia il timecode per Premiere (' + tcPremiere(c.secondi) + ')' : 'Vai a questo punto del video'}">${IC.clock} ${fmtSecondi(c.secondi)}</button>` : ''}</div>
+          <div class="vc-left">${c.secondi != null ? `<span class="vc-ts-grp">${window.isPreviewMode ? `<button type="button" class="vc-tc-copia" data-sec="${c.secondi}" title="Copia il timecode per Premiere (${tcPremiere(c.secondi)})" aria-label="Copia timecode">${IC.clock}</button>` : ''}<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">${IC.play} ${fmtSecondi(c.secondi)}</button></span>` : ''}</div>
           <div class="vc-testo"><span class="vc-t">${escHtml(c.testo)}</span><button type="button" class="vc-piu" hidden title="Mostra tutto il commento" aria-label="Mostra o nascondi il resto del commento"></button> ${c.ok_da ? `<span class="vc-ok-tag" title="Approvato"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>Ok ${c.ok_da === mioRuolo ? 'tuo' : c.ok_da === 'admin' ? 'di Gianluca' : 'del cliente'}</span>` : ''}<span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${window.isPreviewMode ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span></span></div>
           <div class="vc-side"><span class="vc-azioni">
             ${isReply ? '' : `<button type="button" class="vc-rispondi" title="Rispondi"><svg ${SVG_ST}><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg></button>`}
@@ -1335,13 +1339,14 @@
       document.querySelectorAll('.video-comments[data-init]').forEach(b => renderVideoComments(b, tutti));
     };
 
+    // Cronometro (solo Gianluca): copia il timecode per Premiere, senza toccare il video
+    box.querySelectorAll('.vc-tc-copia').forEach(b => b.onclick = async () => {
+      const ok = await copiaTesto(tcPremiere(Number(b.dataset.sec)));
+      b.classList.remove('vc-ts-copiato', 'vc-ts-err'); void b.offsetWidth;
+      b.classList.add(ok ? 'vc-ts-copiato' : 'vc-ts-err');
+      setTimeout(() => b.classList.remove('vc-ts-copiato', 'vc-ts-err'), 400);
+    });
     box.querySelectorAll('.vc-ts').forEach(b => b.onclick = async () => {
-      // Gianluca: copia anche il timecode per Premiere, il pulsante lampeggia per confermarlo
-      if (window.isPreviewMode) copiaTesto(tcPremiere(Number(b.dataset.sec))).then(ok => {
-        b.classList.remove('vc-ts-copiato', 'vc-ts-err'); void b.offsetWidth;
-        b.classList.add(ok ? 'vc-ts-copiato' : 'vc-ts-err');
-        setTimeout(() => b.classList.remove('vc-ts-copiato', 'vc-ts-err'), 400);
-      });
       try { await loadVimeoApi(); const pl = getVideoPlayer(box); if (pl) { await pl.setCurrentTime(Number(b.dataset.sec)); await pl.play().catch(() => {}); } } catch (e) {}
     });
     const chip = box.querySelector('.vc-chip');
