@@ -821,14 +821,19 @@
         const reDb = /^\s*(https?:\/\/(?:www\.)?dropbox\.com\/(?:scl\/fi|s)\/[^\s<>"]+?\.(?:mp4|mov|m4v|webm)(?:\?[^\s<>"]*)?)(?=$|[\s<>"])/i;
         const links = [m[7]];
         const infos = [info0];
-        let mx;
-        while ((mx = s.slice(last).match(reDb)) !== null) { links.push(mx[1]); last += mx[0].length; infos.push(tags()); }
-        const nomeQualita = (u, i) => {
-          const nome = decodeURIComponent(u.pathname.split('/').pop() || '').toLowerCase();
-          if (/(^|[^a-z])(high|hq|hd|hr|alta|4k|full)([^a-z]|$)/.test(nome)) return 'Alta';
+        // Qualità riconosciuta dal nome del file: 4K, Alta (HD), Bassa (LOW); senza parole chiave nessun pulsante
+        const qualitaDaLink = lk => {
+          let nome = '';
+          try { nome = decodeURIComponent(new URL(lk.replace(/&amp;/g, '&')).pathname.split('/').pop() || '').toLowerCase(); } catch (e) {}
+          if (/(^|[^a-z0-9])(4k|uhd|2160p?)([^a-z0-9]|$)/.test(nome)) return '4K';
+          if (/(^|[^a-z])(high|hq|hd|hr|alta|full)([^a-z]|$)/.test(nome)) return 'Alta';
           if (/(^|[^a-z])(low|lq|sd|bassa|proxy)([^a-z]|$)/.test(nome)) return 'Bassa';
-          return links.length > 1 ? 'Versione ' + (i + 1) : '';
+          return '';
         };
+        let mx;
+        // Link consecutivi = versioni dello stesso video solo se tutti hanno una qualità riconoscibile nel nome
+        while (qualitaDaLink(links[0]) && (mx = s.slice(last).match(reDb)) !== null && qualitaDaLink(mx[1])) { links.push(mx[1]); last += mx[0].length; infos.push(tags()); }
+        const nomeQualita = (u, i) => qualitaDaLink(u.toString());
         const varianti = [];
         links.forEach((lk, i) => {
           let u; try { u = new URL(lk.replace(/&amp;/g, '&')); } catch (e) { return; }
@@ -842,21 +847,25 @@
           const dbId = 'db_' + (seg[0] === 's' ? seg[1] : seg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
           const q = x => escOnly(x).replace(/"/g, '&quot;');
           const v0 = varianti[0];
-          const corto = (lab, n) => lab === 'Alta' ? 'HD' : lab === 'Bassa' ? 'LOW' : 'V' + n;
+          const corto = { Bassa: 'LOW', Alta: 'HD', '4K': '4K' };
+          const rango = { Bassa: 0, Alta: 1, '4K': 2 };
           const btnQ = (txt, tit, on, dis, dati) => `<button type="button" class="video-toggle video-q${on ? ' attiva' : ''}"${dati || ''}${dis ? ' disabled' : ''} title="${tit}" aria-label="${tit}">${txt}</button>`;
-          let qualita;
+          let qualita = '';
           if (varianti.length < 2) {
-            const alta = v0.label === 'Alta';
-            qualita = `<span class="video-qualita" role="group" aria-label="Qualità">`
-              + btnQ('LOW', alta ? 'Bassa risoluzione non disponibile' : 'Bassa risoluzione (in riproduzione)', !alta, alta)
-              + btnQ('HD', alta ? 'Alta risoluzione (in riproduzione)' : 'Alta risoluzione non ancora disponibile', alta, !alta)
-              + `</span>`;
+            const l = v0.label;
+            if (l === 'Bassa' || l === 'Alta') {
+              const alta = l === 'Alta';
+              qualita = btnQ('LOW', alta ? 'Bassa risoluzione non disponibile' : 'Bassa risoluzione (in riproduzione)', !alta, alta)
+                + btnQ('HD', alta ? 'Alta risoluzione (in riproduzione)' : 'Alta risoluzione non ancora disponibile', alta, !alta);
+            } else if (l === '4K') {
+              qualita = btnQ('4K', '4K (in riproduzione)', true, false);
+            }
           } else {
-            qualita = `<span class="video-qualita" role="group" aria-label="Qualità">`
-              + varianti.map((v, i) => btnQ(corto(v.label, i + 1), (v.label || 'Versione ' + (i + 1)) + (v.label === 'Alta' ? ' risoluzione' : ''), i === 0, false,
-                  ` data-src="${q(v.src)}" data-dl="${q(v.dl)}" data-orig="${q(v.orig)}" data-nome="${q(v.nome)}" data-info="${q(v.info)}" data-label="${q(v.label)}" onclick="vimeoQualita(this)"`)).join('')
-              + `</span>`;
+            qualita = [...varianti].sort((a, b) => rango[a.label] - rango[b.label]).map(v =>
+              btnQ(corto[v.label], v.label === '4K' ? '4K' : v.label === 'Alta' ? 'Alta risoluzione' : 'Bassa risoluzione', v === v0, false,
+                ` data-src="${q(v.src)}" data-dl="${q(v.dl)}" data-orig="${q(v.orig)}" data-nome="${q(v.nome)}" data-info="${q(v.info)}" data-label="${q(v.label)}" onclick="vimeoQualita(this)"`)).join('');
           }
+          if (qualita) qualita = `<span class="video-qualita" role="group" aria-label="Qualità">${qualita}</span>`;
           out += videoWrapHtml(`<video src="${q(v0.src)}" controls playsinline preload="metadata"></video>`, dbId,
             `<a class="video-fallback" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
             { scarica: q(v0.dl), senzaCommenti, qualita, info: v0.info,
