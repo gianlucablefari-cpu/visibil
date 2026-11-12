@@ -325,6 +325,18 @@
       <label for="c-avanzamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>Note</label>
       <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese" style="min-height:180px;"></textarea>
 
+
+      <div id="vid-admin" style="margin:1.5rem 0 1rem;">
+        <label style="margin-bottom:0.3rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>Video</label>
+        <p class="desc" style="margin-bottom:0.6rem;">Video Dropbox mostrati sotto la nota. Cambiare il link di un video non fa perdere i commenti (restano legati al codice del video). Salvataggio con il pulsante qui sotto.</p>
+        <div id="vid-lista"></div>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;">
+          <button type="button" class="secondary btn-small" onclick="vidAggiungi()">+ Aggiungi video</button>
+          <button type="button" class="btn-small" onclick="vidSalva()">Salva video</button>
+        </div>
+        <div class="msg" id="vid-msg"></div>
+      </div>
+
       <button onclick="salvaDaFare()">Salva</button>
       <div class="msg" id="cliente-msg-3"></div>
     </div>
@@ -1764,6 +1776,7 @@
     document.getElementById('c-sito-password').value = c.sito_password || '';
     document.getElementById('c-instagram').value = c.instagram_url || '';
     document.getElementById('c-avanzamento').value = c.prossimo_passo || '';
+    vidCarica(user_id);
     document.getElementById('c-upload').value = c.upload_link || '';
     document.getElementById('c-rinnovo-piano').value = c.rinnovo_piano || '';
     document.getElementById('c-rinnovo-data').value = c.rinnovo_data || '';
@@ -1862,6 +1875,106 @@
     const ss = String(sec).padStart(2, '0');
     return h > 0 ? h + ':' + String(m).padStart(2, '0') + ':' + ss : m + ':' + ss;
   }
+
+  // ---- Sezione "Video" strutturata (tabella video_cliente) ----
+  let vidDati = [];          // [{id, chiave, commenti_attivi, versioni:[{link, qualita, info}]}]
+  let vidChiaviEsistenti = []; // video_id con commenti già presenti per il cliente
+  function vidQualitaDaLink(lk) {
+    let nome = '';
+    try { nome = decodeURIComponent(new URL(lk).pathname.split('/').pop() || '').toLowerCase(); } catch (e) {}
+    if (/(^|[^a-z0-9])(4k|uhd|2160p?)([^a-z0-9]|$)/.test(nome)) return '4K';
+    if (/(^|[^a-z0-9])(high|hq|hd|hr|alta|full|fullhd|full-hd|fhd|1080p?)([^a-z0-9]|$)/.test(nome)) return 'Alta';
+    if (/(^|[^a-z])(low|lq|sd|bassa|proxy)([^a-z]|$)/.test(nome)) return 'Bassa';
+    return '';
+  }
+  function vidChiaveDaLink(lk) {
+    try { const sg = new URL(lk).pathname.split('/').filter(Boolean); const id = (sg[0] === 's' ? sg[1] : sg[2] || '').replace(/[^A-Za-z0-9_-]/g, ''); return id ? 'db_' + id : ''; } catch (e) { return ''; }
+  }
+  function vidRender() {
+    const box = document.getElementById('vid-lista');
+    if (!box) return;
+    if (!vidDati.length) { box.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun video strutturato.</p>'; return; }
+    const attr = t => vcEsc(t).replace(/"/g, '&quot;');
+    box.innerHTML = vidDati.map((v, i) => {
+      const opzioniChiave = ['<option value="">Nuovo (dal primo link)</option>'].concat(
+        Array.from(new Set(vidChiaviEsistenti.concat(v.chiave ? [v.chiave] : []))).map(k => `<option value="${attr(k)}"${k === v.chiave ? ' selected' : ''}>${vcEsc(k)}</option>`)).join('');
+      const versioni = v.versioni.map((x, j) => `
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.4rem; align-items:center;">
+          <input type="text" value="${attr(x.link)}" placeholder="Link Dropbox del file" style="flex:1 1 260px; min-width:0;" onchange="vidCampo(${i},${j},'link',this.value)">
+          <select onchange="vidCampo(${i},${j},'qualita',this.value)" style="width:auto;">
+            ${[['', 'Qualità —'], ['Bassa', 'LOW'], ['Alta', 'HD'], ['4K', '4K']].map(([val, t]) => `<option value="${val}"${x.qualita === val ? ' selected' : ''}>${t}</option>`).join('')}
+          </select>
+          <input type="text" value="${attr(x.info)}" placeholder="Info (es. 1280×720, H.264, 25 fps)" style="flex:1 1 180px; min-width:0;" onchange="vidCampo(${i},${j},'info',this.value)">
+          ${v.versioni.length > 1 ? `<button type="button" class="secondary btn-small" title="Rimuovi versione" onclick="vidRimuoviVersione(${i},${j})">✕</button>` : ''}
+        </div>`).join('');
+      return `
+      <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.7rem 0.85rem; margin-bottom:0.75rem;">
+        <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
+          <strong style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Video ${i + 1}</strong>
+          <label style="display:flex; align-items:center; gap:0.3rem; margin:0; font-size:0.8rem; font-weight:400;"><input type="checkbox" style="width:auto;" ${v.commenti_attivi ? 'checked' : ''} onchange="vidToggleCommenti(${i},this.checked)"> Commenti attivi</label>
+          <span style="flex:1"></span>
+          <button type="button" class="secondary btn-small" title="Sposta su" ${i === 0 ? 'disabled' : ''} onclick="vidSposta(${i},-1)">↑</button>
+          <button type="button" class="secondary btn-small" title="Sposta giù" ${i === vidDati.length - 1 ? 'disabled' : ''} onclick="vidSposta(${i},1)">↓</button>
+          <button type="button" class="secondary btn-small" title="Elimina video" onclick="vidElimina(${i})">✕</button>
+        </div>
+        ${versioni}
+        <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; margin-top:0.3rem;">
+          <button type="button" class="secondary btn-small" onclick="vidAggiungiVersione(${i})">+ Versione (HD/4K…)</button>
+          <span style="font-size:0.75rem; color:var(--grey);">Commenti collegati a:</span>
+          <select style="width:auto;" onchange="vidChiave(${i},this.value)">${opzioniChiave}</select>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  function vidAggiungi() { vidDati.push({ id: null, chiave: '', commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
+  function vidAggiungiVersione(i) { vidDati[i].versioni.push({ link: '', qualita: '', info: '' }); vidRender(); }
+  function vidRimuoviVersione(i, j) { vidDati[i].versioni.splice(j, 1); vidRender(); }
+  function vidElimina(i) { if (confirm('Eliminare questo video dalla lista? I commenti restano salvati.')) { vidDati.splice(i, 1); vidRender(); } }
+  function vidSposta(i, d) { const k = i + d; if (k < 0 || k >= vidDati.length) return; [vidDati[i], vidDati[k]] = [vidDati[k], vidDati[i]]; vidRender(); }
+  function vidToggleCommenti(i, on) { vidDati[i].commenti_attivi = !!on; }
+  function vidChiave(i, val) { vidDati[i].chiave = val; }
+  function vidCampo(i, j, campo, val) {
+    const x = vidDati[i].versioni[j];
+    x[campo] = val.trim();
+    if (campo === 'link') {
+      if (!x.qualita) x.qualita = vidQualitaDaLink(x.link);
+      vidRender();
+    }
+  }
+  async function vidCarica(user_id) {
+    vidDati = []; vidChiaviEsistenti = [];
+    if (!user_id) { vidRender(); return; }
+    const [r1, r2] = await Promise.all([
+      client.from('video_cliente').select('*').eq('user_id', user_id).order('ordine', { ascending: true }),
+      client.from('video_commenti').select('video_id').eq('user_id', user_id)
+    ]);
+    if (r1.error) { showMsg('vid-msg', 'Errore nel caricamento video: ' + r1.error.message, false); }
+    vidDati = (r1.data || []).map(r => ({ id: r.id, chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
+      versioni: (Array.isArray(r.versioni) ? r.versioni : []).map(x => ({ link: x.link || '', qualita: x.qualita || '', info: x.info || '' })) }));
+    vidChiaviEsistenti = Array.from(new Set((r2.data || []).map(c => c.video_id).filter(k => k && k.startsWith('db_'))));
+    vidRender();
+  }
+  async function vidSalva() {
+    const user_id = document.getElementById('c-userid').value.trim();
+    if (!user_id) { showMsg('vid-msg', 'Carica prima un cliente.', false); return; }
+    const c = clientiCache.find(x => x.user_id === user_id);
+    const righe = [];
+    for (const v of vidDati) {
+      const versioni = v.versioni.filter(x => x.link.trim()).map(x => ({ link: x.link.trim(), qualita: x.qualita || '', info: x.info || '' }));
+      if (!versioni.length) continue;
+      if (versioni.length > 1 && versioni.some(x => !x.qualita)) { showMsg('vid-msg', 'Con più versioni imposta la qualità (LOW/HD/4K) di ciascuna.', false); return; }
+      righe.push({ cliente_id: c ? c.id : null, user_id, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
+    }
+    const del = await client.from('video_cliente').delete().eq('user_id', user_id);
+    if (del.error) { showMsg('vid-msg', 'Errore: ' + del.error.message, false); return; }
+    if (righe.length) {
+      const ins = await client.from('video_cliente').insert(righe);
+      if (ins.error) { showMsg('vid-msg', 'Errore: ' + ins.error.message, false); return; }
+    }
+    showMsg('vid-msg', 'Video salvati ✓', true);
+    vidCarica(user_id);
+  }
+
   async function caricaVideoCommenti(user_id) {
     const box = document.getElementById('vc-admin');
     if (!user_id) { box.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p>'; return; }

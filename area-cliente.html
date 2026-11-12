@@ -801,6 +801,49 @@
     }
   }, true);
 
+  // Video Dropbox con eventuali versioni (LOW/HD/4K). versioniIn: [{link, label:'Bassa'|'Alta'|'4K'|'', info}]
+  // chiave: codice dei commenti (db_xxx, link o codice vecchio); vuoto = ricavato dal primo link
+  function videoDropboxHtml(versioniIn, chiave, senzaCommenti) {
+    const escOnly = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const varianti = [];
+    versioniIn.forEach((vi, i) => {
+      let u; try { u = new URL(String(vi.link).replace(/&amp;/g, '&')); } catch (e) { return; }
+      const orig = u.toString();
+      const dlUrl = new URL(orig); dlUrl.searchParams.delete('raw'); dlUrl.searchParams.set('dl', '1');
+      const play = new URL(orig); play.searchParams.delete('dl'); play.searchParams.set('raw', '1');
+      varianti.push({ info: vi.info || '', nome: decodeURIComponent(u.pathname.split('/').pop() || ''), u, orig, dl: dlUrl.toString(), src: play.toString(), label: vi.label || '' });
+    });
+    if (!varianti.length) return '';
+    const idDa = (uu) => { const sg = uu.pathname.split('/').filter(Boolean); return (sg[0] === 's' ? sg[1] : sg[2] || '').replace(/[^A-Za-z0-9_-]/g, ''); };
+    let dbId = 'db_' + idDa(varianti[0].u);
+    if (chiave) {
+      const kc = String(chiave).trim();
+      if (/^db_[A-Za-z0-9_-]+$/.test(kc)) dbId = kc;
+      else {
+        try { const idv = idDa(new URL(kc)); if (idv) dbId = 'db_' + idv; }
+        catch (e) { if (/^[A-Za-z0-9_-]{8,}$/.test(kc)) dbId = 'db_' + kc; }
+      }
+    }
+    const q = x => escOnly(x).replace(/"/g, '&quot;');
+    const v0 = varianti[0];
+    const corto = { Bassa: 'LOW', Alta: 'HD', '4K': '4K' };
+    const rango = { Bassa: 0, Alta: 1, '4K': 2 };
+    const btnQ = (txt, tit, on, dis, dati) => `<button type="button" class="video-toggle video-q${on ? ' attiva' : ''}"${dati || ''}${dis ? ' disabled' : ''} title="${tit}" aria-label="${tit}">${txt}</button>`;
+    let qualita = '';
+    if (varianti.length < 2) {
+      qualita = ''; // un solo video: nessun pulsante di qualità
+    } else {
+      qualita = [...varianti].sort((a, b) => rango[a.label] - rango[b.label]).map(v =>
+        btnQ(corto[v.label], v.label === '4K' ? '4K' : v.label === 'Alta' ? 'Alta risoluzione' : 'Bassa risoluzione', v === v0, false,
+          ` data-src="${q(v.src)}" data-dl="${q(v.dl)}" data-orig="${q(v.orig)}" data-nome="${q(v.nome)}" data-info="${q(v.info)}" data-label="${q(v.label)}" onclick="vimeoQualita(this)"`)).join('');
+    }
+    if (qualita) qualita = `<span class="video-qualita" role="group" aria-label="Qualità">${qualita}</span>`;
+    return videoWrapHtml(`<video src="${q(v0.src)}" controls playsinline preload="metadata"></video>`, dbId,
+      `<a class="video-fallback" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
+      { scarica: q(v0.dl), senzaCommenti, qualita, info: v0.info,
+        titolo: `<a class="video-nome" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" title="Apri su Dropbox">${escOnly(v0.nome)}</a>` });
+  }
+
   // Testo sicuro + player Vimeo responsive (solo iframe/link di vimeo.com)
   function renderNota(raw) {
     const s = String(raw == null ? '' : raw);
@@ -859,48 +902,9 @@
         let mx;
         // Link consecutivi = versioni dello stesso video solo se tutti hanno una qualità riconoscibile nel nome
         while (qualitaDaLink(links[0]) && (mx = s.slice(last).match(reDb)) !== null && qualitaDaLink(mx[1])) { links.push(mx[1]); last += mx[0].length; infos.push(tags()); }
-        const nomeQualita = (u, i) => qualitaDaLink(u.toString());
-        const varianti = [];
-        links.forEach((lk, i) => {
-          let u; try { u = new URL(lk.replace(/&amp;/g, '&')); } catch (e) { return; }
-          const orig = u.toString();
-          const dlUrl = new URL(orig); dlUrl.searchParams.delete('raw'); dlUrl.searchParams.set('dl', '1');
-          const play = new URL(orig); play.searchParams.delete('dl'); play.searchParams.set('raw', '1');
-          varianti.push({ info: infos[i] || '', nome: decodeURIComponent(u.pathname.split('/').pop() || ''), u, orig, dl: dlUrl.toString(), src: play.toString(), label: nomeQualita(u, i) });
-        });
-        if (varianti.length) {
-          const seg = varianti[0].u.pathname.split('/').filter(Boolean);
-          let dbId = 'db_' + (seg[0] === 's' ? seg[1] : seg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
-          // "#commenti <link vecchio | codice>": usa i commenti di un altro file (es. nuova versione con altro nome)
-          if (chiaveCommenti) {
-            const kc = chiaveCommenti;
-            if (/^db_[A-Za-z0-9_-]+$/.test(kc)) dbId = kc;
-            else {
-              try {
-                const sg = new URL(kc).pathname.split('/').filter(Boolean);
-                const idv = (sg[0] === 's' ? sg[1] : sg[2] || '').replace(/[^A-Za-z0-9_-]/g, '');
-                if (idv) dbId = 'db_' + idv;
-              } catch (e) { if (/^[A-Za-z0-9_-]{8,}$/.test(kc)) dbId = 'db_' + kc; }
-            }
-          }
-          const q = x => escOnly(x).replace(/"/g, '&quot;');
-          const v0 = varianti[0];
-          const corto = { Bassa: 'LOW', Alta: 'HD', '4K': '4K' };
-          const rango = { Bassa: 0, Alta: 1, '4K': 2 };
-          const btnQ = (txt, tit, on, dis, dati) => `<button type="button" class="video-toggle video-q${on ? ' attiva' : ''}"${dati || ''}${dis ? ' disabled' : ''} title="${tit}" aria-label="${tit}">${txt}</button>`;
-          let qualita = '';
-          if (varianti.length < 2) {
-            qualita = ''; // un solo video: nessun pulsante di qualità
-          } else {
-            qualita = [...varianti].sort((a, b) => rango[a.label] - rango[b.label]).map(v =>
-              btnQ(corto[v.label], v.label === '4K' ? '4K' : v.label === 'Alta' ? 'Alta risoluzione' : 'Bassa risoluzione', v === v0, false,
-                ` data-src="${q(v.src)}" data-dl="${q(v.dl)}" data-orig="${q(v.orig)}" data-nome="${q(v.nome)}" data-info="${q(v.info)}" data-label="${q(v.label)}" onclick="vimeoQualita(this)"`)).join('');
-          }
-          if (qualita) qualita = `<span class="video-qualita" role="group" aria-label="Qualità">${qualita}</span>`;
-          out += videoWrapHtml(`<video src="${q(v0.src)}" controls playsinline preload="metadata"></video>`, dbId,
-            `<a class="video-fallback" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" style="display:none;">Il video non parte qui: aprilo su Dropbox</a>`,
-            { scarica: q(v0.dl), senzaCommenti, qualita, info: v0.info,
-              titolo: `<a class="video-nome" href="${q(v0.orig)}" target="_blank" rel="noopener noreferrer" title="Apri su Dropbox">${escOnly(v0.nome)}</a>` });
+        const htmlDb = videoDropboxHtml(links.map((lk, i) => ({ link: lk, label: qualitaDaLink(lk), info: infos[i] || '' })), chiaveCommenti, senzaCommenti);
+        if (htmlDb) {
+          out += htmlDb;
           re.lastIndex = last;
           continue;
         }
@@ -1414,12 +1418,18 @@
     let hasItems = false;
 
     // Nota libera di Gianluca
-    if (window.progettoTesto) {
+    // Video strutturati (sezione "Video" dell'admin), mostrati sotto il testo della nota
+    const videoStrutturatiHtml = (window.videoCliente || []).map(v => {
+      const vers = (Array.isArray(v.versioni) ? v.versioni : []).filter(x => x && x.link).map(x => ({ link: x.link, label: x.qualita || '', info: x.info || '' }));
+      return videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false);
+    }).join('');
+    if (window.progettoTesto || videoStrutturatiHtml) {
       hasItems = true;
       container.innerHTML += `
         <div style="text-align:left;">
           <div style="font-size:0.65rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink); margin-bottom:0.3rem;">Note</div>
-          <div style="font-size:0.88rem; line-height:1.5; white-space:pre-wrap;">${renderNota(window.progettoTesto)}</div>
+          ${window.progettoTesto ? `<div style="font-size:0.88rem; line-height:1.5; white-space:pre-wrap;">${renderNota(window.progettoTesto)}</div>` : ''}
+          ${videoStrutturatiHtml}
         </div>`;
     }
 
@@ -1509,6 +1519,10 @@
       }
 
       window.progettoTesto = cliente.prossimo_passo || null;
+      try {
+        const { data: vids } = await client.from('video_cliente').select('*').eq('user_id', targetUserId).order('ordine', { ascending: true });
+        window.videoCliente = vids || [];
+      } catch (e) { window.videoCliente = []; }
 
       const strumentiList = cliente.link_lavoro || [];
       if (strumentiList.length > 0) {
