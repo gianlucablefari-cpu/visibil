@@ -311,7 +311,7 @@
   }
   .video-embed { position: relative; padding-top: 56.25%; border-radius: 8px; overflow: hidden; background: #000; }
   .video-controls { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
-  .video-skips { display: inline-flex; gap: 0.25rem; }
+  .video-skips { display: inline-flex; flex-wrap: wrap; gap: 0.25rem; max-width: 100%; }
   .video-skip, .video-toggle { display: inline-flex; align-items: center; gap: 0.25rem; height: 30px; padding: 0 0.6rem; background: #fff; border: 1px solid rgba(0,0,0,0.15); border-radius: 100px; font: inherit; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--black); cursor: pointer; }
   .video-right { display: inline-flex; gap: 0.35rem; align-items: center; flex: none; margin-right: 0.3rem; }
   .video-dl { text-decoration: none; }
@@ -353,6 +353,9 @@
     .video-nome { word-break: break-all; }
     .video-info { flex: 1 1 100%; white-space: normal; }
     .video-info:not([hidden])::before { content: none; }
+    .video-skips { gap: 0.2rem; width: 100%; justify-content: space-between; }
+    .video-skips .video-skip { padding: 0 0.4rem; gap: 0.15rem; font-size: 0.72rem; }
+    .video-skips .video-skip .ic { width: 12px; height: 12px; }
     .video-controls { padding: 0 0.75rem; flex-wrap: wrap; row-gap: 0.4rem; margin-top: 0.6rem; }
     .video-fallback { display: block; padding: 0.4rem 0.9rem 0; }
     .video-comments { margin: 0.9rem 0 1rem; padding: 0.9rem 0.9rem 1rem; border-radius: 0; border-left: 0; border-right: 0; }
@@ -764,6 +767,8 @@
     fwd:   `<svg ${SVG_ATTR}><polyline points="9 18 15 12 9 6"></polyline></svg>`,
     back2: `<svg ${SVG_ATTR}><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>`,
     fwd2:  `<svg ${SVG_ATTR}><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>`,
+    back3: `<svg ${SVG_ATTR}><polyline points="9 17 4 12 9 7"></polyline><polyline points="15 17 10 12 15 7"></polyline><polyline points="21 17 16 12 21 7"></polyline></svg>`,
+    fwd3:  `<svg ${SVG_ATTR}><polyline points="3 17 8 12 3 7"></polyline><polyline points="9 17 14 12 9 7"></polyline><polyline points="15 17 20 12 15 7"></polyline></svg>`,
     download:`<svg ${SVG_ATTR}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
     expand:`<svg ${SVG_ATTR}><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>`,
     pause: `<svg ${SVG_ATTR}><rect x="6" y="4" width="4" height="16" fill="currentColor"></rect><rect x="14" y="4" width="4" height="16" fill="currentColor"></rect></svg>`,
@@ -774,7 +779,7 @@
   function videoWrapHtml(mediaHtml, id, extraHtml, opz) {
     opz = opz || {};
     const scarica = opz.scarica ? `<a class="video-toggle video-dl" href="${opz.scarica}" download title="Scarica il video" aria-label="Scarica il video">${IC.download}</a>` : '';
-    return `<div class="video-cq"><div class="video-block"><div class="video-wrap"><div class="video-titolo"><span class="video-right"><button type="button" class="video-toggle video-exp" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button>${scarica}${opz.qualita || ''}</span>${opz.titolo || ''}<span class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || '')}</span></div><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}</div></div>`;
+    return `<div class="video-cq"><div class="video-block"><div class="video-wrap"><div class="video-titolo"><span class="video-right"><button type="button" class="video-toggle video-exp" onclick="vimeoToggle(this)" title="Ingrandisci" aria-label="Ingrandisci">${IC.expand}</button>${scarica}${opz.qualita || ''}</span>${opz.titolo || ''}<span class="video-info"${opz.info ? '' : ' hidden'}>${escHtml(opz.info || '')}</span></div><div class="video-embed">${mediaHtml}</div><div class="video-controls"><span class="video-skips"><button type="button" class="video-skip" onclick="vimeoSkip(this,-60)" title="Indietro di 60 secondi">${IC.back3}<span>60</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-15)" title="Indietro di 15 secondi">${IC.back2}<span>15</span></button><button type="button" class="video-skip" onclick="vimeoSkip(this,-5)" title="Indietro di 5 secondi">${IC.back}<span>5</span></button><button type="button" class="video-skip video-playbtn" onclick="vimeoPlay(this)" title="Play / Pausa" aria-label="Play / Pausa">${IC.play}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,5)" title="Avanti di 5 secondi"><span>5</span>${IC.fwd}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,15)" title="Avanti di 15 secondi"><span>15</span>${IC.fwd2}</button><button type="button" class="video-skip" onclick="vimeoSkip(this,60)" title="Avanti di 60 secondi"><span>60</span>${IC.fwd3}</button></span></div>${extraHtml || ''}</div>${opz.senzaCommenti ? '' : `<div class="video-comments" data-video="${id}"></div>`}</div></div>`;
   }
   // Se un video Dropbox non si carica, mostra il link di riserva
   document.addEventListener('error', e => {
