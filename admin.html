@@ -819,6 +819,9 @@
         <div id="pg-form-titolo" class="section-label" style="margin-top:0;">Nuovo pagamento</div>
         <input type="hidden" id="pg-editing-id">
 
+        <label for="pg-progetto">Progetto (facoltativo)</label>
+        <select id="pg-progetto"><option value="">— nessun progetto —</option></select>
+
         <label for="pg-descrizione">Descrizione generale</label>
         <input type="text" id="pg-descrizione" placeholder="es. Sito Vetrina + lavoro extra">
 
@@ -2013,6 +2016,7 @@
         <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
           <strong style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--grey);">${i + 1}</strong>
           <input type="text" value="${attr(v.nome)}" placeholder="Nome del video (es. Spot Bagni Sartoriali)" style="flex:1 1 220px; min-width:0; font-weight:600;" onchange="vidNome(${i},this.value)">
+          <select style="width:auto; flex:none; max-width:220px;" onchange="vidDati[${i}].progetto_id=this.value" title="Progetto a cui appartiene il video">${opzioniProgetto(v.progetto_id || '')}</select>
           <select style="width:auto; flex:none;" onchange="vidDati[${i}].stato=this.value" title="In lavorazione: compare nel Pannello del cliente. Consegnato: va tra i conclusi">
             <option value="in_lavorazione"${(v.stato || 'in_lavorazione') === 'in_lavorazione' ? ' selected' : ''}>In lavorazione</option>
             <option value="consegnato"${v.stato === 'consegnato' ? ' selected' : ''}>Consegnato</option>
@@ -2049,8 +2053,24 @@
       vidRender();
     }
   }
+  // Progetti del cliente attivo, per i menu "Progetto" di video e pagamenti
+  let progettiMenu = [];
+  async function caricaProgettiMenu(user_id) {
+    progettiMenu = [];
+    if (user_id) {
+      const { data } = await client.from('progetti').select('id, titolo, stato').eq('user_id', user_id).order('ordine', { ascending: true });
+      progettiMenu = data || [];
+    }
+    const sel = document.getElementById('pg-progetto');
+    if (sel) { const v = sel.value; sel.innerHTML = opzioniProgetto(v); }
+  }
+  function opzioniProgetto(scelto) {
+    return '<option value="">— nessun progetto —</option>' + progettiMenu.map(p => `<option value="${p.id}"${p.id === scelto ? ' selected' : ''}>${vcEsc(p.titolo || '(senza titolo)')}${p.stato === 'Completato' ? ' (completato)' : ''}</option>`).join('');
+  }
+
   async function vidCarica(user_id) {
     vidDati = []; vidChiaviEsistenti = []; vidConteggi = {};
+    await caricaProgettiMenu(user_id);
     if (!user_id) { vidRender(); return; }
     const [r1, r2] = await Promise.all([
       client.from('video_cliente').select('*').eq('user_id', user_id).order('ordine', { ascending: true }),
@@ -2058,7 +2078,7 @@
     ]);
     if (r1.error) { showMsg('vid-msg', 'Errore nel caricamento video: ' + r1.error.message, false); }
     const firmaLink = vv => (vv || []).map(x => (x.link || '').trim()).filter(Boolean).join('\n');
-    vidDati = (r1.data || []).map(r => ({ id: r.id, aggiornato_il: r.aggiornato_il || null, revisione_finita_il: r.revisione_finita_il || null, stato: r.stato || 'in_lavorazione', linkOrig: firmaLink(r.versioni), nome: r.nome || vidNomeDaLink(((r.versioni || [])[0] || {}).link || ''), chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
+    vidDati = (r1.data || []).map(r => ({ id: r.id, aggiornato_il: r.aggiornato_il || null, revisione_finita_il: r.revisione_finita_il || null, stato: r.stato || 'in_lavorazione', progetto_id: r.progetto_id || '', linkOrig: firmaLink(r.versioni), nome: r.nome || vidNomeDaLink(((r.versioni || [])[0] || {}).link || ''), chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
       versioni: (Array.isArray(r.versioni) ? r.versioni : []).map(x => ({ link: x.link || '', qualita: x.qualita || '', info: x.info || '' })) }));
     (r2.data || []).forEach(c => { if (c.video_id) vidConteggi[c.video_id] = (vidConteggi[c.video_id] || 0) + 1; });
     vidChiaviEsistenti = Object.keys(vidConteggi).filter(k => k.startsWith('db_'));
@@ -2083,7 +2103,7 @@
       // "Nuova versione": solo se su un video già esistente sono cambiati i link
       const linkCambiati = v.id && v.linkOrig !== undefined && v.linkOrig !== versioni.map(x => x.link).join('\n');
       const aggiornato_il = linkCambiati ? new Date().toISOString() : (v.aggiornato_il || null);
-      righe.push({ cliente_id, user_id, nome: v.nome, aggiornato_il, revisione_finita_il: v.revisione_finita_il || null, stato: v.stato || 'in_lavorazione', ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
+      righe.push({ cliente_id, user_id, nome: v.nome, aggiornato_il, revisione_finita_il: v.revisione_finita_il || null, stato: v.stato || 'in_lavorazione', progetto_id: v.progetto_id || null, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
     }
     // Prima inserisco le righe nuove, poi tolgo le vecchie: se l'inserimento fallisce i video esistenti restano
     let nuoviId = [];
@@ -2187,6 +2207,7 @@
   }
 
   async function caricaProgettiEsistenti(user_id) {
+    caricaProgettiMenu(user_id).then(() => { if (typeof vidRender === 'function' && vidDati.length) vidRender(); });
     caricaVideoCommenti(user_id);
     const container = document.getElementById('pr-lista-esistenti');
     if (!user_id) {
@@ -2856,6 +2877,7 @@
     document.getElementById('pg-form-titolo').textContent = 'Modifica pagamento';
     document.getElementById('pg-salva-btn').textContent = 'Salva modifiche';
     document.getElementById('pg-descrizione').value = p.descrizione || '';
+    document.getElementById('pg-progetto').innerHTML = opzioniProgetto(p.progetto_id || '');
     document.getElementById('pg-stato').value = p.stato || 'In attesa';
     document.getElementById('pg-data').value = p.data || '';
     document.getElementById('pg-documento').value = p.documento_url || '';
@@ -2879,6 +2901,7 @@
     document.getElementById('pg-form-titolo').textContent = 'Nuovo pagamento';
     document.getElementById('pg-salva-btn').textContent = 'Aggiungi pagamento';
     document.getElementById('pg-descrizione').value = '';
+    document.getElementById('pg-progetto').innerHTML = opzioniProgetto('');
     document.getElementById('pg-documento').value = '';
     document.getElementById('pg-stato').value = 'Pagato';
     document.getElementById('pg-data').value = '';
@@ -2990,6 +3013,7 @@
       stato: document.getElementById('pg-stato').value,
       data: document.getElementById('pg-data').value || new Date().toISOString().slice(0,10),
       documento_url: document.getElementById('pg-documento').value || null,
+      progetto_id: document.getElementById('pg-progetto').value || null,
       payment_link: paymentLink
     };
 

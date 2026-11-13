@@ -213,6 +213,7 @@
   .progetto-item.in-pausa .progetto-bar-fill { background: var(--grey); }
   .progetto-item.sforato .progetto-bar-fill { background: #A32D2D; }
   .progetto-item.sforato .progetto-item-pct { color: #A32D2D; }
+  .progetto-video { flex-direction: column; gap: 0.5rem; margin-top: 0.85rem; }
   .video-voce { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; background: #fff; }
   .video-voce-testa { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; cursor: pointer; list-style: none; }
   .video-voce-testa::-webkit-details-marker { display: none; }
@@ -1259,7 +1260,8 @@
     box.classList.toggle('vc-simulato', simula);
     { const vv = box.closest('.video-voce'); const m = vv && vv.querySelector('.vv-meta');
       if (m) { const its = tutti.filter(c => c.video_id === box.dataset.video && !c.risposta_a); const ris = its.filter(c => c.stato === 'risolto').length;
-        m.textContent = its.length ? its.length + (its.length === 1 ? ' commento' : ' commenti') + (ris ? ' · ' + ris + ' risolti' : '') + (box.dataset.finita ? ' · revisione inviata' : '') : ''; } }
+        const consegnato = vv.dataset.stato === 'consegnato';
+      m.textContent = [its.length ? its.length + (its.length === 1 ? ' commento' : ' commenti') : '', ris ? ris + ' risolti' : '', box.dataset.finita ? 'revisione inviata' : '', consegnato ? 'consegnato' : ''].filter(Boolean).join(' · '); } }
     const videoId = box.dataset.video;
     const listaPrima = box.querySelector('.vc-lista');
     const scrollLista = listaPrima ? listaPrima.scrollTop : 0;
@@ -1678,7 +1680,7 @@
   function renderProgettiAvanzamento(progetti) {
     const section = document.getElementById('progetti-avanzamento-section');
     const list = document.getElementById('progetti-avanzamento-list');
-    const cardDi = p => {
+    const cardBase = p => {
       const modalita = p.modalita || 'avanzamento';
       const titolo = (p.cartella_link ? `<a class="progetto-cartella" href="${escHtml(p.cartella_link)}" target="_blank" rel="noopener" title="Apri la cartella del progetto su Dropbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></a>` : '') + escHtml(p.titolo || '(senza titolo)');
       const statoTxt = p.stato && p.stato !== 'In corso' ? p.stato : '';
@@ -1691,7 +1693,7 @@
         <div class="progetto-item ${statoCls}">
           <div class="progetto-item-top">
             <div class="progetto-item-titolo">${titolo}</div>
-            <div class="progetto-item-ore">${o > 0 ? `<span class="progetto-ore-n" title="Ore di lavoro da saldare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>${fmtOre(o)} ${o === 1 ? 'ora' : 'ore'}</span><a class="progetto-salda" href="${p.link_pagamento ? escHtml(p.link_pagamento) : '#'}"${p.link_pagamento ? ' target="_blank" rel="noopener"' : ` onclick="return showTab('fatture', event)"`}>Salda</a>` : 'Saldato ✓'}</div>
+            <div class="progetto-item-ore">${o > 0 ? `<span class="progetto-ore-n" title="Ore di lavoro da saldare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>${fmtOre(o)} ${o === 1 ? 'ora' : 'ore'}</span><a class="progetto-salda" href="${p.link_pagamento ? escHtml(p.link_pagamento) : '#'}"${p.link_pagamento ? ' target="_blank" rel="noopener"' : ` onclick="return saldaProgetto('${p.id}', event)"`}>Salda</a>` : 'Saldato ✓'}</div>
           </div>
           ${statoTxt ? `<div class="progetto-item-meta"><span></span><span>${statoTxt}</span></div>` : ''}
           ${noteHtml}
@@ -1748,6 +1750,9 @@
           ${p.note ? `<div class="progetto-item-note">${renderNota(p.note)}</div>` : ''}
         </div>`;
     };
+    // Ogni progetto ha in fondo lo spazio per i suoi video (riempito da renderVideoSezione)
+    const cardDi = p => { const h = cardBase(p); const i = h.lastIndexOf('</div>'); return h.slice(0, i) + `<div class="progetto-video" data-pid="${p.id}"></div>` + h.slice(i); };
+    window.progettiIds = new Set((progetti || []).map(p => p.id));
     const attivi = (progetti || []).filter(p => p.stato !== 'Completato');
     window._progettiConclusiHtml = (progetti || []).filter(p => p.stato === 'Completato').map(cardDi).join('');
     window._nProgettiConclusi = (progetti || []).length - attivi.length;
@@ -1764,22 +1769,36 @@
     const corpo = videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false, v.nome || '', v.aggiornato_il || '', { id: v.id, finita: v.revisione_finita_il || '' });
     if (!corpo) return '';
     const aperto = window.videoAperti.has(v.id) || (apertoDefault && !window.videoAperti.has('chiusi:' + v.id));
-    return `<details class="video-voce" data-vid="${v.id}"${aperto ? ' open' : ''}><summary class="video-voce-testa"><span class="vv-icona">▶</span><span class="vv-nome">${escHtml(v.nome || 'Video')}</span><span class="vv-meta"></span><span class="vv-freccia"></span></summary><div class="video-voce-corpo">${corpo}</div></details>`;
+    return `<details class="video-voce" data-vid="${v.id}" data-stato="${v.stato || 'in_lavorazione'}"${aperto ? ' open' : ''}><summary class="video-voce-testa"><span class="vv-icona">▶</span><span class="vv-nome">${escHtml(v.nome || 'Video')}</span><span class="vv-meta"></span><span class="vv-freccia"></span></summary><div class="video-voce-corpo">${corpo}</div></details>`;
   }
   function renderVideoSezione() {
     const sez = document.getElementById('video-section'), list = document.getElementById('video-list');
     if (!sez) return;
+    const ids = window.progettiIds || new Set();
     const tutti = window.videoCliente || [];
-    const attivi = tutti.filter(v => (v.stato || 'in_lavorazione') !== 'consegnato');
-    window._videoConclusiHtml = tutti.filter(v => v.stato === 'consegnato').map(v => videoVoceHtml(v, false)).join('');
-    window._nVideoConclusi = tutti.length - attivi.length;
-    list.innerHTML = attivi.map(v => videoVoceHtml(v, attivi.length === 1)).join('');
+    const diProgetto = tutti.filter(v => v.progetto_id && ids.has(v.progetto_id));
+    const sciolti = tutti.filter(v => !(v.progetto_id && ids.has(v.progetto_id)));
+    const attivi = sciolti.filter(v => (v.stato || 'in_lavorazione') !== 'consegnato');
+    window._videoConclusiHtml = sciolti.filter(v => v.stato === 'consegnato').map(v => videoVoceHtml(v, false)).join('');
+    window._nVideoConclusi = sciolti.length - attivi.length;
+    list.innerHTML = attivi.map(v => videoVoceHtml(v, attivi.length === 1 && !diProgetto.length)).join('');
     sez.style.display = attivi.length ? 'block' : 'none';
+    const lbl = sez.querySelector('.section-label'); if (lbl) lbl.textContent = diProgetto.length ? 'Altri video' : 'Video in lavorazione';
     renderConclusi();
+    document.querySelectorAll('.progetto-video').forEach(box => {
+      const vv = diProgetto.filter(v => v.progetto_id === box.dataset.pid);
+      box.innerHTML = vv.length ? vv.map(v => videoVoceHtml(v, vv.length === 1 && diProgetto.length === 1)).join('') : '';
+      box.style.display = vv.length ? 'flex' : 'none';
+    });
     document.querySelectorAll('.video-voce').forEach(d => d.addEventListener('toggle', () => {
       if (d.open) { window.videoAperti.add(d.dataset.vid); window.videoAperti.delete('chiusi:' + d.dataset.vid); }
       else { window.videoAperti.delete(d.dataset.vid); window.videoAperti.add('chiusi:' + d.dataset.vid); }
     }));
+  }
+  function saldaProgetto(pid, e) {
+    const aperte = (window.pagamentiCache || []).filter(x => x.progetto_id === pid && (x.stato === 'In attesa' || x.stato === 'Scaduto'));
+    if (aperte.length === 1) { if (e) e.preventDefault(); window.open('pagamento.html?id=' + aperte[0].id, '_blank'); return false; }
+    return showTab('fatture', e);
   }
   function renderConclusi() {
     const sez = document.getElementById('conclusi-section');
