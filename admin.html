@@ -1995,7 +1995,8 @@
     if (!box) return;
     if (!vidDati.length) { box.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun video strutturato.</p>'; return; }
     const attr = t => vcEsc(t).replace(/"/g, '&quot;');
-    box.innerHTML = vidDati.map((v, i) => {
+    window.vidAperti = window.vidAperti || new Set();
+    const cardHtml = (v, i) => {
       // Commenti: quelli propri del video, oppure quelli di un altro codice già commentato e non usato da altri video
       const usateDaAltri = new Set(vidDati.filter((x, k) => k !== i).map(x => x.chiave).filter(Boolean));
       const etichetta = k => { const altro = vidDati.find(x => x.chiave === k); const n = vidConteggi[k] || 0;
@@ -2011,13 +2012,21 @@
           <input type="text" value="${attr(x.info)}" placeholder="Info (es. 1280×720, H.264, 25 fps)" style="flex:1 1 180px; min-width:0;" onchange="vidCampo(${i},${j},'info',this.value)">
           ${v.versioni.length > 1 ? `<button type="button" class="secondary btn-small" title="Rimuovi versione" onclick="vidRimuoviVersione(${i},${j})">✕</button>` : ''}
         </div>`).join('');
+      const k = v.id || v.chiave || ('n' + i);
+      const aperto = !v.id || window.vidAperti.has(k);
       return `
-      <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.7rem 0.85rem; margin-bottom:0.75rem;">
+      <div class="vid-card${aperto ? ' aperto' : ''}" data-k="${attr(k)}">
+        <div class="vid-card-testa" onclick="vidToggleCard(this)">
+          <strong style="font-size:0.72rem; color:var(--grey);">${i + 1}</strong>
+          <span class="vid-card-nome">${vcEsc(v.nome || 'Video senza nome')}</span>
+          ${v.stato === 'consegnato' ? '<span class="vid-card-badge">Consegnato</span>' : ''}
+          <span class="vid-card-freccia">˅</span>
+        </div>
+        <div class="vid-card-corpo">
         <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
-          <strong style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--grey);">${i + 1}</strong>
           <input type="text" value="${attr(v.nome)}" placeholder="Nome del video (es. Spot Bagni Sartoriali)" style="flex:1 1 220px; min-width:0; font-weight:600;" onchange="vidNome(${i},this.value)">
-          <select style="width:auto; flex:none; max-width:220px;" onchange="vidDati[${i}].progetto_id=this.value" title="Progetto a cui appartiene il video">${opzioniProgetto(v.progetto_id || '')}</select>
-          <select style="width:auto; flex:none;" onchange="vidDati[${i}].stato=this.value" title="In lavorazione: compare nel Pannello del cliente. Consegnato: va tra i conclusi">
+          <select style="width:auto; flex:none; max-width:220px;" onchange="vidDati[${i}].progetto_id=this.value; window.vidAperti.add(vidDati[${i}].id || vidDati[${i}].chiave); vidRender()" title="Progetto a cui appartiene il video">${opzioniProgetto(v.progetto_id || '')}</select>
+          <select style="width:auto; flex:none;" onchange="vidDati[${i}].stato=this.value; vidRender()" title="In lavorazione: compare nel Pannello del cliente. Consegnato: va tra i conclusi">
             <option value="in_lavorazione"${(v.stato || 'in_lavorazione') === 'in_lavorazione' ? ' selected' : ''}>In lavorazione</option>
             <option value="consegnato"${v.stato === 'consegnato' ? ' selected' : ''}>Consegnato</option>
           </select>
@@ -2033,8 +2042,22 @@
           ${chiavi.length > 1 ? `<span style="font-size:0.75rem; color:var(--grey);">Commenti:</span>
           <select style="width:auto; max-width:100%;" onchange="vidChiave(${i},this.value)">${opzioniChiave}</select>` : ''}
         </div>
+        </div>
       </div>`;
-    }).join('');
+    };
+    // Raggruppati per progetto (nell'ordine dei progetti), poi quelli senza progetto
+    const gruppi = progettiMenu.map(p => ({ titolo: p.titolo || '(senza titolo)', completato: p.stato === 'Completato', idx: vidDati.map((v, i) => i).filter(i => vidDati[i].progetto_id === p.id) }));
+    const ids = new Set(progettiMenu.map(p => p.id));
+    gruppi.push({ titolo: 'Senza progetto', idx: vidDati.map((v, i) => i).filter(i => !vidDati[i].progetto_id || !ids.has(vidDati[i].progetto_id)) });
+    box.innerHTML = gruppi.filter(g => g.idx.length).map(g => `
+      <div class="vid-gruppo"><div class="vid-gruppo-titolo">📁 ${vcEsc(g.titolo)}${g.completato ? ' <span style="color:var(--grey); font-weight:400;">(completato)</span>' : ''}</div>
+        ${g.idx.map(i => cardHtml(vidDati[i], i)).join('')}
+      </div>`).join('');
+  }
+  function vidToggleCard(t) {
+    const c = t.closest('.vid-card'); const ap = c.classList.toggle('aperto');
+    window.vidAperti = window.vidAperti || new Set();
+    if (ap) window.vidAperti.add(c.dataset.k); else window.vidAperti.delete(c.dataset.k);
   }
   function vidNome(i, val) { vidDati[i].nome = val.trim(); }
   function vidAggiungi() { vidDati.push({ id: null, nome: '', stato: 'in_lavorazione', chiave: vidNuovaChiave(), commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
@@ -3742,6 +3765,17 @@
 </script>
 <script src="partials/stato-login.js"></script>
 <style>
+  .vid-gruppo { margin-bottom: 1rem; }
+  .vid-gruppo-titolo { font-size: 0.78rem; font-weight: 700; margin: 0.4rem 0 0.5rem; }
+  .vid-card { border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; margin-bottom: 0.5rem; background: #fff; }
+  .vid-card-testa { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.85rem; cursor: pointer; user-select: none; }
+  .vid-card-nome { flex: 1; min-width: 0; font-weight: 600; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vid-card-badge { font-size: 0.68rem; padding: 0.05rem 0.5rem; border-radius: 100px; background: #e3f3e8; color: #1d6b32; font-weight: 600; }
+  .vid-card-freccia { color: var(--grey); transition: transform 0.15s; transform: rotate(-90deg); }
+  .vid-card.aperto .vid-card-freccia { transform: none; }
+  .vid-card-corpo { display: none; padding: 0 0.85rem 0.7rem; }
+  .vid-card.aperto .vid-card-corpo { display: block; }
+  .vid-card.aperto .vid-card-testa { border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 0.6rem; }
   .acc > .acc-testa { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.5rem; }
   .acc > .acc-testa .acc-freccia { margin-left: auto; flex: none; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; color: var(--grey); transition: transform 0.15s; }
   .acc > .acc-testa .acc-freccia svg { width: 16px; height: 16px; }
