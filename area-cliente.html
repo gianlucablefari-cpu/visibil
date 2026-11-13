@@ -544,6 +544,24 @@
       <div class="app-content">
 
         <section class="tab-panel active" id="tab-home">
+          <div id="collegamenti-home" style="margin-bottom:1.5rem;">
+          <div class="row-card" id="link-sito" style="display:none;">
+            <div>
+              <a href="#" id="link-sito-url" target="_blank">Sito web</a>
+              <span class="site-status" id="link-sito-stato"></span>
+              <div style="font-size:0.75rem; color:var(--grey); margin-top:0.15rem; word-break:break-all;" id="link-sito-display"></div>
+              <div class="site-password" id="link-sito-password" style="display:none;"></div>
+            </div>
+          </div>
+          <div class="row-card" id="link-instagram" style="display:none;">
+            <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
+          </div>
+          <div id="strumenti-section" style="display:none; margin-top: 0.75rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Strumenti</div>
+            <div id="strumenti-lista" style="display:flex; flex-wrap:wrap; gap:0.6rem;"></div>
+          </div>
+
+          </div>
           <div class="links-card" id="links-card" style="display:none;">
             <div id="avanzamento-card" style="display:none; margin-bottom: 1.5rem;">
               <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
@@ -562,24 +580,17 @@
             <div id="progetti-avanzamento-list" style="display:flex; flex-direction:column; gap:0.85rem;"></div>
           </div>
 
-          <div class="row-card" id="link-sito" style="display:none;">
-            <div>
-              <a href="#" id="link-sito-url" target="_blank">Sito web</a>
-              <span class="site-status" id="link-sito-stato"></span>
-              <div style="font-size:0.75rem; color:var(--grey); margin-top:0.15rem; word-break:break-all;" id="link-sito-display"></div>
-              <div class="site-password" id="link-sito-password" style="display:none;"></div>
-            </div>
-          </div>
-          <div class="row-card" id="link-instagram" style="display:none;">
-            <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
-          </div>
-          <div id="strumenti-section" style="display:none; margin-top: 2rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1.25rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Strumenti</div>
-            <div id="strumenti-lista" style="display:flex; flex-wrap:wrap; gap:0.6rem;"></div>
+          <p id="progetti-vuoto" style="display:none; font-size:0.85rem; color:var(--grey);">Nessun progetto in corso al momento.</p>
+        </section>
+
+        <section class="tab-panel" id="tab-documenti">
+          <div class="tab-panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+            Documenti
           </div>
 
-          <div style="margin-top: 2rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1.25rem;">
-            <div class="section-label" style="margin-bottom: 0.75rem;">Materiali</div>
+          <div style="margin-bottom: 1.75rem;">
+            <div class="section-label" style="margin-bottom: 0.75rem;">File e materiali</div>
             <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
               <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
                 <div class="folder-icon">📁</div>
@@ -600,15 +611,7 @@
               </a>
             </div>
           </div>
-        </section>
-
-        <section class="tab-panel" id="tab-documenti">
-          <div class="tab-panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
-            Documenti
-          </div>
-
-          <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 0.25rem;">
+          <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
             <div class="section-label" style="margin-bottom: 0.5rem;">Archivio documenti</div>
             <div id="documenti-list"></div>
             <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
@@ -1659,6 +1662,8 @@
   function renderProgettiAvanzamento(progetti) {
     const section = document.getElementById('progetti-avanzamento-section');
     const list = document.getElementById('progetti-avanzamento-list');
+    const vuoto = document.getElementById('progetti-vuoto');
+    if (vuoto) vuoto.style.display = (!progetti || progetti.length === 0) ? 'block' : 'none';
     if (!progetti || progetti.length === 0) {
       section.style.display = 'none';
       list.innerHTML = '';
