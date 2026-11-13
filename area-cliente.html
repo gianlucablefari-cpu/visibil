@@ -1324,6 +1324,15 @@
     // Il cliente vede i risolti come Gianluca; quelli non ancora nel video caricato restano segnati "in arrivo"
     const risoltoVisto = c => c.stato === 'risolto';
     const inAttesa = c => c.stato === 'risolto' && !risoltoPerCliente(c);
+    // "In attesa di ok" con Va bene / No: dopo l'ultima risposta (di solito la spiegazione di Gianluca), altrimenti sul commento
+    const attesaOkQui = (c, isReply) => {
+      const root = isReply ? items.find(x => x.id === c.risposta_a) : c;
+      if (!root || root.stato !== 'in_attesa_ok') return '';
+      const risp = risposteDi(root.id);
+      const qui = isReply ? (risp.length && risp[risp.length - 1].id === c.id) : !risp.length;
+      if (!qui) return '';
+      return `<span class="vc-attesaok-tag vc-attesaok-dopo" title="Gianluca ha trovato una soluzione alternativa: serve il tuo ok">In attesa di ok</span>${!vcAdmin ? `<button type="button" class="vc-ok-si" data-id="${root.id}">Va bene</button><button type="button" class="vc-ok-no" data-id="${root.id}">No</button>` : ''}`;
+    };
     const itemHtml = (c, isReply) => {
       const mioRuolo = vcAdmin ? 'admin' : 'cliente';
       const puoModificare = c.autore === mioRuolo;
@@ -1333,7 +1342,7 @@
       <div class="vc-item${isReply ? ' vc-reply' : ''}${!isReply && c.fissato ? ' vc-fissato' : ''}${risoltoVisto(c) ? ' vc-fatto' : ''}${inAttesa(c) ? ' vc-attesa' : ''}${c.stato === 'in_attesa_ok' ? ' vc-attesa-ok' : ''}${box._aperti && box._aperti.has(c.id) ? ' vc-aperto' : ''}" data-id="${c.id}">
         <div class="vc-row">
           <div class="vc-left">${c.secondi != null ? `<span class="vc-ts-grp">${vcAdmin ? `<button type="button" class="vc-tc-copia" data-sec="${c.secondi}" title="Copia il timecode per Premiere (${tcPremiere(c.secondi)})" aria-label="Copia timecode">${IC.clock}</button>` : ''}<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">${IC.play} ${fmtSecondi(c.secondi)}</button></span>` : ''}</div>
-          <div class="vc-testo"><span class="vc-t">${escHtml(c.testo)}</span><button type="button" class="vc-piu" hidden title="Mostra tutto il commento" aria-label="Mostra o nascondi il resto del commento"></button> ${!vcAdmin && inAttesa(c) ? '<span class="vc-arrivo" title="Corretto da Gianluca: lo vedrai nel video con la prossima versione">in arrivo</span>' : ''}${c.ok_da ? `<span class="vc-ok-tag" title="Approvato"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>Ok ${c.ok_da === mioRuolo ? 'tuo' : c.ok_da === 'admin' ? 'di Gianluca' : 'del cliente'}</span>` : ''}<span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${vcAdmin ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span></span>${c.stato === 'in_attesa_ok' ? `<span class="vc-attesaok-tag vc-attesaok-dopo" title="Gianluca ha trovato una soluzione alternativa: serve il tuo ok">In attesa di ok</span>${!vcAdmin ? '<button type="button" class="vc-ok-si">Va bene</button><button type="button" class="vc-ok-no">No</button>' : ''}` : ''}</div>
+          <div class="vc-testo"><span class="vc-t">${escHtml(c.testo)}</span><button type="button" class="vc-piu" hidden title="Mostra tutto il commento" aria-label="Mostra o nascondi il resto del commento"></button> ${!vcAdmin && inAttesa(c) ? '<span class="vc-arrivo" title="Corretto da Gianluca: lo vedrai nel video con la prossima versione">in arrivo</span>' : ''}${c.ok_da ? `<span class="vc-ok-tag" title="Approvato"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>Ok ${c.ok_da === mioRuolo ? 'tuo' : c.ok_da === 'admin' ? 'di Gianluca' : 'del cliente'}</span>` : ''}<span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${vcAdmin ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span></span>${attesaOkQui(c, isReply)}</div>
           <div class="vc-side"><span class="vc-azioni">
             ${isReply ? '' : `<button type="button" class="vc-rispondi" title="Rispondi"><svg ${SVG_ST}><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg></button>`}
             ${c.autore !== mioRuolo ? `<button type="button" class="vc-ok-btn${c.ok_da ? ' attivo' : ''}" title="${c.ok_da ? 'Togli l\'ok' : 'Dai l\'ok (va bene)'}"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button>` : ''}
@@ -1591,7 +1600,7 @@
       ricarica();
     });
     box.querySelectorAll('.vc-ok-si, .vc-ok-no').forEach(b => b.onclick = async () => {
-      const id = b.closest('.vc-item').dataset.id; const si = b.classList.contains('vc-ok-si');
+      const id = b.dataset.id || b.closest('.vc-item').dataset.id; const si = b.classList.contains('vc-ok-si');
       if (!si && !confirm('La soluzione non va bene: il commento torna da sistemare. Puoi scrivere sotto il perché.')) return;
       const { error } = await client.rpc('video_commento_conferma', { p_id: id, p_ok: si });
       if (error) { alert('Errore: ' + error.message); return; }
