@@ -654,11 +654,9 @@
             <div class="account-msg" id="disdetta-msg" style="margin-top:0.4rem;"></div>
           </div>
 
-          <div class="step-card" id="pagamenti-dovuti-card" style="display:none; background: rgba(163,45,45,0.05); border-color: rgba(163,45,45,0.2);">
-            <div>
-              <div class="step-label" style="color:#A32D2D;">Pagamenti dovuti</div>
-              <div style="font-size: 0.9rem;" id="pagamenti-dovuti-testo"></div>
-            </div>
+          <div id="dasaldare-section" style="display:none; margin-bottom: 2.5rem;">
+            <div class="section-label">Da saldare</div>
+            <div id="dasaldare-list"></div>
           </div>
 
           <div class="section-label">Preventivi</div>
@@ -2014,12 +2012,6 @@
     renderPagamenti(false);
 
     const dovuti = (pagamenti || []).filter(p => p.stato === 'In attesa' || p.stato === 'Scaduto');
-    if (dovuti.length > 0) {
-      const totale = dovuti.reduce((sum, p) => sum + (Number(p.importo) || 0), 0);
-      const elenco = dovuti.map(p => p.descrizione).join(', ');
-      document.getElementById('pagamenti-dovuti-card').style.display = 'flex';
-      document.getElementById('pagamenti-dovuti-testo').textContent = `${elenco} — totale CHF ${totale}.–`;
-    }
 
     const haNotificheFatture = dovuti.length > 0 || (window.preventiviPendenti || []).length > 0;
     document.getElementById('dot-fatture-sidebar').classList.toggle('show', haNotificheFatture);
@@ -2218,7 +2210,29 @@
   }
 
   function renderPagamenti(mostraTutti) {
-    const pagamenti = window.pagamentiCache || [];
+    const tuttiPag = window.pagamentiCache || [];
+    const aperto = p => p.stato === 'In attesa' || p.stato === 'Scaduto';
+    // In alto "Da saldare" (in attesa / scaduti), nello storico solo il resto
+    const daSaldare = tuttiPag.filter(aperto);
+    const dsSez = document.getElementById('dasaldare-section'), dsList = document.getElementById('dasaldare-list');
+    if (dsSez) {
+      dsSez.style.display = daSaldare.length ? 'block' : 'none';
+      dsList.innerHTML = daSaldare.map(p => {
+        const data = p.data ? new Date(p.data).toLocaleDateString('it-CH', {day:'numeric', month:'long', year:'numeric'}) : '';
+        return `
+        <div class="row-card" style="flex-direction:column; align-items:stretch; gap:0.5rem;">
+          <div style="font-size:0.85rem; font-weight:600;">${escHtml(p.descrizione || '')}</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;">
+            <span style="font-size:0.8rem; color:var(--grey);">${data}${p.importo ? ` · CHF ${p.importo}.–` : ''}</span>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <span class="badge ${badgeClass(p.stato)}">${p.stato || ''}</span>
+              <a href="pagamento.html?id=${p.id}" target="_blank" class="progetto-salda">Salda</a>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+    const pagamenti = tuttiPag.filter(p => !aperto(p));
     const payList = document.getElementById('pagamenti-list');
     const toggleBtn = document.getElementById('pagamenti-toggle');
     payList.innerHTML = '';
