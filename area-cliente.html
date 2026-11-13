@@ -349,7 +349,8 @@
   .vc-stati { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
   .vc-attesaok-dopo { margin-left: 0.5rem; }
   .vc-attesaok-tag { display: inline-block; margin-right: 0.4rem; padding: 0.05rem 0.5rem; border-radius: 100px; background: #FFE8CC; color: #8A4B00; font-size: 0.68rem; font-weight: 700; white-space: nowrap; vertical-align: 1px; }
-  .vc-ok-si, .vc-ok-no { margin: 0 0.3rem 0 0; padding: 0.1rem 0.55rem; border-radius: 100px; font: inherit; font-size: 0.7rem; font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer; vertical-align: 1px; }
+  .vc-ok-si svg, .vc-ok-no svg { width: 15px; height: 15px; display: block; }
+  .vc-ok-si, .vc-ok-no { display: inline-flex; align-items: center; justify-content: center; margin: 0 0.3rem 0 0; padding: 0.3rem 0.55rem; border-radius: 100px; font: inherit; font-size: 0.7rem; font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer; vertical-align: 1px; }
   .vc-ok-si { background: #1d6b32; color: #fff; border: 1px solid #1d6b32; }
   .vc-ok-no { background: #fff; color: #A32D2D; border: 1px solid rgba(163,45,45,0.4); }
   .vc-item.vc-attesa-ok { background: #FFF8EE; border-radius: 6px; }
@@ -1331,7 +1332,7 @@
       const risp = risposteDi(root.id);
       const qui = isReply ? (risp.length && risp[risp.length - 1].id === c.id) : !risp.length;
       if (!qui) return '';
-      return `<span class="vc-attesaok-tag vc-attesaok-dopo" title="Gianluca ha trovato una soluzione alternativa: serve il tuo ok">In attesa di ok</span>${!vcAdmin ? `<button type="button" class="vc-ok-si" data-id="${root.id}">Va bene</button><button type="button" class="vc-ok-no" data-id="${root.id}">No</button>` : ''}`;
+      return `<span class="vc-attesaok-tag vc-attesaok-dopo" title="Gianluca ha trovato una soluzione alternativa: serve il tuo ok">In attesa di ok</span>${!vcAdmin ? `<button type="button" class="vc-ok-si" data-id="${root.id}" title="Va bene, approvo la soluzione" aria-label="Va bene"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button><button type="button" class="vc-ok-no" data-id="${root.id}" title="Non va bene" aria-label="Non va bene"><svg ${SVG_ST}><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path></svg></button>` : ''}`;
     };
     const itemHtml = (c, isReply) => {
       const mioRuolo = vcAdmin ? 'admin' : 'cliente';
@@ -1345,7 +1346,6 @@
           <div class="vc-testo"><span class="vc-t">${escHtml(c.testo)}</span><button type="button" class="vc-piu" hidden title="Mostra tutto il commento" aria-label="Mostra o nascondi il resto del commento"></button> ${!vcAdmin && inAttesa(c) ? '<span class="vc-arrivo" title="Corretto da Gianluca: lo vedrai nel video con la prossima versione">in arrivo</span>' : ''}${c.ok_da ? `<span class="vc-ok-tag" title="Approvato"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>Ok ${c.ok_da === mioRuolo ? 'tuo' : c.ok_da === 'admin' ? 'di Gianluca' : 'del cliente'}</span>` : ''}<span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${vcAdmin ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span></span>${attesaOkQui(c, isReply)}</div>
           <div class="vc-side"><span class="vc-azioni">
             ${isReply ? '' : `<button type="button" class="vc-rispondi" title="Rispondi"><svg ${SVG_ST}><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg></button>`}
-            ${c.autore !== mioRuolo ? `<button type="button" class="vc-ok-btn${c.ok_da ? ' attivo' : ''}" title="${c.ok_da ? 'Togli l\'ok' : 'Dai l\'ok (va bene)'}"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button>` : ''}
             ${vcAdmin && !isReply ? `<button type="button" class="vc-pin-btn${c.fissato ? ' attivo' : ''}" title="${c.fissato ? 'Non fissare più in alto' : 'Fissa in alto'}"><svg ${SVG_ST}><line x1="12" y1="16" x2="12" y2="4"></line><polyline points="6 10 12 4 18 10"></polyline><line x1="5" y1="20" x2="19" y2="20"></line></svg></button>` : ''}
             ${puoModificare ? `<button type="button" class="vc-mod" title="Modifica"><svg ${SVG_ST}><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>` : ''}
             ${vcAdmin && !isReply ? `<button type="button" class="vc-attesaok-btn${c.stato === 'in_attesa_ok' ? ' attivo' : ''}" title="${c.stato === 'in_attesa_ok' ? 'Togli «In attesa di ok»' : 'Soluzione alternativa: chiedi l\'ok al cliente'}"><svg ${SVG_ST}><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>` : ''}
