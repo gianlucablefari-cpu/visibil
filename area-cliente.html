@@ -509,10 +509,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             Pannello di controllo
           </button>
-          <button class="sidebar-nav-item" data-tab="progetti" onclick="return showTab('progetti', event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-            Progetti
-          </button>
           <button class="sidebar-nav-item" data-tab="documenti" onclick="return showTab('documenti', event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
             Cloud
@@ -544,6 +540,10 @@
       <div class="app-content">
 
         <section class="tab-panel active" id="tab-home">
+          <div id="progetti-avanzamento-section" style="display:none; margin-bottom: 1.75rem;">
+            <div class="section-label" style="margin-bottom: 0.75rem;">Progetti</div>
+            <div id="progetti-avanzamento-list" style="display:flex; flex-direction:column; gap:0.85rem;"></div>
+          </div>
           <div id="collegamenti-home" style="margin-bottom:1.5rem;">
           <div class="row-card" id="link-sito" style="display:none;">
             <div>
@@ -567,20 +567,6 @@
               <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
             </div>
           </div>
-        </section>
-
-        <section class="tab-panel" id="tab-progetti">
-          <div class="tab-panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-            Progetti
-          </div>
-
-          <div id="progetti-avanzamento-section" style="display:none; margin-bottom: 2rem;">
-            <div class="section-label" style="margin-bottom: 0.75rem;">Avanzamento</div>
-            <div id="progetti-avanzamento-list" style="display:flex; flex-direction:column; gap:0.85rem;"></div>
-          </div>
-
-          <p id="progetti-vuoto" style="display:none; font-size:0.85rem; color:var(--grey);">Nessun progetto in corso al momento.</p>
         </section>
 
         <section class="tab-panel" id="tab-documenti">
@@ -761,10 +747,6 @@
       <button class="bottom-nav-item active" data-tab="home" onclick="return showTab('home', event)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
         Pannello
-      </button>
-      <button class="bottom-nav-item" data-tab="progetti" onclick="return showTab('progetti', event)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-        Progetti
       </button>
       <button class="bottom-nav-item" data-tab="documenti" onclick="return showTab('documenti', event)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
@@ -1662,8 +1644,6 @@
   function renderProgettiAvanzamento(progetti) {
     const section = document.getElementById('progetti-avanzamento-section');
     const list = document.getElementById('progetti-avanzamento-list');
-    const vuoto = document.getElementById('progetti-vuoto');
-    if (vuoto) vuoto.style.display = (!progetti || progetti.length === 0) ? 'block' : 'none';
     if (!progetti || progetti.length === 0) {
       section.style.display = 'none';
       list.innerHTML = '';
