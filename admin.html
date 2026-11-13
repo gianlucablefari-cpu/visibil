@@ -2775,37 +2775,50 @@
 
   let vociPagamentoCounter = 0;
 
-  function aggiungiVocePagamento(desc, importo) {
+  // Voce: descrizione + (facoltativo) ore × CHF/ora = importo. Se ore e tariffa ci sono, l'importo si calcola da solo.
+  function aggiungiVocePagamento(desc, importo, ore, tariffa) {
     vociPagamentoCounter++;
     const id = vociPagamentoCounter;
     const div = document.createElement('div');
     div.id = `voce-pg-${id}`;
-    div.style.cssText = 'display:flex; gap:0.5rem; margin-top:0.5rem; align-items:center;';
+    div.className = 'voce-pg';
+    div.style.cssText = 'display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.6rem; align-items:center; padding-bottom:0.6rem; border-bottom:1px dashed rgba(0,0,0,0.08);';
+    const v = x => x != null && x !== '' ? x : '';
     div.innerHTML = `
-      <input type="text" placeholder="Descrizione voce" value="${desc || ''}" style="flex:2;" oninput="ricalcolaTotalePagamento()">
-      <input type="number" placeholder="CHF" value="${importo != null ? importo : ''}" style="flex:1;" oninput="ricalcolaTotalePagamento()">
-      <button type="button" onclick="document.getElementById('voce-pg-${id}').remove(); ricalcolaTotalePagamento();" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; padding:0.5rem 0.7rem; flex-shrink:0;">✕</button>
+      <input type="text" class="vp-desc" placeholder="Descrizione voce" value="${vcEsc(desc || '').replace(/"/g, '&quot;')}" style="flex:1 1 100%;" oninput="ricalcolaTotalePagamento()">
+      <input type="number" class="vp-ore" placeholder="Ore" min="0" step="0.25" value="${v(ore)}" style="flex:1 1 70px; min-width:0;" oninput="ricalcolaVocePagamento(this)">
+      <span style="color:var(--grey);">×</span>
+      <input type="number" class="vp-tariffa" placeholder="CHF/ora" min="0" step="1" value="${v(tariffa)}" style="flex:1 1 80px; min-width:0;" oninput="ricalcolaVocePagamento(this)">
+      <span style="color:var(--grey);">=</span>
+      <input type="number" class="vp-importo" placeholder="CHF" value="${importo != null ? importo : ''}" style="flex:1 1 90px; min-width:0; font-weight:600;" oninput="ricalcolaTotalePagamento()">
+      <button type="button" onclick="document.getElementById('voce-pg-${id}').remove(); ricalcolaTotalePagamento();" title="Elimina voce" style="background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:var(--grey); padding:0.4rem 0.6rem; cursor:pointer; width:auto; margin:0;">✕</button>
     `;
     document.getElementById('pg-voci-lista').appendChild(div);
     ricalcolaTotalePagamento();
   }
 
+  function ricalcolaVocePagamento(el) {
+    const row = el.closest('.voce-pg');
+    const o = row.querySelector('.vp-ore').value, t = row.querySelector('.vp-tariffa').value;
+    if (o !== '' && t !== '') row.querySelector('.vp-importo').value = Math.round(Number(o) * Number(t) * 100) / 100;
+    ricalcolaTotalePagamento();
+  }
+
   function ricalcolaTotalePagamento() {
     let totale = 0;
-    document.querySelectorAll('#pg-voci-lista > div').forEach(row => {
-      const importoInput = row.querySelectorAll('input')[1];
-      totale += Number(importoInput.value) || 0;
-    });
-    document.getElementById('pg-totale').textContent = totale;
+    document.querySelectorAll('#pg-voci-lista > .voce-pg').forEach(row => { totale += Number(row.querySelector('.vp-importo').value) || 0; });
+    document.getElementById('pg-totale').textContent = Math.round(totale * 100) / 100;
   }
 
   function raccogliVociPagamento() {
     const voci = [];
-    document.querySelectorAll('#pg-voci-lista > div').forEach(row => {
-      const inputs = row.querySelectorAll('input');
-      const descrizione = inputs[0].value;
-      const importo = Number(inputs[1].value) || 0;
-      if (descrizione || importo) voci.push({ descrizione, importo });
+    document.querySelectorAll('#pg-voci-lista > .voce-pg').forEach(row => {
+      const descrizione = row.querySelector('.vp-desc').value;
+      const importo = Number(row.querySelector('.vp-importo').value) || 0;
+      const ore = row.querySelector('.vp-ore').value, tariffa = row.querySelector('.vp-tariffa').value;
+      const voce = { descrizione, importo };
+      if (ore !== '' && tariffa !== '') { voce.ore = Number(ore); voce.tariffa = Number(tariffa); }
+      if (descrizione || importo) voci.push(voce);
     });
     return voci;
   }
@@ -2849,7 +2862,7 @@
     document.getElementById('pg-genera-link').checked = false;
 
     document.getElementById('pg-voci-lista').innerHTML = '';
-    (p.voci || []).forEach(v => aggiungiVocePagamento(v.descrizione, v.importo));
+    (p.voci || []).forEach(v => aggiungiVocePagamento(v.descrizione, v.importo, v.ore, v.tariffa));
     if (!p.voci || p.voci.length === 0) aggiungiVocePagamento(p.descrizione, p.importo);
     ricalcolaTotalePagamento();
 
