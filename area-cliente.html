@@ -220,6 +220,8 @@
   .vv-icona { font-size: 0.7rem; color: var(--ink); }
   .vv-nome { font-size: 0.9rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .vv-meta { font-size: 0.75rem; color: var(--grey); white-space: nowrap; }
+  .vv-ultima { font-size: 0.72rem; color: #b0b0b0; white-space: nowrap; }
+  @media (max-width: 640px) { .vv-ultima { display: none; } }
   .vv-freccia::after { content: '˅'; color: var(--grey); }
   .video-voce[open] .vv-freccia::after { content: '˄'; }
   .video-voce-corpo { padding: 0 1rem 0.5rem; border-top: 1px solid rgba(0,0,0,0.06); }
@@ -1261,6 +1263,22 @@
     { const vv = box.closest('.video-voce'); const m = vv && vv.querySelector('.vv-meta');
       if (m) { const its = tutti.filter(c => c.video_id === box.dataset.video && !c.risposta_a); const ris = its.filter(c => c.stato === 'risolto').length;
         const consegnato = vv.dataset.stato === 'consegnato';
+      // Ultima modifica: commento, risposta, spunta, nuova versione o revisione inviata — e chi l'ha fatta
+      const eventi = [];
+      tutti.filter(c => c.video_id === box.dataset.video).forEach(c => {
+        if (c.created_at) eventi.push([c.created_at, c.autore]);
+        if (c.risolto_il) eventi.push([c.risolto_il, c.risolto_da || 'admin']);
+      });
+      if (box.dataset.agg) eventi.push([box.dataset.agg, 'admin']);
+      if (box.dataset.finita) eventi.push([box.dataset.finita, 'cliente']);
+      const ultimo = eventi.filter(e => !isNaN(new Date(e[0]))).sort((x, y) => new Date(y[0]) - new Date(x[0]))[0];
+      let um = vv.querySelector('.vv-ultima');
+      if (!um) { um = document.createElement('span'); um.className = 'vv-ultima'; m.after(um); }
+      if (ultimo) {
+        const d = new Date(ultimo[0]);
+        const chi = ultimo[1] === 'admin' ? (vcAdmin ? 'tu' : 'Gianluca') : (vcAdmin ? 'cliente' : 'tu');
+        um.textContent = 'Ultima modifica il ' + d.toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit' }) + ' alle ' + d.toLocaleTimeString('it-CH', { hour: '2-digit', minute: '2-digit' }) + ' (' + chi + ')';
+      } else um.textContent = '';
       m.textContent = [its.length ? its.length + (its.length === 1 ? ' commento' : ' commenti') : '', ris ? ris + ' risolti' : '', box.dataset.finita ? 'revisione inviata' : '', consegnato ? 'consegnato' : ''].filter(Boolean).join(' · '); } }
     const videoId = box.dataset.video;
     const listaPrima = box.querySelector('.vc-lista');
