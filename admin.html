@@ -3741,5 +3741,111 @@
   })();
 </script>
 <script src="partials/stato-login.js"></script>
+<style>
+  .acc > .acc-testa { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 0.5rem; }
+  .acc > .acc-testa .acc-freccia { margin-left: auto; flex: none; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 5px; color: var(--grey); transition: transform 0.15s; }
+  .acc > .acc-testa .acc-freccia svg { width: 16px; height: 16px; }
+  .acc > .acc-testa:hover .acc-freccia { color: var(--ink); background: rgba(26,26,230,0.06); }
+  .acc.acc-chiuso > .acc-testa .acc-freccia { transform: rotate(-90deg); }
+  .acc.acc-chiuso > :not(.acc-testa) { display: none !important; }
+  .acc.acc-chiuso > .acc-testa { margin-bottom: 0 !important; }
+  .acc-nuovo { margin-top: 1.25rem; padding: 1rem; border: 1px dashed rgba(26,26,230,0.35); border-radius: 8px; }
+  .acc-nuovo > .acc-testa { color: var(--ink); }
+</style>
+<script>
+  // Box a fisarmonica nei tab dell'admin: si aprono/chiudono cliccando il titolo (scelta ricordata).
+  // Nei sotto-tab dei documenti gli elenchi stanno sopra, il modulo "Nuovo …" sotto (chiuso finché non serve).
+  (function () {
+    const FRECCIA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+    const chiave = el => 'acc:' + (el.dataset.acc || (el.querySelector('.acc-testa') || el).textContent.replace(/\s+/g, ' ').trim().slice(0, 60));
+    function rendiAcc(box, testa, chiusoDefault) {
+      if (!box || !testa || box.classList.contains('acc')) return;
+      box.classList.add('acc');
+      testa.classList.add('acc-testa');
+      const f = document.createElement('span'); f.className = 'acc-freccia'; f.innerHTML = FRECCIA;
+      testa.appendChild(f);
+      let st = null; try { st = localStorage.getItem(chiave(box)); } catch (e) {}
+      if (st === '1' || (st === null && chiusoDefault)) box.classList.add('acc-chiuso');
+      testa.addEventListener('click', e => {
+        if (e.target.closest('button:not(.acc-freccia), a, input, select, textarea')) return;
+        box.classList.toggle('acc-chiuso');
+        try { localStorage.setItem(chiave(box), box.classList.contains('acc-chiuso') ? '1' : '0'); } catch (e2) {}
+      });
+    }
+    const apri = box => { if (box && box.classList.contains('acc-chiuso')) box.classList.remove('acc-chiuso'); };
+    const wrapDa = (nodi, cls) => { const w = document.createElement('div'); w.className = cls || ''; nodi[0].parentNode.insertBefore(w, nodi[0]); nodi.forEach(n => w.appendChild(n)); return w; };
+    const eBox = n => n.nodeType === 1 && n.tagName === 'DIV' && /var\(--surface\)/.test(n.getAttribute('style') || '');
+
+    // 1) Sotto-tab documenti
+    document.querySelectorAll('.sub-doc-panel').forEach(panel => {
+      if (panel.id === 'subpanel-report') return;
+      const figli = [...panel.childNodes];
+      // modulo "Nuovo …" = dal titolo del modulo fino al primo box elenco
+      const tit = panel.querySelector(':scope > [id$="form-titolo"]');
+      if (tit) {
+        const da = figli.indexOf(tit);
+        let a = figli.findIndex((n, k) => k > da && eBox(n));
+        if (a < 0) a = figli.length;
+        const form = wrapDa(figli.slice(da, a), 'acc-nuovo');
+        form.dataset.acc = panel.id + ':nuovo';
+        panel.appendChild(form);
+        rendiAcc(form, tit, true);
+      }
+      // documento: "Documenti esistenti" sopra, modulo (già in un contenitore) sotto
+      const titDoc = panel.querySelector('#doc-form-titolo-label');
+      if (titDoc) {
+        const cont = titDoc.parentElement;
+        const lbl = [...panel.children].find(x => x.classList.contains('section-label'));
+        if (lbl) {
+          const fs = [...panel.childNodes]; const i0 = fs.indexOf(lbl), i1 = fs.indexOf(cont);
+          const lista = wrapDa(fs.slice(i0, i1));
+          lista.style.cssText = 'background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem;';
+          rendiAcc(lista, lbl, false);
+        }
+        cont.classList.add('acc-nuovo'); cont.dataset.acc = panel.id + ':nuovo'; cont.style.borderTop = '';
+        rendiAcc(cont, titDoc, true);
+      }
+      // elenchi e altri box
+      [...panel.children].filter(eBox).forEach(b => rendiAcc(b, b.firstElementChild, false));
+      const va = panel.querySelector('#vid-admin'); if (va) rendiAcc(va, va.firstElementChild, false);
+    });
+
+    // apre il modulo quando si modifica un elemento o si preme "+ Nuovo …"
+    document.addEventListener('click', e => {
+      const t = e.target.closest('[onclick*="NelForm"], [onclick*="resetForm"]');
+      if (!t) return;
+      const panel = t.closest('.sub-doc-panel'); if (!panel) return;
+      setTimeout(() => { const f = panel.querySelector('.acc-nuovo'); apri(f); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+    }, true);
+    document.querySelectorAll('[id$="form-titolo"], #doc-form-titolo-label').forEach(tit => {
+      new MutationObserver(() => { if (/^Modifica/i.test(tit.textContent.trim())) apri(tit.closest('.acc')); }).observe(tit, { childList: true, characterData: true, subtree: true });
+    });
+
+    // 2) Comunicazioni: cronologia sopra, "Nuova comunicazione" sotto
+    const pc = document.getElementById('panel-comunicazioni');
+    if (pc) {
+      const card = pc.querySelector('.card');
+      const lblNuova = [...card.children].find(x => x.classList.contains('section-label') && /Nuova comunicazione/.test(x.textContent));
+      const cron = [...card.children].find(x => x.querySelector && x.querySelector(':scope > div > .section-label') && /Cronologia/.test(x.textContent));
+      if (lblNuova && cron) {
+        const fs = [...card.childNodes]; const nuova = wrapDa(fs.slice(fs.indexOf(lblNuova), fs.indexOf(cron)), 'acc-nuovo');
+        nuova.dataset.acc = 'com:nuova';
+        cron.style.borderTop = ''; cron.style.marginTop = '1rem'; cron.style.paddingTop = '0';
+        card.appendChild(nuova);
+        rendiAcc(cron, cron.firstElementChild, false);
+        rendiAcc(nuova, lblNuova, false);
+      }
+    }
+
+    // 3) Home e altri tab: ogni box che inizia con un titolo diventa richiudibile
+    ['panel-home', 'panel-da-fare', 'panel-impostazioni'].forEach(id => {
+      const p = document.getElementById(id); if (!p) return;
+      p.querySelectorAll('div').forEach(d => {
+        const f = d.firstElementChild;
+        if (f && f.classList && f.classList.contains('section-label') && d.children.length > 1 && !d.closest('.acc') && d !== p) rendiAcc(d, f, /broadcast|^Account/i.test(f.textContent.trim()));
+      });
+    });
+  })();
+</script>
 </body>
 </html>
