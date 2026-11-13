@@ -326,17 +326,6 @@
       <textarea id="c-avanzamento" placeholder="es. In attesa dei contenuti dal cliente, consegna prevista per fine mese" style="min-height:180px;"></textarea>
 
 
-      <div id="vid-admin" style="margin:1.5rem 0 1rem;">
-        <label style="margin-bottom:0.3rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>Video</label>
-        <p class="desc" style="margin-bottom:0.6rem;">Video Dropbox mostrati sotto la nota. Cambiare il link di un video non fa perdere i commenti (restano legati al codice del video). Salvataggio con il pulsante qui sotto.</p>
-        <div id="vid-lista"></div>
-        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;">
-          <button type="button" class="secondary btn-small" onclick="vidAggiungi()">+ Aggiungi video</button>
-          <button type="button" class="btn-small" onclick="vidSalva()">Salva video</button>
-        </div>
-        <div class="msg" id="vid-msg"></div>
-      </div>
-
       <button onclick="salvaDaFare()">Salva</button>
       <div class="msg" id="cliente-msg-3"></div>
     </div>
@@ -752,6 +741,17 @@
           <div class="section-label" style="margin-top:0;">📋 Progetti/fasi di questo cliente</div>
           <div id="pr-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
           <button type="button" id="pr-nuovo-btn" class="secondary" onclick="resetFormProgetto()" style="width:100%; margin-top:0.75rem; display:none;">+ Nuovo progetto</button>
+        </div>
+
+        <div id="vid-admin" style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:1rem;">
+          <label style="margin-bottom:0.3rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>Video</label>
+          <p class="desc" style="margin-bottom:0.6rem;">Video Dropbox del cliente: scegli per ognuno il progetto, nell'area cliente compare dentro quel progetto. Cambiare il link di un video non fa perdere i commenti (restano legati al codice del video). Salvataggio con il pulsante qui sotto.</p>
+          <div id="vid-lista"></div>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;">
+            <button type="button" class="secondary btn-small" onclick="vidAggiungi()">+ Aggiungi video</button>
+            <button type="button" class="btn-small" onclick="vidSalva()">Salva video</button>
+          </div>
+          <div class="msg" id="vid-msg"></div>
         </div>
 
         <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:1rem;">
