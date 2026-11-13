@@ -221,6 +221,11 @@
   .vv-nome { font-size: 0.9rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .vv-meta { font-size: 0.75rem; color: var(--grey); white-space: nowrap; }
   .vv-ultima { font-size: 0.72rem; color: #b0b0b0; white-space: nowrap; }
+  .video-voce-testa .vv-nome { flex: 0 0 auto; max-width: 55%; }
+  .video-voce-testa .vv-ultima { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .video-voce-testa .vv-meta { margin-left: auto; }
+  .vv-nuova { flex: none; padding: 0.12rem 0.5rem; border-radius: 100px; background: #D93025; color: #fff; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.05em; white-space: nowrap; animation: vvPulse 1.6s ease-in-out infinite; }
+  @keyframes vvPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(217,48,37,0.45); } 50% { box-shadow: 0 0 0 5px rgba(217,48,37,0); } }
   @media (max-width: 640px) { .vv-ultima { display: none; } }
   .vv-freccia::after { content: '˅'; color: var(--grey); }
   .video-voce[open] .vv-freccia::after { content: '˄'; }
@@ -1272,8 +1277,7 @@
       if (box.dataset.agg) eventi.push([box.dataset.agg, 'admin']);
       if (box.dataset.finita) eventi.push([box.dataset.finita, 'cliente']);
       const ultimo = eventi.filter(e => !isNaN(new Date(e[0]))).sort((x, y) => new Date(y[0]) - new Date(x[0]))[0];
-      let um = vv.querySelector('.vv-ultima');
-      if (!um) { um = document.createElement('span'); um.className = 'vv-ultima'; m.after(um); }
+      const um = vv.querySelector('.vv-ultima');
       if (ultimo) {
         const d = new Date(ultimo[0]);
         const chi = ultimo[1] === 'admin' ? (vcAdmin ? 'tu' : 'Gianluca') : (vcAdmin ? 'cliente' : 'tu');
@@ -1787,7 +1791,10 @@
     const corpo = videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false, v.nome || '', v.aggiornato_il || '', { id: v.id, finita: v.revisione_finita_il || '' });
     if (!corpo) return '';
     const aperto = window.videoAperti.has(v.id) || (apertoDefault && !window.videoAperti.has('chiusi:' + v.id));
-    return `<details class="video-voce" data-vid="${v.id}" data-stato="${v.stato || 'in_lavorazione'}"${aperto ? ' open' : ''}><summary class="video-voce-testa"><span class="vv-icona">▶</span><span class="vv-nome">${escHtml(v.nome || 'Video')}</span><span class="vv-meta"></span><span class="vv-freccia"></span></summary><div class="video-voce-corpo">${corpo}</div></details>`;
+        // "NUOVA VERSIONE!" finché il cliente non apre il video dopo il cambio di file
+    const nuova = !!v.aggiornato_il && (!v.visto_cliente_il || new Date(v.visto_cliente_il) < new Date(v.aggiornato_il));
+    const badge = !nuova ? '' : window.isPreviewMode ? '<span class="vv-nuova" title="Il cliente non ha ancora aperto questa versione">NUOVA VERSIONE · non ancora vista</span>' : '<span class="vv-nuova">NUOVA VERSIONE!</span>';
+    return `<details class="video-voce" data-vid="${v.id}" data-stato="${v.stato || 'in_lavorazione'}"${nuova ? ' data-nuova="1"' : ''}${aperto ? ' open' : ''}><summary class="video-voce-testa"><span class="vv-icona">▶</span><span class="vv-nome">${escHtml(v.nome || 'Video')}</span>${badge}<span class="vv-ultima"></span><span class="vv-meta"></span><span class="vv-freccia"></span></summary><div class="video-voce-corpo">${corpo}</div></details>`;
   }
   function renderVideoSezione() {
     const sez = document.getElementById('video-section'), list = document.getElementById('video-list');
@@ -1809,6 +1816,11 @@
       box.style.display = vv.length ? 'flex' : 'none';
     });
     document.querySelectorAll('.video-voce').forEach(d => d.addEventListener('toggle', () => {
+      if (d.open && d.dataset.nuova && !window.isPreviewMode) {
+        delete d.dataset.nuova;
+        const b = d.querySelector('.vv-nuova'); if (b) b.remove();
+        client.rpc('video_visto', { p_id: d.dataset.vid }).then(({ data }) => { const v = (window.videoCliente || []).find(x => x.id === d.dataset.vid); if (v && data) v.visto_cliente_il = data; });
+      }
       if (d.open) { window.videoAperti.add(d.dataset.vid); window.videoAperti.delete('chiusi:' + d.dataset.vid); }
       else { window.videoAperti.delete(d.dataset.vid); window.videoAperti.add('chiusi:' + d.dataset.vid); }
     }));
