@@ -342,6 +342,13 @@
   .vc-mostra-risolti:hover { color: #1d6b32; border-color: #1d6b32; background: #f3faf5; }
   .vc-stati.vc-stati-fondo { margin: 0.9rem 0 0; display: flex; justify-content: center; }
   .vc-stati { margin-left: auto; display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
+  .vc-attesaok-tag { display: inline-block; margin-right: 0.4rem; padding: 0.05rem 0.5rem; border-radius: 100px; background: #FFE8CC; color: #8A4B00; font-size: 0.68rem; font-weight: 700; white-space: nowrap; vertical-align: 1px; }
+  .vc-ok-si, .vc-ok-no { margin: 0 0.3rem 0 0; padding: 0.1rem 0.55rem; border-radius: 100px; font: inherit; font-size: 0.7rem; font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer; vertical-align: 1px; }
+  .vc-ok-si { background: #1d6b32; color: #fff; border: 1px solid #1d6b32; }
+  .vc-ok-no { background: #fff; color: #A32D2D; border: 1px solid rgba(163,45,45,0.4); }
+  .vc-item.vc-attesa-ok { background: #FFF8EE; border-radius: 6px; }
+  .vc-azioni .vc-attesaok-btn.attivo { color: #fff; background: #C77700; border-color: #C77700; }
+  .vc-stato-attesaok { display: inline-flex; align-items: center; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: #FFE8CC; color: #8A4B00; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
   .vc-stato-attesa { display: inline-flex; align-items: center; height: 28px; padding: 0 0.65rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.75rem; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; }
   .vc-arrivo { display: inline-block; margin-right: 0.4rem; padding: 0.05rem 0.45rem; border-radius: 100px; background: #fff4de; color: #7a4e00; font-size: 0.68rem; font-weight: 600; white-space: nowrap; text-decoration: none; }
   .vc-item.vc-attesa > .vc-row .vc-fatto-btn.attivo { background: #b7791f; border-color: #b7791f; }
@@ -1317,15 +1324,16 @@
       const puoEliminare = vcAdmin || c.autore === 'cliente';
       const figli = isReply ? [] : risposteDi(c.id);
       return `
-      <div class="vc-item${isReply ? ' vc-reply' : ''}${!isReply && c.fissato ? ' vc-fissato' : ''}${risoltoVisto(c) ? ' vc-fatto' : ''}${inAttesa(c) ? ' vc-attesa' : ''}${box._aperti && box._aperti.has(c.id) ? ' vc-aperto' : ''}" data-id="${c.id}">
+      <div class="vc-item${isReply ? ' vc-reply' : ''}${!isReply && c.fissato ? ' vc-fissato' : ''}${risoltoVisto(c) ? ' vc-fatto' : ''}${inAttesa(c) ? ' vc-attesa' : ''}${c.stato === 'in_attesa_ok' ? ' vc-attesa-ok' : ''}${box._aperti && box._aperti.has(c.id) ? ' vc-aperto' : ''}" data-id="${c.id}">
         <div class="vc-row">
           <div class="vc-left">${c.secondi != null ? `<span class="vc-ts-grp">${vcAdmin ? `<button type="button" class="vc-tc-copia" data-sec="${c.secondi}" title="Copia il timecode per Premiere (${tcPremiere(c.secondi)})" aria-label="Copia timecode">${IC.clock}</button>` : ''}<button type="button" class="vc-ts" data-sec="${c.secondi}" title="Vai a questo punto del video">${IC.play} ${fmtSecondi(c.secondi)}</button></span>` : ''}</div>
-          <div class="vc-testo"><span class="vc-t">${escHtml(c.testo)}</span><button type="button" class="vc-piu" hidden title="Mostra tutto il commento" aria-label="Mostra o nascondi il resto del commento"></button> ${!vcAdmin && inAttesa(c) ? '<span class="vc-arrivo" title="Corretto da Gianluca: lo vedrai nel video con la prossima versione">in arrivo</span>' : ''}${c.ok_da ? `<span class="vc-ok-tag" title="Approvato"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>Ok ${c.ok_da === mioRuolo ? 'tuo' : c.ok_da === 'admin' ? 'di Gianluca' : 'del cliente'}</span>` : ''}<span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${vcAdmin ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span></span></div>
+          <div class="vc-testo">${c.stato === 'in_attesa_ok' ? `<span class="vc-attesaok-tag" title="Gianluca ha trovato una soluzione alternativa: serve il tuo ok">In attesa di ok</span>${!vcAdmin && !simula ? '<button type="button" class="vc-ok-si">Va bene</button><button type="button" class="vc-ok-no">No</button>' : ''}` : ''}<span class="vc-t">${escHtml(c.testo)}</span><button type="button" class="vc-piu" hidden title="Mostra tutto il commento" aria-label="Mostra o nascondi il resto del commento"></button> ${!vcAdmin && inAttesa(c) ? '<span class="vc-arrivo" title="Corretto da Gianluca: lo vedrai nel video con la prossima versione">in arrivo</span>' : ''}${c.ok_da ? `<span class="vc-ok-tag" title="Approvato"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>Ok ${c.ok_da === mioRuolo ? 'tuo' : c.ok_da === 'admin' ? 'di Gianluca' : 'del cliente'}</span>` : ''}<span class="vc-info"><span class="${c.autore === 'admin' ? 'vc-autore-admin' : ''}">${vcAdmin ? (c.autore === 'admin' ? 'Tu' : 'Cliente') : (c.autore === 'admin' ? 'Gianluca' : 'Tu')}</span><span class="vc-when" tabindex="0" data-tip="${new Date(c.created_at).toLocaleString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}">${IC.clock}</span></span></div>
           <div class="vc-side"><span class="vc-azioni">
             ${isReply ? '' : `<button type="button" class="vc-rispondi" title="Rispondi"><svg ${SVG_ST}><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg></button>`}
             ${c.autore !== mioRuolo ? `<button type="button" class="vc-ok-btn${c.ok_da ? ' attivo' : ''}" title="${c.ok_da ? 'Togli l\'ok' : 'Dai l\'ok (va bene)'}"><svg ${SVG_ST}><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button>` : ''}
             ${vcAdmin && !isReply ? `<button type="button" class="vc-pin-btn${c.fissato ? ' attivo' : ''}" title="${c.fissato ? 'Non fissare più in alto' : 'Fissa in alto'}"><svg ${SVG_ST}><line x1="12" y1="16" x2="12" y2="4"></line><polyline points="6 10 12 4 18 10"></polyline><line x1="5" y1="20" x2="19" y2="20"></line></svg></button>` : ''}
             ${puoModificare ? `<button type="button" class="vc-mod" title="Modifica"><svg ${SVG_ST}><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>` : ''}
+            ${vcAdmin && !isReply ? `<button type="button" class="vc-attesaok-btn${c.stato === 'in_attesa_ok' ? ' attivo' : ''}" title="${c.stato === 'in_attesa_ok' ? 'Togli «In attesa di ok»' : 'Soluzione alternativa: chiedi l\'ok al cliente'}"><svg ${SVG_ST}><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></button>` : ''}
             ${vcAdmin ? `<button type="button" class="vc-fatto-btn${risoltoVisto(c) ? ' attivo' : ''}" title="${inAttesa(c) ? 'Fatto: il cliente lo vede con «in arrivo» finché non carichi la nuova versione. Clicca per riaprire' : risoltoVisto(c) ? 'Fatto: clicca per riaprire' : 'Segna come fatto'}"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg></button>` : ''}
             ${puoEliminare ? `<button type="button" class="vc-del" title="Elimina"><svg ${SVG_ST}><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>` : ''}
           </span></div>
@@ -1375,6 +1383,7 @@
     // Stato delle correzioni: quanti commenti principali sono segnati come fatti
     const nRisolti = radici.filter(risoltoVisto).length;
     const nAttesa = radici.filter(inAttesa).length;
+    const nAttesaOk = radici.filter(c => c.stato === 'in_attesa_ok').length;
     const statoUI = !radici.length ? '' : nRisolti === radici.length
       ? `<span class="vc-stato-tutti vc-stato-ok" title="Tutti i commenti sono stati sistemati"><svg ${SVG_ST}><polyline points="20 6 9 17 4 12"></polyline></svg>Tutti i commenti risolti</span>`
       : nRisolti ? `<span class="vc-stato-tutti" title="Commenti sistemati">${nRisolti} di ${radici.length} risolti</span>` : '';
@@ -1392,7 +1401,8 @@
     const pillaInAlto = revFinita && items.length && revisioneUI;
     const copiaTuttiUI = vcAdmin && radici.some(c => c.secondi != null) ? `<button type="button" class="vc-copia-tutti" title="Copia l'elenco dei timecode da sistemare, per Premiere"><svg ${SVG_ST}><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>Timecode</span></button>` : '';
     const testata = items.length ? `<div class="vc-title">${toggleUI}${pillaInAlto ? `<span class="vc-rev-centro">${revisioneUI}</span>` : ''}<span class="vc-title-dx">${(perMinuto ? items.some(x => x.secondi != null) : radici.length > 1) ? `<span class="vc-nav"><button type="button" class="vc-nav-prev" title="${perMinuto ? 'Commento precedente (per minuto)' : 'Commento precedente nell\'elenco'}" aria-label="Commento precedente"><svg ${SVG_ST}><polygon points="19 20 9 12 19 4 19 20" fill="currentColor"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg></button><button type="button" class="vc-nav-next" title="${perMinuto ? 'Commento successivo (per minuto)' : 'Commento successivo nell\'elenco'}" aria-label="Commento successivo"><svg ${SVG_ST}><polygon points="5 4 15 12 5 20 5 4" fill="currentColor"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg></button></span>` : ''}${ordinaUI}${copiaTuttiUI}</span>${nRisoltiChiusi ? `<button type="button" class="vc-mostra-risolti${nascondiRisolti ? '' : ' attivo'}" title="${nascondiRisolti ? 'Mostra i commenti risolti' : 'Nascondi i commenti risolti'}"><svg ${SVG_ST}>${nascondiRisolti ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>' : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>'}</svg>Risolti (${nRisoltiChiusi})</button>` : ''}</div>` : '';
-    const statiFondo = statoUI || attesaUI ? `<div class="vc-stati vc-stati-fondo">${statoUI}${attesaUI}</div>` : '';
+    const attesaOkUI = nAttesaOk ? `<span class="vc-stato-attesaok">${nAttesaOk} in attesa di ok</span>` : '';
+    const statiFondo = statoUI || attesaUI || attesaOkUI ? `<div class="vc-stati vc-stati-fondo">${statoUI}${attesaOkUI}${attesaUI}</div>` : '';
     const avviso = box._avviso === 'ok' ? '<div class="vc-rev-nota">Messaggio inviato: Gianluca è stato avvisato e inizierà con le correzioni.</div>'
       : box._avviso === 'errore' ? '<div class="vc-rev-nota vc-rev-err">Revisione segnata, ma il messaggio a Gianluca non è partito: scrivigli da "Contattami".</div>' : '';
     const revBlocco = revisioneUI ? `<div class="vc-rev-wrap">${revisioneUI}</div>` : '';
@@ -1560,6 +1570,21 @@
       if (error) { alert('Errore: ' + error.message); return; }
       const agg = await fetchVideoCommenti(true);
       document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg));
+    });
+    const ricarica = async () => { const agg = await fetchVideoCommenti(true); document.querySelectorAll('.video-comments[data-video="' + videoId + '"]').forEach(x => renderVideoComments(x, agg)); };
+    box.querySelectorAll('.vc-attesaok-btn').forEach(b => b.onclick = async () => {
+      const id = b.closest('.vc-item').dataset.id; const c = items.find(x => x.id === id);
+      const on = !(c && c.stato === 'in_attesa_ok');
+      const { error } = await client.from('video_commenti').update(on ? { stato: 'in_attesa_ok', risolto_il: null, risolto_da: null } : { stato: null }).eq('id', id);
+      if (error) { alert('Errore: ' + error.message); return; }
+      ricarica();
+    });
+    box.querySelectorAll('.vc-ok-si, .vc-ok-no').forEach(b => b.onclick = async () => {
+      const id = b.closest('.vc-item').dataset.id; const si = b.classList.contains('vc-ok-si');
+      if (!si && !confirm('La soluzione non va bene: il commento torna da sistemare. Puoi scrivere sotto il perché.')) return;
+      const { error } = await client.rpc('video_commento_conferma', { p_id: id, p_ok: si });
+      if (error) { alert('Errore: ' + error.message); return; }
+      ricarica();
     });
     box.querySelectorAll('.vc-pin-btn').forEach(b => b.onclick = async () => {
       const id = b.closest('.vc-item').dataset.id;
