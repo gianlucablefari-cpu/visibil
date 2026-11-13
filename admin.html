@@ -1077,6 +1077,12 @@
   }
 
   // Copia i timecode (HH:MM:SS:FF) dei commenti con minuto non ancora fatti, per Premiere
+  function copiaLinkVideo(chiave, btn) {
+    const url = 'https://vsbl.ch/area-cliente.html?video=' + encodeURIComponent(chiave);
+    const fatto = () => { const t = btn.textContent; btn.textContent = '✓ Copiato'; setTimeout(() => { btn.textContent = t; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(fatto, () => prompt('Copia il link:', url));
+    else prompt('Copia il link:', url);
+  }
   async function copiaTimecodeVideo(vid, btn) {
     const p2 = x => String(x).padStart(2, '0');
     const tc = n => p2(Math.floor(n / 3600)) + ':' + p2(Math.floor((n % 3600) / 60)) + ':' + p2(n % 60) + ':00';
@@ -2037,6 +2043,7 @@
           <strong style="font-size:0.72rem; color:var(--grey);">${i + 1}</strong>
           <span class="vid-card-nome">${vcEsc(v.nome || 'Video senza nome')}</span>
           ${v.stato === 'consegnato' ? '<span class="vid-card-badge">Consegnato</span>' : ''}
+          ${v.id && v.chiave ? `<button type="button" class="secondary btn-small vid-link-btn" title="Copia il link diretto a questo video, da mandare al cliente" onclick="event.stopPropagation(); copiaLinkVideo('${attr(v.chiave)}', this)">🔗 Link</button>` : ''}
           <span class="vid-card-freccia">˅</span>
         </div>
         <div class="vid-card-corpo">
@@ -3784,6 +3791,7 @@
 <style>
   .vid-gruppo { margin-bottom: 1rem; }
   .vid-gruppo-titolo { font-size: 0.78rem; font-weight: 700; margin: 0.4rem 0 0.5rem; }
+  .vid-link-btn { margin: 0 !important; padding: 0.2rem 0.55rem !important; font-size: 0.62rem !important; flex: none; }
   .vid-card { border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; margin-bottom: 0.5rem; background: #fff; }
   .vid-card-testa { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.85rem; cursor: pointer; user-select: none; }
   .vid-card-nome { flex: 1; min-width: 0; font-weight: 600; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

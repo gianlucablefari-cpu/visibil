@@ -500,6 +500,20 @@
     .vc-row .vc-testo .vc-t { grid-column: 1 / -1; grid-row: 2; padding-top: 0.1rem; white-space: pre-wrap; word-break: break-word; }
     .vc-row .vc-testo:has(.vc-edit) { display: block; grid-column: 1 / -1; grid-row: 2; padding-top: 0; }
   }
+  #tab-video .video-pagina-indietro { background: none; border: 0; padding: 0.2rem 0; margin-bottom: 1rem; font: inherit; font-size: 0.85rem; font-weight: 600; color: var(--grey); cursor: pointer; }
+  #tab-video .video-pagina-indietro:hover { color: var(--black); }
+  #tab-video .video-voce { border: 0; background: none; }
+  #tab-video .video-voce-testa { padding: 0 0 0.75rem; cursor: default; pointer-events: none; }
+  #tab-video .video-voce-testa .vv-nome { font-size: 1.35rem; font-weight: 700; max-width: none; }
+  #tab-video .video-voce-testa .vv-freccia, #tab-video .video-voce-testa .vv-icona { display: none; }
+  #tab-video .video-voce-corpo { padding: 0; border-top: 0; }
+  .video-voce:not([open]) .vv-freccia::after { content: '›'; font-size: 1.1rem; }
+  @media (max-width: 600px) {
+    .video-voce-testa .vv-ultima { display: none; }
+    .video-voce-testa .vv-nome { flex: 1 1 auto; min-width: 0; max-width: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .video-voce-testa .vv-nuova { flex: none; }
+    .video-voce-testa .vv-meta { display: none; }
+  }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -545,7 +559,7 @@
       <aside class="app-sidebar">
         <div class="sidebar-logo">VISIBIL</div>
 
-        <div class="sidebar-profile">
+        <div class="sidebar-profile" data-tab="account" role="button" tabindex="0" title="I tuoi dati" onclick="return showTab('account', event)" style="cursor:pointer;">
           <div class="avatar avatar-sm" id="avatar-iniziali-sidebar"></div>
           <div>
             <div class="profile-name" id="cliente-nome-sidebar" style="font-size:0.9rem;"></div>
@@ -566,10 +580,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
             Fatture
             <span class="nav-dot" id="dot-fatture-sidebar"></span>
-          </button>
-          <button class="sidebar-nav-item" data-tab="account" onclick="return showTab('account', event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            Dati personali
           </button>
           <button class="sidebar-nav-item" onclick="openContactSheet(); return false;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
@@ -597,7 +607,27 @@
             <div class="section-label" style="margin-bottom: 0.75rem;">Video in lavorazione</div>
             <div id="video-list" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
           </div>
-          <div id="collegamenti-home" style="margin-bottom:1.5rem;">
+          <div class="links-card" id="links-card" style="display:none;">
+            <div id="avanzamento-card" style="display:none; margin-bottom: 1.5rem;">
+              <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+            </div>
+          </div>
+          <div id="conclusi-section" style="display:none; margin-top: 1.75rem;"></div>
+        </section>
+
+        <section class="tab-panel" id="tab-video">
+          <button type="button" class="video-pagina-indietro" onclick="history.state && history.state.video ? history.back() : esciVideoPagina()">← Pannello</button>
+          <div id="video-pagina-slot"></div>
+        </section>
+
+        <section class="tab-panel" id="tab-documenti">
+          <div class="tab-panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+            Cloud
+          </div>
+
+          <div id="collegamenti-home" style="margin-bottom:1.75rem;">
+            <div class="section-label" style="margin-bottom: 0.75rem;">Collegamenti</div>
           <div class="row-card" id="link-sito" style="display:none;">
             <div>
               <a href="#" id="link-sito-url" target="_blank">Sito web</a>
@@ -615,20 +645,6 @@
           </div>
 
           </div>
-          <div class="links-card" id="links-card" style="display:none;">
-            <div id="avanzamento-card" style="display:none; margin-bottom: 1.5rem;">
-              <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
-            </div>
-          </div>
-          <div id="conclusi-section" style="display:none; margin-top: 1.75rem;"></div>
-        </section>
-
-        <section class="tab-panel" id="tab-documenti">
-          <div class="tab-panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
-            Cloud
-          </div>
-
           <div style="margin-bottom: 1.75rem;">
             <div class="section-label" style="margin-bottom: 0.75rem;">I tuoi file</div>
             <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
@@ -810,10 +826,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
         Fatture
         <span class="nav-dot" id="dot-fatture-bottom"></span>
-      </button>
-      <button class="bottom-nav-item" data-tab="account" onclick="return showTab('account', event)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        Dati
       </button>
     </div>
 
@@ -1836,11 +1848,11 @@
     const vers = (Array.isArray(v.versioni) ? v.versioni : []).filter(x => x && x.link).map(x => ({ link: x.link, label: x.qualita || '', info: x.info || '' }));
     const corpo = videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false, v.nome || '', v.aggiornato_il || '', { id: v.id, finita: v.revisione_finita_il || '' });
     if (!corpo) return '';
-    const aperto = window.videoAperti.has(v.id) || (apertoDefault && !window.videoAperti.has('chiusi:' + v.id));
+    const aperto = false; // si apre come pagina a sé (apriVideoPagina)
         // "NUOVA VERSIONE!" finché il cliente non apre il video dopo il cambio di file
     const nuova = !!v.aggiornato_il && (!v.visto_cliente_il || new Date(v.visto_cliente_il) < new Date(v.aggiornato_il));
     const badge = !nuova ? '' : window.isPreviewMode ? '<span class="vv-nuova" title="Il cliente non ha ancora aperto questa versione">NUOVA VERSIONE · non ancora vista</span>' : '<span class="vv-nuova">NUOVA VERSIONE!</span>';
-    return `<details class="video-voce" data-vid="${v.id}" data-stato="${v.stato || 'in_lavorazione'}"${nuova ? ' data-nuova="1"' : ''}${aperto ? ' open' : ''}><summary class="video-voce-testa"><span class="vv-icona">▶</span><span class="vv-nome">${escHtml(v.nome || 'Video')}</span>${badge}<span class="vv-ultima"></span><span class="vv-meta"></span><span class="vv-freccia"></span></summary><div class="video-voce-corpo">${corpo}</div></details>`;
+    return `<details class="video-voce" data-vid="${v.id}" data-chiave="${escHtml(v.chiave || '')}" data-stato="${v.stato || 'in_lavorazione'}"${nuova ? ' data-nuova="1"' : ''}${aperto ? ' open' : ''}><summary class="video-voce-testa"><span class="vv-icona">▶</span><span class="vv-nome">${escHtml(v.nome || 'Video')}</span>${badge}<span class="vv-ultima"></span><span class="vv-meta"></span><span class="vv-freccia"></span></summary><div class="video-voce-corpo">${corpo}</div></details>`;
   }
   function renderVideoSezione() {
     const sez = document.getElementById('video-section'), list = document.getElementById('video-list');
@@ -1867,10 +1879,42 @@
         const b = d.querySelector('.vv-nuova'); if (b) b.remove();
         client.rpc('video_visto', { p_id: d.dataset.vid }).then(({ data }) => { const v = (window.videoCliente || []).find(x => x.id === d.dataset.vid); if (v && data) v.visto_cliente_il = data; });
       }
-      if (d.open) { window.videoAperti.add(d.dataset.vid); window.videoAperti.delete('chiusi:' + d.dataset.vid); }
-      else { window.videoAperti.delete(d.dataset.vid); window.videoAperti.add('chiusi:' + d.dataset.vid); }
+      if (d.open && window._videoFocus !== d) apriVideoPagina(d);
+      else if (!d.open && window._videoFocus === d) { if (history.state && history.state.video) history.back(); else esciVideoPagina(); }
     }));
+    // link diretto: area-cliente.html?video=<id>
+    const vq = new URLSearchParams(location.search).get('video');
+    if (vq && !window._videoLinkFatto) { window._videoLinkFatto = true; const d = trovaVideoVoce(vq); if (d) d.open = true; }
   }
+
+  // Pagina singola del video: la riga si sposta in una vista a sé, con "← Pannello" per tornare
+  function trovaVideoVoce(k) {
+    return document.querySelector('.video-voce[data-chiave="' + CSS.escape(k) + '"]') || document.querySelector('.video-voce[data-vid="' + CSS.escape(k) + '"]');
+  }
+  function apriVideoPagina(d) {
+    if (window._videoFocus && window._videoFocus !== d) esciVideoPagina(true);
+    const segnaposto = document.createComment('video-voce');
+    d.parentNode.insertBefore(segnaposto, d);
+    window._videoSegnaposto = segnaposto; window._videoFocus = d; window._videoScroll = window.scrollY;
+    document.getElementById('video-pagina-slot').appendChild(d);
+    showTab('video');
+    const k = d.dataset.chiave || d.dataset.vid;
+    const u = new URL(location.href); u.searchParams.set('video', k);
+    if (!(history.state && history.state.video === k)) history.pushState({ video: k }, '', u);
+  }
+  function esciVideoPagina(soloRipristina) {
+    const d = window._videoFocus; if (!d) return;
+    window._videoFocus = null;
+    d.open = false;
+    const sp = window._videoSegnaposto; if (sp && sp.parentNode) { sp.parentNode.insertBefore(d, sp); sp.remove(); }
+    if (history.state && history.state.video) history.replaceState(null, '', (() => { const u = new URL(location.href); u.searchParams.delete('video'); return u; })());
+    else { const u = new URL(location.href); if (u.searchParams.has('video')) { u.searchParams.delete('video'); history.replaceState(null, '', u); } }
+    if (!soloRipristina) { showTab('home'); const y = window._videoScroll || 0; setTimeout(() => window.scrollTo(0, y), 0); }
+  }
+  window.addEventListener('popstate', () => {
+    if (window._videoFocus && !(history.state && history.state.video)) esciVideoPagina();
+    else if (history.state && history.state.video && !window._videoFocus) { const d = trovaVideoVoce(history.state.video); if (d) d.open = true; }
+  });
   function saldaProgetto(pid, e) {
     const aperte = (window.pagamentiCache || []).filter(x => x.progetto_id === pid && (x.stato === 'In attesa' || x.stato === 'Scaduto'));
     if (aperte.length === 1) { if (e) e.preventDefault(); window.open('pagamento.html?id=' + aperte[0].id, '_blank'); return false; }
@@ -1911,7 +1955,8 @@
     const rigaSospeso = (etichetta, testo, href, extra) => `
         <div class="sospeso-riga"><span class="sospeso-etichetta">${etichetta}</span><span class="sospeso-testo">${escHtml(testo || '')}</span><a href="${href}"${extra || ''}>Apri</a></div>`;
     // Le fatture non stanno qui: si saldano dal pulsante "Salda" del progetto o dalla pagina Fatture
-    (preventiviPendenti || []).forEach(p => {
+    // I preventivi da approvare stanno solo in Fatture (segnalati dal pallino rosso nel menu)
+    ([]).forEach(p => {
       clienteItemsHtml += rigaSospeso('Preventivo da approvare', p.titolo, p.link_approvazione || '#', p.link_approvazione ? ' target="_blank"' : ` onclick="showTab('fatture'); return false;"`);
     });
 
@@ -1921,6 +1966,7 @@
     }
 
     card.style.display = hasItems ? 'block' : 'none';
+    const lc = document.getElementById('links-card'); if (lc) lc.style.display = hasItems ? 'block' : 'none';
   }
 
   const OWNER_ID = "45d74677-8f95-4d75-86a0-c7d9c586d68a";
@@ -2016,7 +2062,6 @@
       document.getElementById('account-pref-telefono').checked = !!cliente.pref_telefono;
       document.getElementById('account-orario').value = cliente.orario_preferito || '';
 
-      document.getElementById('links-card').style.display = 'block';
 
       if (cliente.sito_url) {
         document.getElementById('link-sito').style.display = 'block';
@@ -2379,9 +2424,15 @@
     const panel = document.getElementById('tab-' + name);
     if (panel) panel.classList.add('active');
 
+    if (name !== 'video' && window._videoFocus) esciVideoPagina(true);
+    const navName = name === 'video' ? 'home' : name;
     document.querySelectorAll('.sidebar-nav-item, .bottom-nav-item').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.tab === name);
+      btn.classList.toggle('active', btn.dataset.tab === navName);
     });
+    if (name === 'documenti') {
+      const ch = document.getElementById('collegamenti-home');
+      if (ch) ch.style.display = [...ch.querySelectorAll('#link-sito, #link-instagram, #strumenti-section')].some(x => x.style.display !== 'none') ? '' : 'none';
+    }
 
     const content = document.querySelector('.app-content');
     if (content) content.scrollTop = 0;
