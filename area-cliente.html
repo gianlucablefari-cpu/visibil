@@ -1815,9 +1815,7 @@
 
     const rigaSospeso = (etichetta, testo, href, extra) => `
         <div class="sospeso-riga"><span class="sospeso-etichetta">${etichetta}</span><span class="sospeso-testo">${escHtml(testo || '')}</span><a href="${href}"${extra || ''}>Apri</a></div>`;
-    (dovuti || []).forEach(p => {
-      clienteItemsHtml += rigaSospeso(p.stato === 'Scaduto' ? 'Fattura scaduta' : 'Fattura', p.descrizione, `pagamento.html?id=${p.id}`, ' target="_blank"');
-    });
+    // Le fatture non stanno qui: si saldano dal pulsante "Salda" del progetto o dalla pagina Fatture
     (preventiviPendenti || []).forEach(p => {
       clienteItemsHtml += rigaSospeso('Preventivo da approvare', p.titolo, p.link_approvazione || '#', p.link_approvazione ? ' target="_blank"' : ` onclick="showTab('fatture'); return false;"`);
     });
