@@ -213,6 +213,20 @@
   .progetto-item.in-pausa .progetto-bar-fill { background: var(--grey); }
   .progetto-item.sforato .progetto-bar-fill { background: #A32D2D; }
   .progetto-item.sforato .progetto-item-pct { color: #A32D2D; }
+  .video-voce { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; background: #fff; }
+  .video-voce-testa { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; cursor: pointer; list-style: none; }
+  .video-voce-testa::-webkit-details-marker { display: none; }
+  .vv-icona { font-size: 0.7rem; color: var(--ink); }
+  .vv-nome { font-size: 0.9rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .vv-meta { font-size: 0.75rem; color: var(--grey); white-space: nowrap; }
+  .vv-freccia::after { content: '˅'; color: var(--grey); }
+  .video-voce[open] .vv-freccia::after { content: '˄'; }
+  .video-voce-corpo { padding: 0 1rem 0.5rem; border-top: 1px solid rgba(0,0,0,0.06); }
+  .video-voce .video-intestazione { display: none; }
+  .video-voce .video-testa { margin-top: 0.8rem; }
+  .video-voce .video-testa:not(:has(.video-aggiornato)) { display: none; }
+  .conclusi-testa { cursor: pointer; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); padding: 0.4rem 0; }
+  .conclusi-corpo { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.6rem; }
   .progetto-item-ore { font-size: 0.78rem; color: var(--grey); flex-shrink: 0; }
   .sospeso-riga { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem; padding: 0.55rem 0.85rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; font-size: 0.82rem; background: #fff; }
   .sospeso-etichetta { color: var(--grey); white-space: nowrap; }
@@ -546,8 +560,12 @@
 
         <section class="tab-panel active" id="tab-home">
           <div id="progetti-avanzamento-section" style="display:none; margin-bottom: 1.75rem;">
-            <div class="section-label" style="margin-bottom: 0.75rem;">Progetti</div>
+            <div class="section-label" style="margin-bottom: 0.75rem;">Progetti in corso</div>
             <div id="progetti-avanzamento-list" style="display:flex; flex-direction:column; gap:0.85rem;"></div>
+          </div>
+          <div id="video-section" style="display:none; margin-bottom: 1.75rem;">
+            <div class="section-label" style="margin-bottom: 0.75rem;">Video in lavorazione</div>
+            <div id="video-list" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
           </div>
           <div id="collegamenti-home" style="margin-bottom:1.5rem;">
           <div class="row-card" id="link-sito" style="display:none;">
@@ -572,6 +590,7 @@
               <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
             </div>
           </div>
+          <div id="conclusi-section" style="display:none; margin-top: 1.75rem;"></div>
         </section>
 
         <section class="tab-panel" id="tab-documenti">
@@ -1231,6 +1250,9 @@
     const simula = !!(window.isPreviewMode && window.simulaCliente);
     const vcAdmin = window.isPreviewMode && !simula;
     box.classList.toggle('vc-simulato', simula);
+    { const vv = box.closest('.video-voce'); const m = vv && vv.querySelector('.vv-meta');
+      if (m) { const its = tutti.filter(c => c.video_id === box.dataset.video && !c.risposta_a); const ris = its.filter(c => c.stato === 'risolto').length;
+        m.textContent = its.length ? its.length + (its.length === 1 ? ' commento' : ' commenti') + (ris ? ' · ' + ris + ' risolti' : '') + (box.dataset.finita ? ' · revisione inviata' : '') : ''; } }
     const videoId = box.dataset.video;
     const listaPrima = box.querySelector('.vc-lista');
     const scrollLista = listaPrima ? listaPrima.scrollTop : 0;
@@ -1649,13 +1671,7 @@
   function renderProgettiAvanzamento(progetti) {
     const section = document.getElementById('progetti-avanzamento-section');
     const list = document.getElementById('progetti-avanzamento-list');
-    if (!progetti || progetti.length === 0) {
-      section.style.display = 'none';
-      list.innerHTML = '';
-      return;
-    }
-    section.style.display = 'block';
-    list.innerHTML = progetti.map(p => {
+    const cardDi = p => {
       const modalita = p.modalita || 'avanzamento';
       const titolo = p.titolo || '(senza titolo)';
       const noteHtml = p.note ? `<div class="progetto-item-note">${renderNota(p.note)}</div>` : '';
@@ -1723,7 +1739,47 @@
           ${extraNota}
           ${p.note ? `<div class="progetto-item-note">${renderNota(p.note)}</div>` : ''}
         </div>`;
-    }).join('');
+    };
+    const attivi = (progetti || []).filter(p => p.stato !== 'Completato');
+    window._progettiConclusiHtml = (progetti || []).filter(p => p.stato === 'Completato').map(cardDi).join('');
+    window._nProgettiConclusi = (progetti || []).length - attivi.length;
+    section.style.display = attivi.length ? 'block' : 'none';
+    list.innerHTML = attivi.map(cardDi).join('');
+    renderConclusi();
+  }
+
+  // Video: ogni video è una riga col nome, che si apre su player e commenti.
+  // Nel Pannello solo quelli in lavorazione; i consegnati vanno in "Conclusi".
+  window.videoAperti = window.videoAperti || new Set();
+  function videoVoceHtml(v, apertoDefault) {
+    const vers = (Array.isArray(v.versioni) ? v.versioni : []).filter(x => x && x.link).map(x => ({ link: x.link, label: x.qualita || '', info: x.info || '' }));
+    const corpo = videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false, v.nome || '', v.aggiornato_il || '', { id: v.id, finita: v.revisione_finita_il || '' });
+    if (!corpo) return '';
+    const aperto = window.videoAperti.has(v.id) || (apertoDefault && !window.videoAperti.has('chiusi:' + v.id));
+    return `<details class="video-voce" data-vid="${v.id}"${aperto ? ' open' : ''}><summary class="video-voce-testa"><span class="vv-icona">▶</span><span class="vv-nome">${escHtml(v.nome || 'Video')}</span><span class="vv-meta"></span><span class="vv-freccia"></span></summary><div class="video-voce-corpo">${corpo}</div></details>`;
+  }
+  function renderVideoSezione() {
+    const sez = document.getElementById('video-section'), list = document.getElementById('video-list');
+    if (!sez) return;
+    const tutti = window.videoCliente || [];
+    const attivi = tutti.filter(v => (v.stato || 'in_lavorazione') !== 'consegnato');
+    window._videoConclusiHtml = tutti.filter(v => v.stato === 'consegnato').map(v => videoVoceHtml(v, false)).join('');
+    window._nVideoConclusi = tutti.length - attivi.length;
+    list.innerHTML = attivi.map(v => videoVoceHtml(v, attivi.length === 1)).join('');
+    sez.style.display = attivi.length ? 'block' : 'none';
+    renderConclusi();
+    document.querySelectorAll('.video-voce').forEach(d => d.addEventListener('toggle', () => {
+      if (d.open) { window.videoAperti.add(d.dataset.vid); window.videoAperti.delete('chiusi:' + d.dataset.vid); }
+      else { window.videoAperti.delete(d.dataset.vid); window.videoAperti.add('chiusi:' + d.dataset.vid); }
+    }));
+  }
+  function renderConclusi() {
+    const sez = document.getElementById('conclusi-section');
+    if (!sez) return;
+    const n = (window._nProgettiConclusi || 0) + (window._nVideoConclusi || 0);
+    sez.style.display = n ? 'block' : 'none';
+    const aperto = sez.querySelector('details') && sez.querySelector('details').open;
+    sez.innerHTML = n ? `<details${aperto ? ' open' : ''}><summary class="conclusi-testa">Conclusi (${n})</summary><div class="conclusi-corpo">${window._progettiConclusiHtml || ''}${window._videoConclusiHtml || ''}</div></details>` : '';
   }
 
   function renderDaFare(dovuti, preventiviPendenti) {
@@ -1734,11 +1790,9 @@
 
     // Nota libera di Gianluca
     // Video strutturati (sezione "Video" dell'admin), mostrati sotto il testo della nota
-    const videoStrutturatiHtml = (window.videoCliente || []).map(v => {
-      const vers = (Array.isArray(v.versioni) ? v.versioni : []).filter(x => x && x.link).map(x => ({ link: x.link, label: x.qualita || '', info: x.info || '' }));
-      return videoDropboxHtml(vers, v.chiave || '', v.commenti_attivi === false, v.nome || '', v.aggiornato_il || '', { id: v.id, finita: v.revisione_finita_il || '' });
-    }).join('');
-    if (window.progettoTesto || videoStrutturatiHtml) {
+    renderVideoSezione();
+    const videoStrutturatiHtml = '';
+    if (window.progettoTesto) {
       hasItems = true;
       container.innerHTML += `
         <div style="text-align:left;">

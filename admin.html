@@ -2005,6 +2005,10 @@
         <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
           <strong style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--grey);">${i + 1}</strong>
           <input type="text" value="${attr(v.nome)}" placeholder="Nome del video (es. Spot Bagni Sartoriali)" style="flex:1 1 220px; min-width:0; font-weight:600;" onchange="vidNome(${i},this.value)">
+          <select style="width:auto; flex:none;" onchange="vidDati[${i}].stato=this.value" title="In lavorazione: compare nel Pannello del cliente. Consegnato: va tra i conclusi">
+            <option value="in_lavorazione"${(v.stato || 'in_lavorazione') === 'in_lavorazione' ? ' selected' : ''}>In lavorazione</option>
+            <option value="consegnato"${v.stato === 'consegnato' ? ' selected' : ''}>Consegnato</option>
+          </select>
           <label style="display:flex; align-items:center; gap:0.3rem; margin:0; font-size:0.8rem; font-weight:400;"><input type="checkbox" style="width:auto;" ${v.commenti_attivi ? 'checked' : ''} onchange="vidToggleCommenti(${i},this.checked)"> Commenti attivi</label>
           <span style="flex:1"></span>
           <button type="button" class="secondary btn-small" title="Sposta su" ${i === 0 ? 'disabled' : ''} onclick="vidSposta(${i},-1)">↑</button>
@@ -2021,7 +2025,7 @@
     }).join('');
   }
   function vidNome(i, val) { vidDati[i].nome = val.trim(); }
-  function vidAggiungi() { vidDati.push({ id: null, nome: '', chiave: vidNuovaChiave(), commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
+  function vidAggiungi() { vidDati.push({ id: null, nome: '', stato: 'in_lavorazione', chiave: vidNuovaChiave(), commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
   function vidAggiungiVersione(i) { vidDati[i].versioni.push({ link: '', qualita: '', info: '' }); vidRender(); }
   function vidRimuoviVersione(i, j) { vidDati[i].versioni.splice(j, 1); vidRender(); }
   function vidElimina(i) { if (confirm('Eliminare questo video dalla lista? I commenti restano salvati.')) { vidDati.splice(i, 1); vidRender(); } }
@@ -2046,7 +2050,7 @@
     ]);
     if (r1.error) { showMsg('vid-msg', 'Errore nel caricamento video: ' + r1.error.message, false); }
     const firmaLink = vv => (vv || []).map(x => (x.link || '').trim()).filter(Boolean).join('\n');
-    vidDati = (r1.data || []).map(r => ({ id: r.id, aggiornato_il: r.aggiornato_il || null, revisione_finita_il: r.revisione_finita_il || null, linkOrig: firmaLink(r.versioni), nome: r.nome || vidNomeDaLink(((r.versioni || [])[0] || {}).link || ''), chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
+    vidDati = (r1.data || []).map(r => ({ id: r.id, aggiornato_il: r.aggiornato_il || null, revisione_finita_il: r.revisione_finita_il || null, stato: r.stato || 'in_lavorazione', linkOrig: firmaLink(r.versioni), nome: r.nome || vidNomeDaLink(((r.versioni || [])[0] || {}).link || ''), chiave: r.chiave || '', commenti_attivi: r.commenti_attivi !== false,
       versioni: (Array.isArray(r.versioni) ? r.versioni : []).map(x => ({ link: x.link || '', qualita: x.qualita || '', info: x.info || '' })) }));
     (r2.data || []).forEach(c => { if (c.video_id) vidConteggi[c.video_id] = (vidConteggi[c.video_id] || 0) + 1; });
     vidChiaviEsistenti = Object.keys(vidConteggi).filter(k => k.startsWith('db_'));
@@ -2071,7 +2075,7 @@
       // "Nuova versione": solo se su un video già esistente sono cambiati i link
       const linkCambiati = v.id && v.linkOrig !== undefined && v.linkOrig !== versioni.map(x => x.link).join('\n');
       const aggiornato_il = linkCambiati ? new Date().toISOString() : (v.aggiornato_il || null);
-      righe.push({ cliente_id, user_id, nome: v.nome, aggiornato_il, revisione_finita_il: v.revisione_finita_il || null, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
+      righe.push({ cliente_id, user_id, nome: v.nome, aggiornato_il, revisione_finita_il: v.revisione_finita_il || null, stato: v.stato || 'in_lavorazione', ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
     }
     // Prima inserisco le righe nuove, poi tolgo le vecchie: se l'inserimento fallisce i video esistenti restano
     let nuoviId = [];
