@@ -227,7 +227,14 @@
   .video-voce .video-testa:not(:has(.video-aggiornato)) { display: none; }
   .conclusi-testa { cursor: pointer; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); padding: 0.4rem 0; }
   .conclusi-corpo { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.6rem; }
-  .progetto-item-ore { font-size: 0.78rem; color: var(--grey); flex-shrink: 0; }
+  .progetto-item-titolo { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .progetto-cartella { display: inline-flex; color: var(--ink); }
+  .progetto-cartella svg { width: 17px; height: 17px; }
+  .progetto-item-ore { display: inline-flex; align-items: center; gap: 0.6rem; }
+  .progetto-ore-n { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--black); font-weight: 600; }
+  .progetto-ore-n svg { width: 15px; height: 15px; color: var(--grey); }
+  .progetto-salda { padding: 0.2rem 0.7rem; border: 1px solid rgba(0,0,0,0.18); border-radius: 100px; color: var(--ink); font-size: 0.72rem; font-weight: 600; text-decoration: none; background: #fff; }
+  .progetto-salda:hover { border-color: var(--ink); }
   .sospeso-riga { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.5rem; padding: 0.55rem 0.85rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; font-size: 0.82rem; background: #fff; }
   .sospeso-etichetta { color: var(--grey); white-space: nowrap; }
   .sospeso-testo { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1673,7 +1680,8 @@
     const list = document.getElementById('progetti-avanzamento-list');
     const cardDi = p => {
       const modalita = p.modalita || 'avanzamento';
-      const titolo = p.titolo || '(senza titolo)';
+      const titolo = (p.cartella_link ? `<a class="progetto-cartella" href="${escHtml(p.cartella_link)}" target="_blank" rel="noopener" title="Apri la cartella del progetto su Dropbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></a>` : '') + escHtml(p.titolo || '(senza titolo)');
+      const statoTxt = p.stato && p.stato !== 'In corso' ? p.stato : '';
       const noteHtml = p.note ? `<div class="progetto-item-note">${renderNota(p.note)}</div>` : '';
       const statoCls = p.stato === 'Completato' ? 'completato' : p.stato === 'In pausa' ? 'in-pausa' : '';
       if (modalita === 'da_saldare') {
@@ -1683,9 +1691,9 @@
         <div class="progetto-item ${statoCls}">
           <div class="progetto-item-top">
             <div class="progetto-item-titolo">${titolo}</div>
-            <div class="progetto-item-ore">${o > 0 ? `${fmtOre(o)} ${o === 1 ? 'ora' : 'ore'} di lavoro da saldare` : 'Saldato'}</div>
+            <div class="progetto-item-ore">${o > 0 ? `<span class="progetto-ore-n" title="Ore di lavoro da saldare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>${fmtOre(o)} ${o === 1 ? 'ora' : 'ore'}</span><a class="progetto-salda" href="${p.link_pagamento ? escHtml(p.link_pagamento) : '#'}"${p.link_pagamento ? ' target="_blank" rel="noopener"' : ` onclick="return showTab('fatture', event)"`}>Salda</a>` : 'Saldato ✓'}</div>
           </div>
-          <div class="progetto-item-meta"><span></span><span>${p.stato || ''}</span></div>
+          ${statoTxt ? `<div class="progetto-item-meta"><span></span><span>${statoTxt}</span></div>` : ''}
           ${noteHtml}
         </div>`;
       }
@@ -1700,7 +1708,7 @@
             <div class="progetto-item-pct">${rim >= 0 ? `${h(rim)}h rimaste` : `${h(-rim)}h oltre il pacchetto`}</div>
           </div>
           <div class="progetto-bar-track"><div class="progetto-bar-fill" style="width:${pctRim}%;"></div></div>
-          <div class="progetto-item-meta"><span>${h(usate)}h usate su ${h(acq)}h</span><span>${p.stato || ''}</span></div>
+          <div class="progetto-item-meta"><span>${h(usate)}h usate su ${h(acq)}h</span><span>${statoTxt}</span></div>
           ${noteHtml}
         </div>`;
       }
@@ -1709,7 +1717,7 @@
         <div class="progetto-item ${statoCls}">
           <div class="progetto-item-top">
             <div class="progetto-item-titolo">${titolo}</div>
-            <div class="progetto-item-pct">${p.stato || ''}</div>
+            <div class="progetto-item-pct">${statoTxt}</div>
           </div>
           ${noteHtml}
         </div>`;
@@ -1728,13 +1736,13 @@
       return `
         <div class="progetto-item ${statoClasse}">
           <div class="progetto-item-top">
-            <div class="progetto-item-titolo">${p.titolo || '(senza titolo)'}</div>
+            <div class="progetto-item-titolo">${titolo}</div>
             <div class="progetto-item-pct">${pct}%</div>
           </div>
           <div class="progetto-bar-track"><div class="progetto-bar-fill" style="width:${Math.min(100, pct)}%;"></div></div>
           <div class="progetto-item-meta">
             <span>${oreTesto}</span>
-            <span>${p.stato || ''}</span>
+            <span>${statoTxt}</span>
           </div>
           ${extraNota}
           ${p.note ? `<div class="progetto-item-note">${renderNota(p.note)}</div>` : ''}
