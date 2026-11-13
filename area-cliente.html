@@ -106,8 +106,9 @@
   .sidebar-nav-item:hover { background: var(--surface); color: var(--black); }
   .sidebar-nav-item.active { background: rgba(26,26,230,0.06); color: var(--ink); }
   .nav-dot { position: absolute; top: 0.55rem; left: 1.7rem; width: 8px; height: 8px; border-radius: 50%; background: #A32D2D; display: none; }
-  .sidebar-nav-item .nav-dot { left: auto; right: 0.7rem; }
   .nav-dot.show { display: block; }
+  .sidebar-nav-item .nav-dot { position: static; flex: none; margin-left: -0.45rem; }
+  .sidebar-nav-item .nav-dot.show { display: inline-block; }
   .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 0.85rem; padding-top: 1.5rem; }
   .sidebar-plan { display: none; border: 1px solid rgba(26,26,230,0.15); background: rgba(26,26,230,0.04); border-radius: 8px; padding: 0.85rem 0.9rem; }
   .sidebar-plan-label { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); font-weight: 700; margin-bottom: 0.3rem; }
