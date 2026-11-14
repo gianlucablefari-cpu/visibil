@@ -215,7 +215,20 @@
     <div class="dash-layout">
 
       <div class="side-col">
-        <div style="display:flex; align-items:center; justify-content:space-between; border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.5rem 0.75rem; gap:0.5rem;">
+        <button onclick="showTab('home')" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          Home
+        </button>
+
+        <div class="card">
+          <button class="secondary" onclick="apriNuovoCliente()" style="width:100%; margin-bottom:1rem;">+ Nuovo cliente</button>
+          <input type="text" id="cerca-cliente" name="cerca-cliente-visibil" placeholder="Cerca per nome..." oninput="renderClientiLista()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" readonly onfocus="this.removeAttribute('readonly')" style="margin-bottom:0.75rem;">
+          <div id="clienti-lista"></div>
+          <button class="secondary btn-small" onclick="toggleArchiviati()" id="toggle-archiviati-btn" style="width:100%; margin-top:0.75rem;">Mostra archiviati</button>
+          <div id="clienti-archiviati-lista" style="display:none; margin-top:0.75rem;"></div>
+        </div>
+
+        <div title="Clienti · pagamenti in sospeso · messaggi dei clienti · preventivi da approvare" style="display:flex; align-items:center; justify-content:space-between; border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.5rem 0.75rem; gap:0.5rem;">
           <div style="display:flex; align-items:center; gap:0.3rem;" title="Clienti">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; opacity:0.5; flex-shrink:0;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             <span style="font-size:0.8rem; font-weight:700;" id="stat-clienti">—</span>
@@ -232,21 +245,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; opacity:0.5; flex-shrink:0;"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
             <span style="font-size:0.8rem; font-weight:700;" id="stat-preventivi">—</span>
           </div>
-        </div>
-
-        <button onclick="showTab('home')" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-          Home
-        </button>
-
-        <div class="card">
-          <h2>Clienti esistenti</h2>
-          <p class="desc">Clicca "Carica" per richiamare un cliente nel form e modificarlo.</p>
-          <button class="secondary" onclick="apriNuovoCliente()" style="width:100%; margin-bottom:1rem;">+ Nuovo cliente</button>
-          <input type="text" id="cerca-cliente" name="cerca-cliente-visibil" placeholder="Cerca per nome..." oninput="renderClientiLista()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" readonly onfocus="this.removeAttribute('readonly')" style="margin-bottom:0.75rem;">
-          <div id="clienti-lista"></div>
-          <button class="secondary btn-small" onclick="toggleArchiviati()" id="toggle-archiviati-btn" style="width:100%; margin-top:0.75rem;">Mostra archiviati</button>
-          <div id="clienti-archiviati-lista" style="display:none; margin-top:0.75rem;"></div>
         </div>
 
       </div>
