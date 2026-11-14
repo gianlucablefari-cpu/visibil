@@ -130,6 +130,17 @@
   .com-nuova { border: 1px dashed rgba(26,26,230,0.35); border-radius: 8px; padding: 1rem; margin: 0.5rem 0 1rem; }
   .com-nuova > .section-label { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 0; }
   .com-nuova-chiudi { margin: 0 !important; }
+  .com-msg { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; margin-bottom: 0.5rem; background: #fff; }
+  .com-msg > summary { list-style: none; cursor: pointer; padding: 0.65rem 0.85rem; display: flex; flex-direction: column; gap: 0.3rem; }
+  .com-msg > summary::-webkit-details-marker { display: none; }
+  .com-msg-riga { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+  .com-msg-verso { font-size: 0.68rem; color: var(--grey); }
+  .com-msg-data { margin-left: auto; font-size: 0.7rem; color: var(--grey); white-space: nowrap; }
+  .com-msg-oggetto { font-size: 0.82rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .com-msg-freccia { color: var(--grey); transition: transform 0.15s; }
+  .com-msg[open] .com-msg-freccia { transform: rotate(90deg); }
+  .com-msg[open] .com-msg-oggetto { white-space: normal; }
+  .com-msg-corpo { padding: 0 0.85rem 0.85rem; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -3566,16 +3577,15 @@
 
     list.innerHTML = messaggi.map(m => {
       const data = m.created_at ? new Date(m.created_at).toLocaleDateString('it-CH', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+      const verso = m.tipo === 'contatto' ? 'dal cliente a te' : m.tipo === 'avviso' ? 'automatica, a te' : m.tipo === 'nota_manuale' ? 'registrata a mano' : (m.tipo === 'promemoria' ? 'automatica, al cliente' : 'al cliente');
       return `
-        <div style="border:1px solid rgba(0,0,0,0.08); border-radius:8px; padding:0.85rem; margin-bottom:0.6rem;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
-            <span style="display:flex; align-items:center; gap:0.5rem;">${badgeMessaggio(m.tipo)}<span style="font-size:0.68rem; color:var(--grey);">${m.tipo === 'contatto' ? 'dal cliente a te' : m.tipo === 'avviso' ? 'automatica, a te' : m.tipo === 'nota_manuale' ? 'registrata a mano' : (m.tipo === 'promemoria' ? 'automatica, al cliente' : 'al cliente')}</span></span>
-            <span style="font-size:0.7rem; color:var(--grey);">${data}</span>
-          </div>
-          <div style="font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">${m.oggetto || ''}</div>
-          ${testoConLeggiDiPiu(m.contenuto, 300)}
-          ${m.stato_consegna ? `<div style="margin-top:0.4rem;">${iconaStatoConsegna(m.stato_consegna)}</div>` : ''}
-        </div>`;
+        <details class="com-msg">
+          <summary>
+            <span class="com-msg-riga">${badgeMessaggio(m.tipo)}<span class="com-msg-verso">${verso}</span><span class="com-msg-data">${data}</span></span>
+            <span class="com-msg-riga"><span class="com-msg-oggetto">${vcEsc(m.oggetto || '(senza oggetto)')}</span>${m.stato_consegna ? iconaStatoConsegna(m.stato_consegna) : ''}<span class="com-msg-freccia">›</span></span>
+          </summary>
+          <div class="com-msg-corpo"><div style="font-size:0.8rem; color:var(--grey); background:#fff; border:1px solid rgba(0,0,0,0.06); border-radius:6px; padding:0.75rem;">${m.contenuto || ''}</div></div>
+        </details>`;
     }).join('');
   }
 
@@ -3971,7 +3981,6 @@
         card.insertBefore(btn, cron);
         card.insertBefore(nuova, cron);
         mostra(false);
-        rendiAcc(cron, cron.firstElementChild, false);
       }
     }
 
