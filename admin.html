@@ -1863,7 +1863,10 @@
     document.getElementById('cerca-cliente').value = '';
     renderClientiLista();
 
-    showDocGroup('progetti');
+    // Cambiando cliente resta la stessa scheda; dalla Home si parte da Progetti
+    const tabAttivo = (document.querySelector('.tab-panel.active') || {}).id || '';
+    if (!tabAttivo || tabAttivo === 'panel-home') showDocGroup('progetti');
+    else showTab(tabAttivo.replace('panel-', ''));
     document.getElementById('acc-dati-personali').classList.add('open');
     document.getElementById('acc-link-abbonamento').classList.remove('open');
     updateDatiPersonaliSummary(c);
