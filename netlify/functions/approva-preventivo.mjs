@@ -91,17 +91,8 @@ export default async (req) => {
   const RESEND_API_KEY = Netlify.env.get("RESEND_API_KEY");
   if (RESEND_API_KEY) {
     try {
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          from: "VISIBIL <benvenuto@vsbl.ch>",
-          to: ["gianluca.blefari@outlook.com"],
-          subject: `Preventivo approvato: ${preventivo.titolo}`,
-          html: `
+      const oggettoAvviso = `Preventivo approvato: ${preventivo.titolo}`;
+      const htmlAvviso = `
             <div style="font-family: sans-serif; color:#0F0F0F; line-height:1.6;">
               <p>Il preventivo <strong>${preventivo.titolo}</strong>${preventivo.importo ? ` (CHF ${preventivo.importo}.–)` : ''} è stato approvato.</p>
               <p>
@@ -111,9 +102,29 @@ export default async (req) => {
                 ${piano_scelto ? `Piano scelto: ${piano_scelto}<br>` : ''}
               </p>
             </div>
-          `
+          `;
+      const avvisoRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: "VISIBIL <benvenuto@vsbl.ch>",
+          to: ["gianluca.blefari@outlook.com"],
+          subject: oggettoAvviso,
+          html: htmlAvviso
         })
       });
+      // Registro anche questa email in Comunicazioni (avviso a Gianluca)
+      if (avvisoRes.ok && preventivo.user_id) {
+        const avvisoData = await avvisoRes.json().catch(() => ({}));
+        await fetch(`${SUPABASE_URL}/rest/v1/messaggi`, {
+          method: "POST",
+          headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+          body: JSON.stringify({ user_id: preventivo.user_id, tipo: "avviso", oggetto: oggettoAvviso, contenuto: htmlAvviso, resend_id: avvisoData.id || null, stato_consegna: "inviata" })
+        });
+      }
     } catch (e) {
       // non blocca l'approvazione se l'email fallisce
     }

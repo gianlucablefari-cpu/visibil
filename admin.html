@@ -3489,6 +3489,7 @@
       pagamento: { bg: '#FFF4DE', fg: '#8A5A00', label: 'Pagamento' },
       broadcast: { bg: '#F0E6FF', fg: '#6B2FBF', label: 'Broadcast' },
       promemoria: { bg: '#FFE8E8', fg: '#B3261E', label: 'Promemoria' },
+      avviso: { bg: '#EFEFEF', fg: '#555555', label: 'Avviso a te' },
       nota_manuale: { bg: '#EFEFEF', fg: '#555555', label: 'Risposta registrata' }
     };
     const s = stili[tipo] || { bg: '#F5F6FF', fg: '#1A1AE6', label: 'Inviata da te' };
@@ -3564,7 +3565,7 @@
       return `
         <div style="border:1px solid rgba(0,0,0,0.08); border-radius:8px; padding:0.85rem; margin-bottom:0.6rem;">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.4rem;">
-            ${badgeMessaggio(m.tipo)}
+            <span style="display:flex; align-items:center; gap:0.5rem;">${badgeMessaggio(m.tipo)}<span style="font-size:0.68rem; color:var(--grey);">${m.tipo === 'contatto' ? 'dal cliente a te' : m.tipo === 'avviso' ? 'automatica, a te' : m.tipo === 'nota_manuale' ? 'registrata a mano' : (m.tipo === 'promemoria' ? 'automatica, al cliente' : 'al cliente')}</span></span>
             <span style="font-size:0.7rem; color:var(--grey);">${data}</span>
           </div>
           <div style="font-size:0.8rem; font-weight:600; margin-bottom:0.3rem;">${m.oggetto || ''}</div>
