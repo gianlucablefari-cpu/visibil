@@ -1780,12 +1780,12 @@
       const statoCls = p.stato === 'Completato' ? 'completato' : p.stato === 'In pausa' ? 'in-pausa' : '';
       if (modalita === 'da_saldare') {
         const o = Number(p.ore_da_saldare) || 0, t = Number(p.tariffa_oraria) || 0;
-        const fmtOre = x => String(x).replace('.', ',');
+        const fmtOre = x => { const min = Math.round(x * 60), h = Math.floor(min / 60), m = min % 60; return m ? (h ? h + ' h ' + String(m).padStart(2, '0') : m + ' min') : h + (h === 1 ? ' ora' : ' ore'); };
         return `
         <div class="progetto-item ${statoCls}">
           <div class="progetto-item-top">
             <div class="progetto-item-titolo">${titolo}</div>
-            <div class="progetto-item-ore">${o > 0 ? `<span class="progetto-ore-n" title="Ore di lavoro da saldare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>${fmtOre(o)} ${o === 1 ? 'ora' : 'ore'}</span><a class="progetto-salda" href="${p.link_pagamento ? escHtml(p.link_pagamento) : '#'}"${p.link_pagamento ? ' target="_blank" rel="noopener"' : ` onclick="return saldaProgetto('${p.id}', event)"`}>Salda</a>` : 'Saldato ✓'}</div>
+            <div class="progetto-item-ore">${o > 0 ? `<span class="progetto-ore-n" title="Ore di lavoro da saldare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>${fmtOre(o)}</span><a class="progetto-salda" href="${p.link_pagamento ? escHtml(p.link_pagamento) : '#'}"${p.link_pagamento ? ' target="_blank" rel="noopener"' : ` onclick="return saldaProgetto('${p.id}', event)"`}>Salda</a>` : 'Saldato ✓'}</div>
           </div>
           ${statoTxt ? `<div class="progetto-item-meta"><span></span><span>${statoTxt}</span></div>` : ''}
           ${noteHtml}

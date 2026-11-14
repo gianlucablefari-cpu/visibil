@@ -169,6 +169,14 @@
   .sub-doc-panel > :first-child { margin-top: 0 !important; }
   .cliente-attivita-riga { font-size: 0.66rem; color: var(--grey); margin: -0.6rem 0 0.9rem 0.25rem; }
   .riga-elimina { display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0 !important; margin:0 !important; background:none !important; border:1px solid rgba(0,0,0,0.15) !important; border-radius:5px; color:#c0392b !important; cursor:pointer; flex-shrink:0; }
+  .ore-box { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; background: #fff; padding: 0.6rem 0.75rem; margin-bottom: 0.75rem; }
+  .ore-box-titolo { font-size: 0.78rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .ore-riga { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; padding: 0.25rem 0; border-top: 1px solid rgba(0,0,0,0.05); }
+  .ore-riga select { width: auto; max-width: 45%; margin: 0; padding: 0.25rem 0.4rem; font-size: 0.75rem; }
+  .ore-riga button { margin: 0 !important; }
+  .ore-data { width: 6.5rem; color: var(--grey); }
+  .ore-durata { width: 4.5rem; font-weight: 600; }
+  .ore-esclusa { opacity: 0.45; text-decoration: line-through; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -701,6 +709,9 @@
           <label for="c-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Link "Richiedi file" per upload (Dropbox)</label>
           <input type="text" id="c-upload">
 
+          <label for="c-ticktick">⏱ ID attività TickTick del cliente (per le ore)</label>
+          <input type="text" id="c-ticktick" placeholder="es. 6a8dc71ad1f499bd0da58f54">
+          <p class="desc" style="margin-top:0.3rem;">Le sessioni di cronometro su questa attività diventano ore del cliente. Se lo lasci vuoto, chiedimelo e lo trovo io.</p>
           <div class="section-label" style="margin-top:1.25rem;">Sito e social</div>
           <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
           <input type="text" id="c-sito-url">
@@ -799,6 +810,11 @@
 
         <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:2rem;">
           <div class="section-label" style="margin-top:0;">📋 Progetti e video</div>
+          <div id="ore-box" style="display:none;" class="ore-box">
+            <div id="ore-box-titolo" class="ore-box-titolo"></div>
+            <div id="ore-lista"></div>
+            <p class="desc" style="margin:0.4rem 0 0;">Importate ogni sera dal cronometro TickTick. Spariscono da qui quando le metti in un pagamento (Fatture → Pagamenti → ⏱).</p>
+          </div>
           <div id="pr-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
           <button type="button" id="pr-nuovo-btn" class="secondary" onclick="resetFormProgetto()" style="width:100%; margin-top:0.75rem; display:none;">+ Nuovo progetto</button>
         </div>
@@ -878,7 +894,8 @@
         <input type="hidden" id="pg-editing-id">
 
         <label for="pg-progetto">Progetto (facoltativo)</label>
-        <select id="pg-progetto"><option value="">— nessun progetto —</option></select>
+        <select id="pg-progetto" onchange="pgMostraOre()"><option value="">— nessun progetto —</option></select>
+        <div id="pg-ore-ticktick"></div>
 
         <label for="pg-descrizione">Descrizione generale</label>
         <input type="text" id="pg-descrizione" placeholder="es. Sito Vetrina + lavoro extra">
@@ -1570,6 +1587,7 @@
       sito_stato: document.getElementById('c-sito-stato').value,
       sito_password: document.getElementById('c-sito-password').value,
       instagram_url: document.getElementById('c-instagram').value,
+      ticktick_task_id: document.getElementById('c-ticktick').value.trim() || null,
       prossimo_passo: document.getElementById('c-avanzamento').value,
       upload_link: document.getElementById('c-upload').value,
       rinnovo_piano: document.getElementById('c-rinnovo-piano').value,
@@ -2078,8 +2096,10 @@
     document.getElementById('c-sito-stato').value = c.sito_stato || '';
     document.getElementById('c-sito-password').value = c.sito_password || '';
     document.getElementById('c-instagram').value = c.instagram_url || '';
+    document.getElementById('c-ticktick').value = c.ticktick_task_id || '';
     document.getElementById('c-avanzamento').value = c.prossimo_passo || '';
     vidCarica(user_id);
+    caricaOre(user_id);
     aggiornaRigaAttivita(false);
     document.getElementById('c-upload').value = c.upload_link || '';
     document.getElementById('c-rinnovo-piano').value = c.rinnovo_piano || '';
@@ -2352,6 +2372,7 @@
     }
     const sel = document.getElementById('pg-progetto');
     if (sel) { const v = sel.value; sel.innerHTML = opzioniProgetto(v); }
+    if (typeof renderOre === 'function') { renderOre(); pgMostraOre(); }
   }
   function opzioniProgetto(scelto) {
     return '<option value="">— nessun progetto —</option>' + progettiMenu.map(p => `<option value="${p.id}"${p.id === scelto ? ' selected' : ''}>${vcEsc(p.titolo || '(senza titolo)')}${p.stato === 'Completato' ? ' (completato)' : ''}</option>`).join('');
@@ -2534,7 +2555,7 @@
       <div style="font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
         <span style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;"><button type="button" onclick="spostaProgetto('${p.id}', -1)" ${idx === 0 ? 'disabled' : ''} title="Sposta su" class="mv-btn">▲</button><button type="button" onclick="spostaProgetto('${p.id}', 1)" ${idx === window.progettiCache.length - 1 ? 'disabled' : ''} title="Sposta giù" class="mv-btn">▼</button></span>
         <span onclick="caricaProgettoNelForm('${p.id}')" style="cursor:pointer; flex:1;">${p.titolo || '(senza titolo)'}
-          <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${(p.modalita || 'avanzamento') === 'da_saldare' ? `🕒 ${p.ore_da_saldare || 0} h da saldare`
+          <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${(p.modalita || 'avanzamento') === 'da_saldare' ? `🕒 ${fmtOre(Math.round((Number(p.ore_da_saldare) || 0) * 60))} da saldare`
             : p.modalita === 'pacchetto' ? `${(p.ore_stimate || 0) - (p.ore_fatte || 0)}h rimaste su ${p.ore_stimate || 0}h`
             : p.modalita === 'testo' ? 'Solo stato e note'
             : `${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%${extraTag}` : ''}`}</span>
@@ -3156,6 +3177,7 @@
       const ore = row.querySelector('.vp-ore').value, tariffa = row.querySelector('.vp-tariffa').value;
       const voce = { descrizione, importo };
       if (ore !== '' && tariffa !== '') { voce.ore = Number(ore); voce.tariffa = Number(tariffa); }
+      if (row.dataset.sessioni) voce.sessioni = row.dataset.sessioni.split(',');
       if (descrizione || importo) voci.push(voce);
     });
     return voci;
@@ -3206,6 +3228,7 @@
     document.getElementById('pg-salva-btn').textContent = 'Salva modifiche';
     document.getElementById('pg-descrizione').value = p.descrizione || '';
     document.getElementById('pg-progetto').innerHTML = opzioniProgetto(p.progetto_id || '');
+    pgMostraOre();
     document.getElementById('pg-stato').value = p.stato || 'In attesa';
     document.getElementById('pg-data').value = p.data || '';
     document.getElementById('pg-documento').value = p.documento_url || '';
@@ -3230,6 +3253,7 @@
     document.getElementById('pg-salva-btn').textContent = 'Aggiungi pagamento';
     document.getElementById('pg-descrizione').value = '';
     document.getElementById('pg-progetto').innerHTML = opzioniProgetto('');
+    pgMostraOre();
     document.getElementById('pg-documento').value = '';
     document.getElementById('pg-stato').value = 'Pagato';
     document.getElementById('pg-data').value = '';
@@ -3293,6 +3317,98 @@
     }
   }
 
+  // ---- Ore di lavoro dal cronometro TickTick (tabella ore_lavoro, importate ogni sera) ----
+  window.oreCache = [];
+  const fmtOre = min => { const h = Math.floor(min / 60), m = min % 60; return h ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`; };
+  const fmtData = d => new Date(d).toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  async function caricaOre(user_id) {
+    window.oreCache = [];
+    if (user_id) {
+      const { data } = await client.from('ore_lavoro').select('*').eq('user_id', user_id).is('pagamento_id', null).order('inizio', { ascending: true });
+      window.oreCache = data || [];
+    }
+    renderOre(); pgMostraOre();
+  }
+  function renderOre() {
+    const box = document.getElementById('ore-box'); if (!box) return;
+    const righe = window.oreCache;
+    if (!righe.length) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    const tot = righe.filter(o => !o.escluso).reduce((a, o) => a + o.minuti, 0);
+    document.getElementById('ore-box-titolo').textContent = `⏱ Ore da TickTick non ancora fatturate · ${fmtOre(tot)}`;
+    document.getElementById('ore-lista').innerHTML = righe.map(o => `
+      <div class="ore-riga${o.escluso ? ' ore-esclusa' : ''}">
+        <span class="ore-data">${fmtData(o.inizio)}</span>
+        <span class="ore-durata">${fmtOre(o.minuti)}</span>
+        <select onchange="oreCambiaProgetto('${o.id}', this.value)" title="Progetto a cui vanno queste ore">${opzioniProgetto(o.progetto_id || '')}</select>
+        <button type="button" class="secondary btn-small" onclick="oreEscludi('${o.id}', ${!o.escluso})" title="${o.escluso ? 'Rimetti nel conteggio' : 'Non conteggiare questa sessione'}">${o.escluso ? '↺' : '✕'}</button>
+      </div>`).join('');
+  }
+  async function oreAggiustaProgetto(pid, deltaMin) {
+    if (!pid || !deltaMin) return;
+    const { data } = await client.from('progetti').select('ore_da_saldare').eq('id', pid).maybeSingle();
+    const nuovo = Math.max(0, Math.round(((Number(data && data.ore_da_saldare) || 0) + deltaMin / 60) * 100) / 100);
+    await client.from('progetti').update({ ore_da_saldare: nuovo }).eq('id', pid);
+  }
+  async function oreCambiaProgetto(id, pid) {
+    const o = window.oreCache.find(x => x.id === id); if (!o) return;
+    const { error } = await client.from('ore_lavoro').update({ progetto_id: pid || null }).eq('id', id);
+    if (error) { alert('Errore: ' + error.message); return; }
+    if (!o.escluso) { await oreAggiustaProgetto(o.progetto_id, -o.minuti); await oreAggiustaProgetto(pid, o.minuti); }
+    o.progetto_id = pid || null; renderOre(); pgMostraOre();
+    caricaProgettiEsistenti(document.getElementById('c-userid').value.trim());
+  }
+  async function oreEscludi(id, escludi) {
+    const o = window.oreCache.find(x => x.id === id); if (!o) return;
+    const { error } = await client.from('ore_lavoro').update({ escluso: escludi }).eq('id', id);
+    if (error) { alert('Errore: ' + error.message); return; }
+    await oreAggiustaProgetto(o.progetto_id, escludi ? -o.minuti : o.minuti);
+    o.escluso = escludi; renderOre(); pgMostraOre();
+    caricaProgettiEsistenti(document.getElementById('c-userid').value.trim());
+  }
+  // Nel modulo pagamento: sessioni del progetto scelto (o senza progetto) ancora da fatturare
+  function pgSessioniDisponibili() {
+    const pid = (document.getElementById('pg-progetto') || {}).value || '';
+    const giaInVoci = new Set([...document.querySelectorAll('#pg-voci-lista > .voce-pg[data-sessioni]')].flatMap(r => r.dataset.sessioni.split(',')));
+    return window.oreCache.filter(o => !o.escluso && (o.progetto_id || '') === pid && !giaInVoci.has(o.id));
+  }
+  function pgMostraOre() {
+    const el = document.getElementById('pg-ore-ticktick'); if (!el) return;
+    const ss = pgSessioniDisponibili();
+    if (!ss.length) { el.innerHTML = ''; return; }
+    const tot = ss.reduce((a, o) => a + o.minuti, 0);
+    el.innerHTML = `<button type="button" class="secondary" onclick="pgAggiungiOre()" style="width:100%; margin-top:0.5rem;">⏱ Aggiungi le ore di TickTick: ${ss.length} session${ss.length === 1 ? 'e' : 'i'} · ${fmtOre(tot)}</button>`;
+  }
+  function pgAggiungiOre() {
+    const ss = pgSessioniDisponibili(); if (!ss.length) return;
+    const pid = document.getElementById('pg-progetto').value;
+    const prog = (window.progettiCache || []).find(p => p.id === pid);
+    const tariffa = prog && prog.tariffa_oraria ? Number(prog.tariffa_oraria) : '';
+    // una voce per giorno: "Lavoro del 12.11.2026" con le ore del giorno
+    const perGiorno = {};
+    ss.forEach(o => { const g = fmtData(o.inizio); (perGiorno[g] = perGiorno[g] || []).push(o); });
+    // tolgo la voce vuota iniziale, se c'è
+    document.querySelectorAll('#pg-voci-lista > .voce-pg').forEach(r => { if (!r.querySelector('.vp-desc').value && !r.querySelector('.vp-importo').value) r.remove(); });
+    Object.entries(perGiorno).forEach(([g, lista]) => {
+      const min = lista.reduce((a, o) => a + o.minuti, 0);
+      const ore = Math.round(min / 60 * 100) / 100;
+      aggiungiVocePagamento(`Lavoro del ${g}`, tariffa !== '' ? Math.round(ore * tariffa * 100) / 100 : '', ore, tariffa);
+      const righe = document.querySelectorAll('#pg-voci-lista > .voce-pg'); righe[righe.length - 1].dataset.sessioni = lista.map(o => o.id).join(',');
+    });
+    ricalcolaTotalePagamento(); pgMostraOre();
+    if (tariffa === '') showMsg('pagamento-msg', 'Il progetto non ha una tariffa oraria: inserisci i CHF/ora nelle voci.', false);
+  }
+  async function oreSegnaFatturate(pagamentoId, ids) {
+    if (!ids.length) return;
+    const ss = window.oreCache.filter(o => ids.includes(o.id));
+    const { error } = await client.from('ore_lavoro').update({ pagamento_id: pagamentoId }).in('id', ids);
+    if (error) { showMsg('pagamento-msg', 'Pagamento salvato, ma errore nel segnare le ore: ' + error.message, false); return; }
+    const perProg = {}; ss.forEach(o => { if (o.progetto_id) perProg[o.progetto_id] = (perProg[o.progetto_id] || 0) + o.minuti; });
+    for (const [pid, min] of Object.entries(perProg)) await oreAggiustaProgetto(pid, -min);
+    caricaOre(document.getElementById('c-userid').value.trim());
+    caricaProgettiEsistenti(document.getElementById('c-userid').value.trim());
+  }
+
   async function salvaPagamento() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('pagamento-msg', 'Nessun cliente caricato: clicca Carica su un cliente dalla lista.', false); return; }
@@ -3352,6 +3468,7 @@
       ({ error } = await client.from('pagamenti').insert({ id: idPagamento, ...payload }));
     }
     if (error) { showMsg('pagamento-msg', 'Errore: ' + error.message, false); return; }
+    await oreSegnaFatturate(idPagamento, voci.flatMap(v => v.sessioni || []));
 
     showMsg('pagamento-msg', isEditing ? 'Pagamento aggiornato.' : (paymentLink ? 'Pagamento aggiunto con link Stripe generato automaticamente.' : 'Pagamento aggiunto.'), true);
     caricaStatistiche();

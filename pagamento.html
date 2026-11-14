@@ -137,7 +137,7 @@
       const vociEl = document.getElementById('q-voci');
       vociEl.innerHTML = '';
       (data.voci || []).forEach(v => {
-        const dett = v.ore != null && v.tariffa != null ? ` <span style="color:#8A8A8A;">(${String(v.ore).replace('.', ',')} h × CHF ${v.tariffa})</span>` : '';
+        const dett = v.ore != null && v.tariffa != null ? ` <span style="color:#8A8A8A;">(${(() => { const min = Math.round(v.ore * 60), h = Math.floor(min / 60), m = min % 60; return m ? (h ? h + ' h ' + String(m).padStart(2, '0') : m + ' min') : h + ' h'; })()} × CHF ${v.tariffa}/h)</span>` : '';
         vociEl.innerHTML += `<div class="quote-row"><span>${v.descrizione || ''}${dett}</span><span>CHF ${v.importo}.–</span></div>`;
       });
 
