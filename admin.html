@@ -168,6 +168,7 @@
   .cl-attivita { display: block; font-size: 0.66rem; color: var(--grey); font-weight: 400; overflow: hidden; text-overflow: ellipsis; }
   .sub-doc-panel > :first-child { margin-top: 0 !important; }
   .cliente-attivita-riga { font-size: 0.66rem; color: var(--grey); margin: -0.6rem 0 0.9rem 0.25rem; }
+  .riga-elimina { display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0 !important; margin:0 !important; background:none !important; border:1px solid rgba(0,0,0,0.15) !important; border-radius:5px; color:#c0392b !important; cursor:pointer; flex-shrink:0; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -724,8 +725,8 @@
 
       <div class="subdoc-pills">
         <button class="subdoc-pill" id="subdoc-progetto" onclick="showSubDoc('progetto')">Progetto</button>
-        <button class="subdoc-pill active" id="subdoc-preventivo" onclick="showSubDoc('preventivo')">Preventivi</button>
         <button class="subdoc-pill" id="subdoc-pagamento" onclick="showSubDoc('pagamento')">Pagamenti</button>
+        <button class="subdoc-pill active" id="subdoc-preventivo" onclick="showSubDoc('preventivo')">Preventivi</button>
         <button class="subdoc-pill" id="subdoc-documento" onclick="showSubDoc('documento')">Documenti</button>
         <button class="subdoc-pill" id="subdoc-report" onclick="showSubDoc('report')">Report</button>
       </div>
@@ -1956,7 +1957,7 @@
     }
   }
 
-  const DOC_GRUPPI = { progetti: ['progetto'], fatture: ['preventivo', 'pagamento'], cloud: ['documento', 'report'] };
+  const DOC_GRUPPI = { progetti: ['progetto'], fatture: ['pagamento', 'preventivo'], cloud: ['documento', 'report'] };
   const DOC_TITOLI = { progetti: 'Progetti', fatture: 'Fatture', cloud: 'Cloud' };
   const ultimoSubDoc = {};
   function gruppoDiSub(tipo) { return Object.keys(DOC_GRUPPI).find(g => DOC_GRUPPI[g].includes(tipo)) || 'progetti'; }
@@ -2911,9 +2912,18 @@
         <span>${p.titolo || '(senza titolo)'} — CHF ${p.importo || 0}</span>
         <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${p.stato === 'Accettato' ? '#1E6B3C' : p.stato === 'Scaduto' ? '#c0392b' : '#7A4E00'};">${p.stato}</span>
         <button type="button" class="secondary btn-small" onclick="event.stopPropagation(); copiaLink('${p.link_approvazione || ''}', this)" style="flex-shrink:0;">🔗 Copia link</button>
+        <button type="button" class="riga-elimina" title="Elimina" onclick="event.stopPropagation(); eliminaPreventivo('${p.id}', '${(p.titolo || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       </div>`).join('');
   }
 
+  async function eliminaPreventivo(id, titolo) {
+    if (!confirm(`Eliminare il preventivo "${titolo || '(senza titolo)'}"?\n\nNon si può annullare.`)) return;
+    const { error } = await client.from('preventivi').delete().eq('id', id);
+    if (error) { alert('Errore: ' + error.message); return; }
+    const ed = document.getElementById('p-editing-id'); if (ed && ed.value === id && typeof resetFormPreventivo === 'function') resetFormPreventivo();
+    caricaPreventiviEsistenti(document.getElementById('c-userid').value.trim());
+    caricaStatistiche();
+  }
   function caricaPreventivoNelForm(id) {
     const p = (window.preventiviCache || []).find(x => x.id === id);
     if (!p) return;
@@ -3171,9 +3181,20 @@
         <span>${p.descrizione || '(senza descrizione)'} — CHF ${p.importo || 0}</span>
         <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${p.stato === 'Pagato' ? '#1E6B3C' : p.stato === 'Scaduto' ? '#c0392b' : '#7A4E00'};">${p.stato}</span>
         <button type="button" class="secondary btn-small" onclick="event.stopPropagation(); copiaLink('${p.payment_link || ''}', this)" style="flex-shrink:0;">🔗 Copia link</button>
+        <button type="button" class="riga-elimina" title="Elimina" onclick="event.stopPropagation(); eliminaPagamento('${p.id}', '${(p.descrizione || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       </div>`).join('');
   }
 
+  async function eliminaPagamento(id, desc) {
+    const p = (window.pagamentiCache || []).find(x => x.id === id) || {};
+    const avviso = p.stato === 'Pagato' ? '\n\nAttenzione: risulta già pagato. Lo togli solo dal sito, non da Stripe.' : (p.payment_link ? '\n\nIl link di pagamento Stripe resta attivo: se serve, disattivalo su Stripe.' : '');
+    if (!confirm(`Eliminare il pagamento "${desc || '(senza descrizione)'}"?${avviso}\n\nNon si può annullare.`)) return;
+    const { error } = await client.from('pagamenti').delete().eq('id', id);
+    if (error) { alert('Errore: ' + error.message); return; }
+    if (document.getElementById('pg-editing-id').value === id && typeof resetFormPagamento === 'function') resetFormPagamento();
+    caricaPagamentiEsistenti(document.getElementById('c-userid').value.trim());
+    caricaStatistiche();
+  }
   function caricaPagamentoNelForm(id) {
     const p = (window.pagamentiCache || []).find(x => x.id === id);
     if (!p) return;
