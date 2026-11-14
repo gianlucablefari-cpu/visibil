@@ -518,6 +518,7 @@
   .attivita-cliente { margin: -0.75rem 0.25rem 1.25rem; padding: 0.6rem 0.7rem; border: 1px dashed rgba(26,26,230,0.35); border-radius: 8px; font-size: 0.7rem; line-height: 1.5; color: var(--black); }
   .attivita-titolo { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.25rem; }
   .attivita-etichetta { color: var(--grey); }
+  body.vista-cliente #attivita-cliente-sidebar { display: none !important; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -1758,6 +1759,8 @@
     window.simulaCliente = !window.simulaCliente;
     const b = document.getElementById('btn-simula');
     if (b) b.textContent = window.simulaCliente ? '✕ Torna alla tua vista' : '👁 Come lo vede il cliente';
+    // Nella vista del cliente il box "Visibile solo a te" sparisce, come per il cliente vero
+    document.body.classList.toggle('vista-cliente', !!window.simulaCliente);
     fetchVideoCommenti(false).then(t => document.querySelectorAll('.video-comments[data-init]').forEach(x => renderVideoComments(x, t)));
   }
   async function initVideoComments() {
