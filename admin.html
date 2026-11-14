@@ -159,6 +159,14 @@
   .home-riga-azione { flex: none; font-size: 0.68rem; color: var(--grey); white-space: nowrap; }
   .home-riga:hover .home-riga-azione { color: var(--ink); }
   @media (max-width: 600px) { .home-riga-azione { display: none; } }
+  .servizi-gruppo { font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); margin: 0.75rem 0 0.4rem; }
+  .servizi-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; }
+  .servizio { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.7rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; background: #fff; color: var(--black); text-decoration: none; transition: border-color 0.15s, box-shadow 0.15s; min-width: 0; }
+  .servizio:hover { border-color: var(--ink); box-shadow: 0 4px 14px rgba(26,26,230,0.08); }
+  .servizio img { width: 22px; height: 22px; flex: none; border-radius: 4px; }
+  .servizio span { display: flex; flex-direction: column; min-width: 0; }
+  .servizio strong { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .servizio small { font-size: 0.66rem; color: var(--grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -551,6 +559,36 @@
         <div class="section-label" style="margin-top:0;">Recenti</div>
         <div id="home-recenti" class="recenti-griglia"></div>
       </div>
+      <div id="home-servizi-box" style="margin:0 0 1.5rem;">
+        <div class="section-label" style="margin-top:0;">Servizi</div>
+        <div class="servizi-gruppo">Lavoro</div>
+        <div class="servizi-griglia">
+          <a class="servizio" href="https://www.dropbox.com/home/VISIBIL%20Clienti" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=dropbox.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Dropbox</strong><small>Cartelle clienti</small></span></a>
+          <a class="servizio" href="https://ticktick.com/webapp/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=ticktick.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>TickTick</strong><small>Attività</small></span></a>
+          <a class="servizio" href="https://outlook.live.com/mail/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=outlook.live.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Outlook</strong><small>Posta</small></span></a>
+          <a class="servizio" href="https://claude.ai/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=claude.ai&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Claude</strong><small>Assistente</small></span></a>
+        </div>
+        <div class="servizi-gruppo">Sito e tecnica</div>
+        <div class="servizi-griglia">
+          <a class="servizio" href="https://vsbl.ch" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=vsbl.ch&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>vsbl.ch</strong><small>Sito VISIBIL</small></span></a>
+          <a class="servizio" href="https://app.netlify.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=netlify.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Netlify</strong><small>Hosting e deploy</small></span></a>
+          <a class="servizio" href="https://github.com/gianlucablefari-cpu/visibil" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=github.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>GitHub</strong><small>Codice del sito</small></span></a>
+          <a class="servizio" href="https://supabase.com/dashboard/project/zmdnuplqgpznryxfooez" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=supabase.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Supabase</strong><small>Database e accessi</small></span></a>
+          <a class="servizio" href="https://resend.com/emails" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=resend.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Resend</strong><small>Email inviate</small></span></a>
+          <a class="servizio" href="https://admin.hostpoint.ch/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=hostpoint.ch&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Hostpoint</strong><small>Domini e DNS</small></span></a>
+          <a class="servizio" href="https://console.cloudinary.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=cloudinary.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Cloudinary</strong><small>Immagini</small></span></a>
+        </div>
+        <div class="servizi-gruppo">Soldi</div>
+        <div class="servizi-griglia">
+          <a class="servizio" href="https://dashboard.stripe.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=stripe.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Stripe</strong><small>Pagamenti e abbonamenti</small></span></a>
+        </div>
+        <div class="servizi-gruppo">Social e grafica</div>
+        <div class="servizi-griglia">
+          <a class="servizio" href="https://business.facebook.com/latest/home" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=facebook.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Meta Business</strong><small>Post e ads</small></span></a>
+          <a class="servizio" href="https://app.metricool.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=metricool.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Metricool</strong><small>Pianificazione</small></span></a>
+          <a class="servizio" href="https://www.canva.com/" target="_blank" rel="noopener"><img src="https://www.google.com/s2/favicons?domain=canva.com&sz=64" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span><strong>Canva</strong><small>Grafica</small></span></a>
+        </div>
+      </div>
       <p id="home-tutto-ok" style="display:none; font-size:0.9rem; padding:1rem 1.1rem; border:1px dashed rgba(0,0,0,0.15); border-radius:6px; color:var(--grey);">✓ Tutto in ordine: niente in sospeso.</p>
 
       <div id="home-stripe-abbinare-box" style="display:none; margin-top:1.5rem; padding:1rem 1.1rem; border:1px solid var(--ink); border-radius:6px;">
@@ -619,14 +657,6 @@
         <div class="msg" id="broadcast-msg"></div>
       </div>
 
-      <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08);">
-        <div class="section-label" style="margin-top:0;">Link rapidi</div>
-        <div style="display:flex; flex-wrap:wrap; gap:0.6rem;">
-          <a href="https://www.dropbox.com/home" target="_blank" style="font-size:0.8rem; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none;">📁 Dropbox</a>
-          <a href="https://ticktick.com/webapp/#p/all/tasks" target="_blank" style="font-size:0.8rem; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none;">✅ TickTick</a>
-          <a href="https://dashboard.stripe.com/" target="_blank" style="font-size:0.8rem; padding:0.5rem 0.9rem; border:1px solid rgba(0,0,0,0.12); border-radius:6px; color:var(--black); text-decoration:none;">💳 Stripe</a>
-        </div>
-      </div>
 
       <button onclick="showTab('configuratore')" class="secondary" style="width:100%; margin-top:1rem;">📐 Apri il configuratore prezzi</button>
     </div>
