@@ -114,6 +114,15 @@
   #panel-configuratore.cfg-modale > .card { max-width: 980px; margin: 0 auto; }
   body.modale-aperta { overflow: hidden; }
   .home-box .section-label { }
+  .pr-card { border: 1px solid rgba(0,0,0,0.08); border-radius: 6px; padding: 0.6rem 0.85rem; margin-bottom: 0.6rem; background: var(--white, #fff); }
+  .pr-icon-btn { display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0 !important; margin:0 !important; background:none !important; border:1px solid rgba(0,0,0,0.15) !important; border-radius:5px; color:var(--grey) !important; cursor:pointer; flex-shrink:0; font-size:0.9rem; letter-spacing:0; }
+  .pr-icon-btn:hover { color: var(--black) !important; }
+  .pr-video { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid rgba(0,0,0,0.06); }
+  .pr-video:empty { display: none; }
+  .vid-agg-btn { background: none !important; border: 0 !important; color: var(--grey) !important; padding: 0.3rem 0 !important; margin: 0 !important; font-size: 0.7rem; cursor: pointer; }
+  .vid-agg-btn:hover { color: var(--black) !important; }
+  .vid-consegnati { margin: 0.3rem 0 0.4rem; }
+  .vid-consegnati > summary { cursor: pointer; font-size: 0.75rem; color: var(--grey); padding: 0.3rem 0; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -708,20 +717,18 @@
         <div class="msg" id="progetto-msg"></div>
 
         <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:2rem;">
-          <div class="section-label" style="margin-top:0;">📋 Progetti/fasi di questo cliente</div>
+          <div class="section-label" style="margin-top:0;">📋 Progetti e video</div>
           <div id="pr-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
           <button type="button" id="pr-nuovo-btn" class="secondary" onclick="resetFormProgetto()" style="width:100%; margin-top:0.75rem; display:none;">+ Nuovo progetto</button>
         </div>
 
+        <div class="msg" id="vid-msg"></div>
+
         <div id="vid-admin" style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:1rem;">
-          <label style="margin-bottom:0.3rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>Video</label>
-          <p class="desc" style="margin-bottom:0.6rem;">Video Dropbox del cliente: scegli per ognuno il progetto, nell'area cliente compare dentro quel progetto. Cambiare il link di un video non fa perdere i commenti (restano legati al codice del video). Salvataggio con il pulsante qui sotto.</p>
+          <label style="margin-bottom:0.3rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>Video senza progetto</label>
+          <p class="desc" style="margin-bottom:0.6rem;">Video non ancora collegati a un progetto: scegli il progetto dal menu dentro la scheda del video.</p>
           <div id="vid-lista"></div>
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;">
-            <button type="button" class="secondary btn-small" onclick="vidAggiungi()">+ Aggiungi video</button>
-            <button type="button" class="btn-small" onclick="vidSalva()">Salva video</button>
-          </div>
-          <div class="msg" id="vid-msg"></div>
+          <button type="button" class="secondary btn-small" onclick="vidAggiungi('')" style="margin-top:0.5rem;">+ Aggiungi video senza progetto</button>
         </div>
 
         <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:1rem;">
@@ -2035,12 +2042,13 @@
           <input type="text" value="${attr(x.info)}" placeholder="Info (es. 1280×720, H.264, 25 fps)" style="flex:1 1 180px; min-width:0;" onchange="vidCampo(${i},${j},'info',this.value)">
           ${v.versioni.length > 1 ? `<button type="button" class="secondary btn-small" title="Rimuovi versione" onclick="vidRimuoviVersione(${i},${j})">✕</button>` : ''}
         </div>`).join('');
-      const k = v.id || v.chiave || ('n' + i);
+      const k = v.chiave || v.id || ('n' + i);
       const aperto = !v.id || window.vidAperti.has(k);
+      const gr = vidGruppo(v); const stesso = vidDati.map((x, j) => j).filter(j => vidGruppo(vidDati[j]) === gr);
+      const pos = stesso.indexOf(i);
       return `
       <div class="vid-card${aperto ? ' aperto' : ''}" data-k="${attr(k)}">
         <div class="vid-card-testa" onclick="vidToggleCard(this)">
-          <strong style="font-size:0.72rem; color:var(--grey);">${i + 1}</strong>
           <span class="vid-card-nome">${vcEsc(v.nome || 'Video senza nome')}</span>
           ${v.stato === 'consegnato' ? '<span class="vid-card-badge">Consegnato</span>' : ''}
           ${v.id && v.chiave ? `<button type="button" class="secondary btn-small vid-link-btn" title="Copia il link diretto a questo video, da mandare al cliente" onclick="event.stopPropagation(); copiaLinkVideo('${attr(v.chiave)}', this)">🔗 Link</button>` : ''}
@@ -2049,15 +2057,15 @@
         <div class="vid-card-corpo">
         <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap;">
           <input type="text" value="${attr(v.nome)}" placeholder="Nome del video (es. Spot Bagni Sartoriali)" style="flex:1 1 220px; min-width:0; font-weight:600;" onchange="vidNome(${i},this.value)">
-          <select style="width:auto; flex:none; max-width:220px;" onchange="vidDati[${i}].progetto_id=this.value; window.vidAperti.add(vidDati[${i}].id || vidDati[${i}].chiave); vidRender()" title="Progetto a cui appartiene il video">${opzioniProgetto(v.progetto_id || '')}</select>
-          <select style="width:auto; flex:none;" onchange="vidDati[${i}].stato=this.value; vidRender()" title="In lavorazione: compare nel Pannello del cliente. Consegnato: va tra i conclusi">
+          <select style="width:auto; flex:none; max-width:220px;" onchange="vidDati[${i}].progetto_id=this.value; window.vidAperti.add(vidDati[${i}].chiave || vidDati[${i}].id); vidModificato(true)" title="Progetto a cui appartiene il video">${opzioniProgetto(v.progetto_id || '')}</select>
+          <select style="width:auto; flex:none;" onchange="vidDati[${i}].stato=this.value; vidModificato(true)" title="In lavorazione: compare nel Pannello del cliente. Consegnato: va tra i conclusi">
             <option value="in_lavorazione"${(v.stato || 'in_lavorazione') === 'in_lavorazione' ? ' selected' : ''}>In lavorazione</option>
             <option value="consegnato"${v.stato === 'consegnato' ? ' selected' : ''}>Consegnato</option>
           </select>
           <label style="display:flex; align-items:center; gap:0.3rem; margin:0; font-size:0.8rem; font-weight:400;"><input type="checkbox" style="width:auto;" ${v.commenti_attivi ? 'checked' : ''} onchange="vidToggleCommenti(${i},this.checked)"> Commenti attivi</label>
           <span style="flex:1"></span>
-          <button type="button" class="secondary btn-small" title="Sposta su" ${i === 0 ? 'disabled' : ''} onclick="vidSposta(${i},-1)">↑</button>
-          <button type="button" class="secondary btn-small" title="Sposta giù" ${i === vidDati.length - 1 ? 'disabled' : ''} onclick="vidSposta(${i},1)">↓</button>
+          <button type="button" class="secondary btn-small" title="Sposta su" ${pos === 0 ? 'disabled' : ''} onclick="vidSposta(${i},-1)">↑</button>
+          <button type="button" class="secondary btn-small" title="Sposta giù" ${pos === stesso.length - 1 ? 'disabled' : ''} onclick="vidSposta(${i},1)">↓</button>
           <button type="button" class="secondary btn-small" title="Elimina video" onclick="vidElimina(${i})">✕</button>
         </div>
         ${versioni}
@@ -2065,35 +2073,56 @@
           <button type="button" class="secondary btn-small" onclick="vidAggiungiVersione(${i})">+ Versione (HD/4K…)</button>
           ${chiavi.length > 1 ? `<span style="font-size:0.75rem; color:var(--grey);">Commenti:</span>
           <select style="width:auto; max-width:100%;" onchange="vidChiave(${i},this.value)">${opzioniChiave}</select>` : ''}
+          <span style="flex:1"></span>
+          <button type="button" class="btn-small" onclick="vidSalva()">Salva</button>
         </div>
         </div>
       </div>`;
     };
-    // Raggruppati per progetto (nell'ordine dei progetti), poi quelli senza progetto
-    const gruppi = progettiMenu.map(p => ({ titolo: p.titolo || '(senza titolo)', completato: p.stato === 'Completato', idx: vidDati.map((v, i) => i).filter(i => vidDati[i].progetto_id === p.id) }));
+    const cardsDi = idx => {
+      const attivi = idx.filter(i => vidDati[i].stato !== 'consegnato'), cons = idx.filter(i => vidDati[i].stato === 'consegnato');
+      return attivi.map(i => cardHtml(vidDati[i], i)).join('') +
+        (cons.length ? `<details class="vid-consegnati"><summary>Consegnati (${cons.length})</summary>${cons.map(i => cardHtml(vidDati[i], i)).join('')}</details>` : '');
+    };
     const ids = new Set(progettiMenu.map(p => p.id));
-    gruppi.push({ titolo: 'Senza progetto', idx: vidDati.map((v, i) => i).filter(i => !vidDati[i].progetto_id || !ids.has(vidDati[i].progetto_id)) });
-    box.innerHTML = gruppi.filter(g => g.idx.length).map(g => `
-      <div class="vid-gruppo"><div class="vid-gruppo-titolo">📁 ${vcEsc(g.titolo)}${g.completato ? ' <span style="color:var(--grey); font-weight:400;">(completato)</span>' : ''}</div>
-        ${g.idx.map(i => cardHtml(vidDati[i], i)).join('')}
-      </div>`).join('');
+    const fuori = [];
+    progettiMenu.forEach(p => {
+      const idx = vidDati.map((v, i) => i).filter(i => vidDati[i].progetto_id === p.id);
+      const cont = document.querySelector('.pr-video[data-pid="' + p.id + '"]');
+      if (cont) cont.innerHTML = cardsDi(idx) + `<button type="button" class="vid-agg-btn" onclick="vidAggiungi('${p.id}')">+ Aggiungi video a questo progetto</button>`;
+      else if (idx.length) fuori.push({ titolo: p.titolo || '(senza titolo)', idx });
+    });
+    const senza = vidDati.map((v, i) => i).filter(i => !vidDati[i].progetto_id || !ids.has(vidDati[i].progetto_id));
+    box.innerHTML = fuori.map(g => `<div class="vid-gruppo"><div class="vid-gruppo-titolo">📁 ${vcEsc(g.titolo)}</div>${cardsDi(g.idx)}</div>`).join('') + cardsDi(senza);
+    const va = document.getElementById('vid-admin');
+    if (va) { const wrap = va.closest('.acc') || va; wrap.style.display = (senza.length || fuori.length || !progettiMenu.length) ? '' : 'none'; }
   }
+  function vidGruppo(v) { return (v.progetto_id && progettiMenu.some(p => p.id === v.progetto_id) ? v.progetto_id : '') + '|' + (v.stato === 'consegnato' ? 'c' : 'a'); }
+  // Salvataggio: alla chiusura della scheda (se ci sono modifiche), con "Salva", o subito per spostamenti/eliminazioni
+  window.vidSporco = false;
+  function vidModificato(salvaOra) { window.vidSporco = true; vidRender(); if (salvaOra) vidSalva(); }
+  window.addEventListener('beforeunload', e => { if (window.vidSporco) { e.preventDefault(); e.returnValue = ''; } });
   function vidToggleCard(t) {
     const c = t.closest('.vid-card'); const ap = c.classList.toggle('aperto');
     window.vidAperti = window.vidAperti || new Set();
-    if (ap) window.vidAperti.add(c.dataset.k); else window.vidAperti.delete(c.dataset.k);
+    if (ap) window.vidAperti.add(c.dataset.k); else { window.vidAperti.delete(c.dataset.k); if (window.vidSporco) vidSalva(); }
   }
-  function vidNome(i, val) { vidDati[i].nome = val.trim(); }
-  function vidAggiungi() { vidDati.push({ id: null, nome: '', stato: 'in_lavorazione', chiave: vidNuovaChiave(), commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
-  function vidAggiungiVersione(i) { vidDati[i].versioni.push({ link: '', qualita: '', info: '' }); vidRender(); }
-  function vidRimuoviVersione(i, j) { vidDati[i].versioni.splice(j, 1); vidRender(); }
-  function vidElimina(i) { if (confirm('Eliminare questo video dalla lista? I commenti restano salvati.')) { vidDati.splice(i, 1); vidRender(); } }
-  function vidSposta(i, d) { const k = i + d; if (k < 0 || k >= vidDati.length) return; [vidDati[i], vidDati[k]] = [vidDati[k], vidDati[i]]; vidRender(); }
-  function vidToggleCommenti(i, on) { vidDati[i].commenti_attivi = !!on; }
-  function vidChiave(i, val) { vidDati[i].chiave = val; }
+  function vidNome(i, val) { vidDati[i].nome = val.trim(); window.vidSporco = true; }
+  function vidAggiungi(pid) { vidDati.push({ id: null, nome: '', stato: 'in_lavorazione', progetto_id: pid || '', chiave: vidNuovaChiave(), commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
+  function vidAggiungiVersione(i) { vidDati[i].versioni.push({ link: '', qualita: '', info: '' }); vidModificato(); }
+  function vidRimuoviVersione(i, j) { vidDati[i].versioni.splice(j, 1); vidModificato(); }
+  function vidElimina(i) { if (confirm('Eliminare questo video? I commenti restano salvati.')) { vidDati.splice(i, 1); vidModificato(true); } }
+  function vidSposta(i, d) {
+    const g = vidGruppo(vidDati[i]); let k = i + d;
+    while (k >= 0 && k < vidDati.length && vidGruppo(vidDati[k]) !== g) k += d;
+    if (k < 0 || k >= vidDati.length) return;
+    [vidDati[i], vidDati[k]] = [vidDati[k], vidDati[i]]; vidModificato(true);
+  }
+  function vidToggleCommenti(i, on) { vidDati[i].commenti_attivi = !!on; window.vidSporco = true; }
+  function vidChiave(i, val) { vidDati[i].chiave = val; window.vidSporco = true; }
   function vidCampo(i, j, campo, val) {
     const x = vidDati[i].versioni[j];
-    x[campo] = val.trim();
+    x[campo] = val.trim(); window.vidSporco = true;
     if (campo === 'link') {
       if (!x.qualita) x.qualita = vidQualitaDaLink(x.link);
       if (!vidDati[i].nome && j === 0) vidDati[i].nome = vidNomeDaLink(x.link);
@@ -2131,7 +2160,16 @@
     vidChiaviEsistenti = Object.keys(vidConteggi).filter(k => k.startsWith('db_'));
     vidRender();
   }
+  let vidSalvataggio = null;
   async function vidSalva() {
+    if (vidSalvataggio) { vidSalvataggio.ancora = true; return; }
+    vidSalvataggio = { ancora: false };
+    try { await vidSalvaUnaVolta(); } finally {
+      const ancora = vidSalvataggio.ancora; vidSalvataggio = null;
+      if (ancora) vidSalva();
+    }
+  }
+  async function vidSalvaUnaVolta() {
     const user_id = document.getElementById('c-userid').value.trim();
     if (!user_id) { showMsg('vid-msg', 'Carica prima un cliente.', false); return; }
     // ID del cliente: dalla cache (che esclude gli archiviati) o, se manca, dal database
@@ -2163,8 +2201,12 @@
     if (nuoviId.length) delQ = delQ.not('id', 'in', '(' + nuoviId.join(',') + ')');
     const del = await delQ;
     if (del.error) { showMsg('vid-msg', 'Errore nella pulizia dei video vecchi: ' + del.error.message, false); vidCarica(user_id); return; }
+    window.vidSporco = false;
     showMsg('vid-msg', 'Video salvati ✓', true);
-    vidCarica(user_id);
+    // le bozze senza link restano aperte nell'elenco
+    const bozze = vidDati.filter(v => !v.id && !v.versioni.some(x => x.link.trim()));
+    await vidCarica(user_id);
+    if (bozze.length) { vidDati.push(...bozze); vidRender(); }
   }
 
   async function caricaVideoCommenti(user_id) {
@@ -2266,6 +2308,7 @@
     window.progettiCache = data || [];
     if (window.progettiCache.length === 0) {
       container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun progetto ancora.</p>';
+      vidRender();
       return;
     }
     const coloreStato = s => s === 'Completato' ? '#1E6B3C' : s === 'In pausa' ? '#7A4E00' : '#1A1AE6';
@@ -2274,20 +2317,25 @@
       const pctColore = pct !== null && pct > 100 ? '#A32D2D' : 'var(--grey)';
       const extraTag = (pct !== null && pct > 100) ? (p.extra_gratuito ? ' · extra gratuito' : ' · extra da fatturare') : '';
       return `
-      <div style="border:1px solid rgba(0,0,0,0.08); border-radius:6px; padding:0.6rem 0.85rem; margin-bottom:0.5rem; font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+      <div class="pr-card">
+      <div style="font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
         <span style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;"><button type="button" onclick="spostaProgetto('${p.id}', -1)" ${idx === 0 ? 'disabled' : ''} title="Sposta su" class="mv-btn">▲</button><button type="button" onclick="spostaProgetto('${p.id}', 1)" ${idx === window.progettiCache.length - 1 ? 'disabled' : ''} title="Sposta giù" class="mv-btn">▼</button></span>
         <span onclick="caricaProgettoNelForm('${p.id}')" style="cursor:pointer; flex:1;">${p.titolo || '(senza titolo)'}
-          <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${(p.modalita || 'avanzamento') === 'da_saldare' ? `${p.ore_da_saldare || 0}h da saldare${p.tariffa_oraria ? ` · CHF ${Math.round((p.ore_da_saldare || 0) * p.tariffa_oraria)}.–` : ''}`
+          <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${(p.modalita || 'avanzamento') === 'da_saldare' ? `🕒 ${p.ore_da_saldare || 0} h da saldare`
             : p.modalita === 'pacchetto' ? `${(p.ore_stimate || 0) - (p.ore_fatte || 0)}h rimaste su ${p.ore_stimate || 0}h`
             : p.modalita === 'testo' ? 'Solo stato e note'
             : `${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%${extraTag}` : ''}`}</span>
-          <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}</span>
+          <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}${p.cartella_link ? ` <a href="${vcEsc(p.cartella_link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-weight:400; text-transform:none; color:var(--grey); margin-left:0.4rem;">📁 cartella</a>` : ''}</span>
         </span>
+        <button type="button" onclick="caricaProgettoNelForm('${p.id}')" title="Modifica progetto" class="pr-icon-btn">✎</button>
         <button type="button" onclick="eliminaProgetto('${p.id}', '${(p.titolo || '').replace(/'/g, "\\'")}')"  title="Elimina" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
+      </div>
+      <div class="pr-video" data-pid="${p.id}"></div>
       </div>`;
     }).join('');
+    vidRender();
   }
 
   function caricaProgettoNelForm(id) {
