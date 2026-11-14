@@ -1107,6 +1107,15 @@
     await caricaTemplateList();
     caricaStatistiche();
     caricaRecenti();
+    // Arrivo dall'anteprima dell'area cliente: apre quel cliente nella scheda indicata
+    const qp = new URLSearchParams(location.search), qCliente = qp.get('cliente');
+    if (qCliente && clientiCache.some(c => c.user_id === qCliente)) {
+      await caricaNelForm(qCliente);
+      const scheda = qp.get('scheda') || 'progetti';
+      if (['progetti', 'cloud', 'fatture'].includes(scheda)) showDocGroup(scheda);
+      else showTab(scheda === 'cliente' ? 'da-fare' : scheda === 'comunicazioni' ? 'comunicazioni' : 'da-fare');
+      history.replaceState(null, '', 'admin.html');
+    }
 
     setInterval(async () => {
       await caricaMessaggi();

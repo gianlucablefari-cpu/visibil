@@ -2001,7 +2001,7 @@
         + (!isPreview ? '<a href="area-cliente.html?preview=' + OWNER_ID + '" style="color:#fff; text-decoration:underline; font-weight:600;">Passa all\'anteprima</a>'
            : previewId === OWNER_ID ? '<a href="area-cliente.html" style="color:#fff; text-decoration:underline; font-weight:600;">Passa alla vista cliente</a>' : '')
         + (isPreview ? '<button type="button" id="btn-simula" onclick="toggleSimulaCliente()" style="background:#fff; color:#0F0F0F; border:0; border-radius:100px; padding:0.25rem 0.75rem; font:inherit; font-size:0.72rem; font-weight:700; letter-spacing:0; text-transform:none; cursor:pointer;">👁 Come lo vede il cliente</button>' : '')
-        + '<a href="admin.html" style="color:#fff; text-decoration:underline; font-weight:600;">Torna all\'admin</a>';
+        + '<a href="admin.html?cliente=' + encodeURIComponent(targetUserId) + '" onclick="this.href = linkAdminCliente(\'' + targetUserId + '\')" style="color:#fff; text-decoration:underline; font-weight:600;" title="Apre questo cliente nell\'admin, nella scheda corrispondente a quella che stai guardando">✎ Modifica nell\'admin</a>';
       document.body.prepend(banner);
       document.getElementById('dashboard').style.marginTop = '2.5rem';
     }
@@ -2449,6 +2449,12 @@
     return false;
   }
 
+  // Dal banner dell'anteprima: apre il cliente nell'admin, nella scheda che corrisponde a quella aperta qui
+  function linkAdminCliente(uid) {
+    const attiva = (document.querySelector('.tab-panel.active') || {}).id || '';
+    const mappa = { 'tab-home': 'progetti', 'tab-video': 'progetti', 'tab-documenti': 'cloud', 'tab-fatture': 'fatture', 'tab-contatti': 'comunicazioni', 'tab-account': 'cliente' };
+    return 'admin.html?cliente=' + encodeURIComponent(uid) + '&scheda=' + (mappa[attiva] || 'progetti');
+  }
   function openContactSheet() { showTab('contatti'); setTimeout(() => { const t = document.getElementById('contact-messaggio'); if (t) t.focus(); }, 50); }
   function closeContactSheet() {}
 
