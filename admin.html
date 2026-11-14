@@ -165,6 +165,7 @@
   .servizio img, .servizio-iniziale { width: 26px; height: 26px; border-radius: 6px; flex: none; }
   .servizio-iniziale { display: flex; align-items: center; justify-content: center; background: #F2F2F2; color: var(--grey); font-size: 0.8rem; }
   .servizio span { font-size: 0.64rem; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cl-attivita { display: block; font-size: 0.66rem; color: var(--grey); font-weight: 400; overflow: hidden; text-overflow: ellipsis; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -556,6 +557,10 @@
       <div id="home-recenti-box" style="display:none; margin:0.75rem 0 1.5rem;">
         <div class="section-label" style="margin-top:0;">Recenti</div>
         <div id="home-recenti" class="recenti-griglia"></div>
+      </div>
+      <div id="home-attivita-box" style="display:none; margin:0 0 1.5rem;">
+        <div class="section-label" style="margin-top:0;">Attività dei clienti</div>
+        <div id="home-attivita" class="recenti-griglia"></div>
       </div>
       <div id="home-servizi-box" style="margin:0 0 1.5rem;">
         <div class="section-label" style="margin-top:0;">Servizi</div>
@@ -1101,6 +1106,7 @@
     }
     document.getElementById('app').style.display = 'block';
     document.getElementById('admin-email').textContent = user.email;
+    window.utenteAdminId = user.id;
     await caricaClienti();
     await caricaMessaggi();
     await caricaFirmaDefault();
@@ -1128,8 +1134,8 @@
     const box = document.getElementById('home-recenti-box'), el = document.getElementById('home-recenti');
     if (!box || !el) return;
     const [rv, rc, rp] = await Promise.all([
-      client.from('video_cliente').select('user_id, nome, chiave, progetto_id, stato, aggiornato_il, revisione_finita_il'),
-      client.from('video_commenti').select('video_id, created_at, risolto_il').order('created_at', { ascending: false }).limit(1000),
+      client.from('video_cliente').select('user_id, nome, chiave, progetto_id, stato, aggiornato_il, revisione_finita_il, visto_cliente_il'),
+      client.from('video_commenti').select('video_id, user_id, autore, created_at, risolto_il').order('created_at', { ascending: false }).limit(1000),
       client.from('progetti').select('id, titolo')
     ]);
     if (rv.error || !rv.data) return;
@@ -1145,6 +1151,7 @@
       cand.sort((a, b) => (a[0] < b[0] ? 1 : -1));
       return { v, quando: cand[0][0], cosa: cand[0][1] };
     }).filter(Boolean).sort((a, b) => (a.quando < b.quando ? 1 : -1)).slice(0, 4);
+    calcolaAttivitaClienti(rv.data, rc.data || []);
     if (!eventi.length) { box.style.display = 'none'; return; }
     const esc = t => vcEsc(t).replace(/"/g, '&quot;');
     const fa = d => { const m = Math.round((Date.now() - new Date(d)) / 60000); if (m < 60) return m <= 1 ? 'ora' : m + ' min fa'; const h = Math.round(m / 60); if (h < 24) return h + ' h fa'; const g = Math.round(h / 24); return g === 1 ? 'ieri' : g + ' giorni fa'; };
@@ -1157,6 +1164,37 @@
       </div>`).join('');
     box.style.display = '';
   }
+  function tempoFa(d) {
+    const m = Math.round((Date.now() - new Date(d)) / 60000); if (m < 60) return m <= 1 ? 'ora' : m + ' min fa';
+    const h = Math.round(m / 60); if (h < 24) return h + ' h fa';
+    const g = Math.round(h / 24); if (g === 1) return 'ieri'; if (g < 60) return g + ' giorni fa';
+    return Math.round(g / 30) + ' mesi fa';
+  }
+  // Ultima attività di ogni cliente nell'area cliente: accesso, commenti, revisione, video aperto, messaggi
+  function calcolaAttivitaClienti(video, commenti) {
+    const att = {};
+    const segna = (uid, quando, cosa) => { if (!uid || !quando) return; if (!att[uid] || quando > att[uid].quando) att[uid] = { quando, cosa }; };
+    (clientiCache || []).forEach(c => segna(c.user_id, c.ultimo_accesso_il, "ha aperto l'area cliente"));
+    const nomeVideo = {}; (video || []).forEach(v => { nomeVideo[v.chiave] = v.nome;
+      segna(v.user_id, v.visto_cliente_il, 'ha guardato «' + (v.nome || 'video') + '»');
+      segna(v.user_id, v.revisione_finita_il, 'ha finito la revisione di «' + (v.nome || 'video') + '»'); });
+    (commenti || []).filter(c => c.autore === 'cliente').forEach(c => segna(c.user_id, c.created_at, 'ha commentato «' + (nomeVideo[c.video_id] || 'un video') + '»'));
+    (window.messaggiCache || []).filter(m => m.tipo === 'contatto').forEach(m => segna(m.user_id, m.created_at, 'ti ha scritto'));
+    window.attivitaClienti = att;
+    renderClientiLista();
+    const box = document.getElementById('home-attivita-box'), el = document.getElementById('home-attivita');
+    if (!box || !el) return;
+    const top = Object.entries(att).filter(([uid]) => uid !== OWNER_ID_ADMIN()).sort((a, b) => (a[1].quando < b[1].quando ? 1 : -1)).slice(0, 4);
+    if (!top.length) { box.style.display = 'none'; return; }
+    el.innerHTML = top.map(([uid, a]) => `
+      <div class="recente" role="button" tabindex="0" onclick="caricaNelForm('${uid}')">
+        <div class="recente-nome" style="margin-top:0;">${vcEsc(nomeClienteById(uid))}</div>
+        <div class="recente-cliente" style="white-space:normal;">${vcEsc(a.cosa)}</div>
+        <div class="recente-quando" style="margin-top:0.3rem;">${tempoFa(a.quando)}</div>
+      </div>`).join('');
+    box.style.display = '';
+  }
+  function OWNER_ID_ADMIN() { return (window.utenteAdminId || ''); }
   async function apriVideoRecente(uid, chiave) {
     await caricaNelForm(uid);
     showDocGroup('progetti');
@@ -1739,7 +1777,7 @@
             <button title="${c.preferito ? 'Togli dai preferiti' : 'Aggiungi ai preferiti'}" onclick="toggleFavorito(event, '${c.user_id}')" style="display:flex; align-items:center; justify-content:center; width:24px; height:24px; padding:0; margin:0; background:none; border:none; cursor:pointer; flex-shrink:0; color:${c.preferito ? '#e63950' : 'rgba(0,0,0,0.2)'};">
               <svg viewBox="0 0 24 24" fill="${c.preferito ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
             </button>
-            <span onclick="${archiviato ? '' : `caricaNelForm('${c.user_id}')`}" style="cursor:${archiviato ? 'default' : 'pointer'}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1; ${archiviato ? 'color:var(--grey);' : ''}">${c.nome || '(senza nome)'}</span>
+            <span onclick="${archiviato ? '' : `caricaNelForm('${c.user_id}')`}" style="cursor:${archiviato ? 'default' : 'pointer'}; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:1; ${archiviato ? 'color:var(--grey);' : ''}">${c.nome || '(senza nome)'}${!archiviato && window.attivitaClienti && window.attivitaClienti[c.user_id] ? `<small class="cl-attivita" title="${vcEsc(window.attivitaClienti[c.user_id].cosa).replace(/"/g, '&quot;')}">attivo ${tempoFa(window.attivitaClienti[c.user_id].quando)}</small>` : ''}</span>
             <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;">
               ${azioneDestra}
             </div>

@@ -2006,6 +2006,8 @@
       document.getElementById('dashboard').style.marginTop = '2.5rem';
     }
 
+    // Registra l'ultimo accesso del cliente (non quando Gianluca guarda in anteprima)
+    if (!isPreview) client.rpc('registra_accesso').then(() => {}, () => {});
     const { data: clienti, error: errClienti } = await client.from('clienti').select('*').eq('user_id', targetUserId);
     if (errClienti) console.error('Errore clienti:', errClienti);
     const cliente = clienti && clienti[0];
