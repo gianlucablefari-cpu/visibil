@@ -298,20 +298,6 @@
 
     <div class="tab-panel" id="panel-da-fare">
     <div class="card">
-      <div id="pan-link-lavoro" style="display:none; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.25rem;"></div>
-
-    <div class="acc-item" id="acc-link-abbonamento">
-      <div class="acc-header" onclick="toggleAcc(this)" style="display:none;">
-        <span>Gestisci link</span>
-        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </div>
-      <div class="acc-body">
-      <div id="link-lavoro-lista"></div>
-      <button type="button" class="secondary" onclick="aggiungiLinkLavoro()" style="width:100%; margin-top:0.5rem;">+ Aggiungi link</button>
-      <div class="msg" id="cliente-msg-2"></div>
-      </div>
-    </div>
-
       <div style="margin-bottom:1rem;">
     <div class="acc-item" id="acc-dati-personali">
       <div class="acc-header" onclick="toggleAcc(this)">
@@ -634,6 +620,22 @@
     <div class="card">
       <h2 id="doc-gruppo-titolo">Progetti</h2>
       <p class="desc" style="margin-top:0; margin-bottom:1rem; display:none;">Cliente: <strong id="doctab-cliente-display">— nessuno caricato —</strong></p>
+
+      <div id="cloud-link">
+      <div id="pan-link-lavoro" style="display:none; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.25rem;"></div>
+
+    <div class="acc-item" id="acc-link-abbonamento">
+      <div class="acc-header" onclick="toggleAcc(this)" style="display:none;">
+        <span>Gestisci link</span>
+        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </div>
+      <div class="acc-body">
+      <div id="link-lavoro-lista"></div>
+      <button type="button" class="secondary" onclick="aggiungiLinkLavoro()" style="width:100%; margin-top:0.5rem;">+ Aggiungi link</button>
+      <div class="msg" id="cliente-msg-2"></div>
+      </div>
+    </div>
+      </div>
 
       <details class="cloud-dati" id="cloud-dati" open>
         <summary>📁 Cartelle e collegamenti del cliente</summary>
@@ -1802,7 +1804,7 @@
     Object.entries(DOC_GRUPPI).forEach(([gg, subs]) => subs.forEach(t => { const b = document.getElementById('subdoc-' + t); if (b) b.style.display = gg === g ? '' : 'none'; }));
     const pills = document.querySelector('#panel-documenti .subdoc-pills'); if (pills) pills.style.display = DOC_GRUPPI[g].length > 1 ? '' : 'none';
     const t = document.getElementById('doc-gruppo-titolo'); if (t) t.textContent = DOC_TITOLI[g];
-    const cd = document.getElementById('cloud-dati'); if (cd) cd.style.display = g === 'cloud' ? '' : 'none';
+    const cd = document.getElementById('cloud-dati'); if (cd) cd.style.display = g === 'cloud' ? '' : 'none'; const cl = document.getElementById('cloud-link'); if (cl) cl.style.display = g === 'cloud' ? '' : 'none';
     document.querySelectorAll('.tabs-bar > .tab-tile').forEach(b => b.classList.remove('active'));
     const tb = document.getElementById('tab-' + g); if (tb) tb.classList.add('active');
   }
