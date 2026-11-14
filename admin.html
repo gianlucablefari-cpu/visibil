@@ -126,6 +126,10 @@
   .cloud-dati { background: var(--surface); border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; }
   .cloud-dati > summary { cursor: pointer; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); }
   .cloud-dati-corpo { margin-top: 0.75rem; }
+  #com-nuova-btn { margin: 0.25rem 0 0.5rem; }
+  .com-nuova { border: 1px dashed rgba(26,26,230,0.35); border-radius: 8px; padding: 1rem; margin: 0.5rem 0 1rem; }
+  .com-nuova > .section-label { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 0; }
+  .com-nuova-chiudi { margin: 0 !important; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -459,7 +463,7 @@
         <textarea id="email-incipit" style="min-height:80px;">Ciao, ecco il prossimo passo per il tuo progetto:</textarea>
         <p class="desc" style="margin-top:0.3rem; margin-bottom:0.75rem;">Formattazione: **grassetto**, *corsivo*, [testo](https://link)</p>
 
-        <p class="desc" style="margin-top:0.5rem;">Le "Note" della Panoramica vengono incluse automaticamente nell'email.</p>
+        <p class="desc" style="margin-top:0.5rem;">Le "Note" della scheda Cliente vengono incluse automaticamente nell'email.</p>
 
         <label for="email-saluti">Saluti</label>
         <textarea id="email-saluti" style="min-height:100px;"></textarea>
@@ -3954,10 +3958,20 @@
       if (lblNuova && cron) {
         const fs = [...card.childNodes]; const nuova = wrapDa(fs.slice(fs.indexOf(lblNuova), fs.indexOf(cron)), 'acc-nuovo');
         nuova.dataset.acc = 'com:nuova';
+        nuova.classList.add('com-nuova');
         cron.style.borderTop = ''; cron.style.marginTop = '1rem'; cron.style.paddingTop = '0';
-        card.appendChild(nuova);
+        // "Nuova comunicazione" si apre solo con il pulsante, sopra la cronologia
+        const btn = document.createElement('button'); btn.type = 'button'; btn.id = 'com-nuova-btn'; btn.textContent = '+ Nuova comunicazione';
+        const chiudi = document.createElement('button'); chiudi.type = 'button'; chiudi.className = 'secondary btn-small com-nuova-chiudi'; chiudi.textContent = '✕ Chiudi';
+        lblNuova.appendChild(chiudi);
+        const mostra = on => { nuova.style.display = on ? '' : 'none'; btn.style.display = on ? 'none' : ''; if (on) nuova.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+        btn.addEventListener('click', () => mostra(true));
+        chiudi.addEventListener('click', () => mostra(false));
+        window.chiudiNuovaComunicazione = () => mostra(false);
+        card.insertBefore(btn, cron);
+        card.insertBefore(nuova, cron);
+        mostra(false);
         rendiAcc(cron, cron.firstElementChild, false);
-        rendiAcc(nuova, lblNuova, false);
       }
     }
 
