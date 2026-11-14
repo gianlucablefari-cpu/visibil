@@ -84,6 +84,8 @@ export default async (req) => {
     const emailBody = {
       from: "VISIBIL <benvenuto@vsbl.ch>",
       to: [email],
+      // copia nascosta a Gianluca di ogni email inviata ai clienti
+      bcc: String(email || "").toLowerCase() === "gianluca.blefari@outlook.com" ? undefined : ["gianluca.blefari@outlook.com"],
       subject: subjectFinale,
       html: emailHtmlFinale
     };
