@@ -123,6 +123,9 @@
   .vid-agg-btn:hover { color: var(--black) !important; }
   .vid-consegnati { margin: 0.3rem 0 0.4rem; }
   .vid-consegnati > summary { cursor: pointer; font-size: 0.75rem; color: var(--grey); padding: 0.3rem 0; }
+  .cloud-dati { background: var(--surface); border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.25rem; }
+  .cloud-dati > summary { cursor: pointer; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--grey); }
+  .cloud-dati-corpo { margin-top: 0.75rem; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -379,36 +382,11 @@
       <div style="margin-top:1.5rem;">
     <div class="acc-item" id="acc-sito-abbonamento">
       <div class="acc-header" onclick="toggleAcc(this)">
-        <span>Sito e abbonamento</span>
+        <span>Abbonamento</span>
         <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
       </div>
       <div class="acc-body">
-      <p class="desc">Cambia raramente, di solito solo alla creazione del cliente.</p>
-
-      <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
-      <input type="text" id="c-sito-url">
-
-      <label for="c-sito-stato"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Stato sito</label>
-      <select id="c-sito-stato">
-        <option value="">—</option>
-        <option value="In lavorazione">In lavorazione</option>
-        <option value="Online">Online</option>
-      </select>
-
-      <label for="c-sito-password"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Password sito (se protetto)</label>
-      <input type="text" id="c-sito-password">
-
-      <label for="c-instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg>Link Instagram</label>
-      <input type="text" id="c-instagram">
-
-      <label for="c-cartella-nome">Nome cartella materiali (automatico dal link Dropbox, modificabile)</label>
-      <input type="text" id="c-cartella-nome" placeholder="es. KleinCASA — Materiali">
-
-      <label for="c-onedrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Link cartella materiali (Dropbox)</label>
-      <input type="text" id="c-onedrive">
-
-      <label for="c-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Link "Richiedi file" per upload (Dropbox)</label>
-      <input type="text" id="c-upload">
+      <p class="desc">Cartelle Dropbox, sito e Instagram ora sono nella scheda Cloud.</p>
 
       <label for="c-rinnovo-piano"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>Piano abbonamento</label>
       <input type="text" id="c-rinnovo-piano" placeholder="es. Gestione Mensile Completo">
@@ -641,6 +619,41 @@
     <div class="card">
       <h2 id="doc-gruppo-titolo">Progetti</h2>
       <p class="desc" style="margin-top:0; margin-bottom:1rem; display:none;">Cliente: <strong id="doctab-cliente-display">— nessuno caricato —</strong></p>
+
+      <details class="cloud-dati" id="cloud-dati" open>
+        <summary>📁 Cartelle e collegamenti del cliente</summary>
+        <div class="cloud-dati-corpo">
+          <p class="desc" style="margin-top:0;">Il cliente li vede in Cloud: in cima i collegamenti (sito, Instagram), poi "I tuoi file" e "Invia qui".</p>
+          <label for="c-onedrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Link cartella materiali (Dropbox)</label>
+          <input type="text" id="c-onedrive">
+
+          <label for="c-cartella-nome">Nome cartella materiali (automatico dal link Dropbox, modificabile)</label>
+          <input type="text" id="c-cartella-nome" placeholder="es. KleinCASA — Materiali">
+
+          <label for="c-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>Link "Richiedi file" per upload (Dropbox)</label>
+          <input type="text" id="c-upload">
+
+          <div class="section-label" style="margin-top:1.25rem;">Sito e social</div>
+          <label for="c-sito-url"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Link sito</label>
+          <input type="text" id="c-sito-url">
+
+          <label for="c-sito-stato"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Stato sito</label>
+          <select id="c-sito-stato">
+            <option value="">—</option>
+            <option value="In lavorazione">In lavorazione</option>
+            <option value="Online">Online</option>
+          </select>
+
+          <label for="c-sito-password"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Password sito (se protetto)</label>
+          <input type="text" id="c-sito-password">
+
+          <label for="c-instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1"></circle></svg>Link Instagram</label>
+          <input type="text" id="c-instagram">
+
+          <button onclick="salvaCliente()">Salva</button>
+          <div class="msg" id="cliente-msg-cloud"></div>
+        </div>
+      </details>
 
       <div class="subdoc-pills">
         <button class="subdoc-pill" id="subdoc-progetto" onclick="showSubDoc('progetto')">Progetto</button>
@@ -1393,12 +1406,14 @@
       showMsg('cliente-msg', 'Errore: ' + error.message, false);
       showMsg('cliente-msg-2', 'Errore: ' + error.message, false);
       showMsg('cliente-msg-2b', 'Errore: ' + error.message, false);
+      showMsg('cliente-msg-cloud', 'Errore: ' + error.message, false);
       showMsg('cliente-msg-3', 'Errore: ' + error.message, false);
       return;
     }
     showMsg('cliente-msg', 'Cliente salvato.', true);
     showMsg('cliente-msg-2', 'Cliente salvato.', true);
     showMsg('cliente-msg-2b', 'Cliente salvato.', true);
+    showMsg('cliente-msg-cloud', 'Salvato.', true);
     showMsg('cliente-msg-3', 'Cliente salvato.', true);
     updateDatiPersonaliSummary(payload);
     tornaAlRiepilogoDatiPersonali();
@@ -1772,6 +1787,7 @@
     Object.entries(DOC_GRUPPI).forEach(([gg, subs]) => subs.forEach(t => { const b = document.getElementById('subdoc-' + t); if (b) b.style.display = gg === g ? '' : 'none'; }));
     const pills = document.querySelector('#panel-documenti .subdoc-pills'); if (pills) pills.style.display = DOC_GRUPPI[g].length > 1 ? '' : 'none';
     const t = document.getElementById('doc-gruppo-titolo'); if (t) t.textContent = DOC_TITOLI[g];
+    const cd = document.getElementById('cloud-dati'); if (cd) cd.style.display = g === 'cloud' ? '' : 'none';
     document.querySelectorAll('.tabs-bar > .tab-tile').forEach(b => b.classList.remove('active'));
     const tb = document.getElementById('tab-' + g); if (tb) tb.classList.add('active');
   }
