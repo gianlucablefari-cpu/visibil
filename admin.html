@@ -141,6 +141,15 @@
   .com-msg[open] .com-msg-freccia { transform: rotate(90deg); }
   .com-msg[open] .com-msg-oggetto { white-space: normal; }
   .com-msg-corpo { padding: 0 0.85rem 0.85rem; }
+  .recenti-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
+  .recente { position: relative; text-align: left; border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 0.9rem 2.2rem 0.9rem 1rem; background: #fff; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+  .recente:hover { border-color: var(--ink); box-shadow: 0 4px 14px rgba(26,26,230,0.08); }
+  .recente-cliente { font-size: 0.68rem; color: var(--grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .recente-nome { font-size: 0.95rem; font-weight: 700; margin: 0.2rem 0 0.35rem; line-height: 1.25; }
+  .recente-quando { font-size: 0.7rem; color: var(--ink); }
+  .recente-anteprima { position: absolute; top: 0.6rem; right: 0.6rem; text-decoration: none; font-size: 0.85rem; opacity: 0.55; }
+  .recente-anteprima:hover { opacity: 1; }
+  .vid-card.vid-evidenza { box-shadow: 0 0 0 2px var(--ink); }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -529,7 +538,10 @@
     <div class="tab-panel active" id="panel-home">
     <div class="card">
       <h2>Bentornato, Gianluca</h2>
-      <p class="desc">Da fare adesso, in ordine di urgenza. Clicca una riga per aprire il cliente al punto giusto. Le sezioni vuote si nascondono da sole.</p>
+      <div id="home-recenti-box" style="display:none; margin:0.75rem 0 1.5rem;">
+        <div class="section-label" style="margin-top:0;">Recenti</div>
+        <div id="home-recenti" class="recenti-griglia"></div>
+      </div>
       <p id="home-tutto-ok" style="display:none; font-size:0.9rem; padding:1rem 1.1rem; border:1px dashed rgba(0,0,0,0.15); border-radius:6px; color:var(--grey);">✓ Tutto in ordine: niente in sospeso.</p>
 
       <div id="home-stripe-abbinare-box" style="display:none; margin-top:1.5rem; padding:1rem 1.1rem; border:1px solid var(--ink); border-radius:6px;">
@@ -1060,11 +1072,56 @@
     await caricaFirmaDefault();
     await caricaTemplateList();
     caricaStatistiche();
+    caricaRecenti();
 
     setInterval(async () => {
       await caricaMessaggi();
       caricaStatistiche();
     }, 45000);
+  }
+
+  // Home: scorciatoie ai video con cambiamenti più recenti (nuova versione, commenti, revisione del cliente)
+  async function caricaRecenti() {
+    const box = document.getElementById('home-recenti-box'), el = document.getElementById('home-recenti');
+    if (!box || !el) return;
+    const [rv, rc, rp] = await Promise.all([
+      client.from('video_cliente').select('user_id, nome, chiave, progetto_id, stato, aggiornato_il, revisione_finita_il'),
+      client.from('video_commenti').select('video_id, created_at, risolto_il').order('created_at', { ascending: false }).limit(1000),
+      client.from('progetti').select('id, titolo')
+    ]);
+    if (rv.error || !rv.data) return;
+    const ultimoCommento = {}, ultimoRisolto = {};
+    (rc.data || []).forEach(c => {
+      if (c.created_at && (!ultimoCommento[c.video_id] || c.created_at > ultimoCommento[c.video_id])) ultimoCommento[c.video_id] = c.created_at;
+      if (c.risolto_il && (!ultimoRisolto[c.video_id] || c.risolto_il > ultimoRisolto[c.video_id])) ultimoRisolto[c.video_id] = c.risolto_il;
+    });
+    const titoli = {}; (rp.data || []).forEach(p => { titoli[p.id] = p.titolo; });
+    const eventi = rv.data.map(v => {
+      const cand = [[v.aggiornato_il, 'nuova versione'], [v.revisione_finita_il, 'revisione del cliente'], [ultimoCommento[v.chiave], 'nuovo commento'], [ultimoRisolto[v.chiave], 'commento risolto']].filter(x => x[0]);
+      if (!cand.length) return null;
+      cand.sort((a, b) => (a[0] < b[0] ? 1 : -1));
+      return { v, quando: cand[0][0], cosa: cand[0][1] };
+    }).filter(Boolean).sort((a, b) => (a.quando < b.quando ? 1 : -1)).slice(0, 4);
+    if (!eventi.length) { box.style.display = 'none'; return; }
+    const esc = t => vcEsc(t).replace(/"/g, '&quot;');
+    const fa = d => { const m = Math.round((Date.now() - new Date(d)) / 60000); if (m < 60) return m <= 1 ? 'ora' : m + ' min fa'; const h = Math.round(m / 60); if (h < 24) return h + ' h fa'; const g = Math.round(h / 24); return g === 1 ? 'ieri' : g + ' giorni fa'; };
+    el.innerHTML = eventi.map(({ v, quando, cosa }) => `
+      <div class="recente" role="button" tabindex="0" onclick="apriVideoRecente('${esc(v.user_id)}', '${esc(v.chiave)}')">
+        <div class="recente-cliente">${vcEsc(nomeClienteById(v.user_id))}${v.progetto_id && titoli[v.progetto_id] ? ' · ' + vcEsc(titoli[v.progetto_id]) : ''}</div>
+        <div class="recente-nome">${vcEsc(v.nome || 'Video')}</div>
+        <div class="recente-quando">${cosa} · ${fa(quando)}</div>
+        <a class="recente-anteprima" href="area-cliente.html?preview=${encodeURIComponent(v.user_id)}&video=${encodeURIComponent(v.chiave || '')}" target="_blank" onclick="event.stopPropagation()" title="Apri come lo vede il cliente">👁</a>
+      </div>`).join('');
+    box.style.display = '';
+  }
+  async function apriVideoRecente(uid, chiave) {
+    await caricaNelForm(uid);
+    showDocGroup('progetti');
+    for (let i = 0; i < 30 && !vidDati.some(v => v.chiave === chiave); i++) await new Promise(r => setTimeout(r, 100));
+    window.vidAperti = window.vidAperti || new Set(); window.vidAperti.add(chiave);
+    vidRender();
+    const c = document.querySelector('.vid-card[data-k="' + CSS.escape(chiave) + '"]');
+    if (c) { c.scrollIntoView({ behavior: 'smooth', block: 'center' }); c.classList.add('vid-evidenza'); setTimeout(() => c.classList.remove('vid-evidenza'), 1600); }
   }
 
   async function caricaStatistiche() {
