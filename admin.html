@@ -177,6 +177,9 @@
   .ore-data { width: 6.5rem; color: var(--grey); }
   .ore-durata { width: 4.5rem; font-weight: 600; }
   .ore-esclusa { opacity: 0.45; text-decoration: line-through; }
+  .fatt-dati { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.08); }
+  .fatt-dati > summary { cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+  .account-pop { max-height: calc(100vh - 120px); overflow-y: auto; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -244,6 +247,25 @@
           </div>
           <button class="secondary btn-small" onclick="salvaFirmaDefault()" style="margin-top:0.5rem;">Salva firma</button>
           <div class="msg" id="admin-firma-msg"></div>
+          <details class="fatt-dati" id="fatt-dati">
+            <summary>🧾 Dati per le fatture</summary>
+            <p class="desc" style="margin:0.4rem 0 0.2rem;">Compaiono nelle fatture dei clienti. Finché l'IBAN è vuoto, il bonifico non viene proposto.</p>
+            <label for="fatt-intestatario">Intestatario</label><input type="text" id="fatt-intestatario" autocomplete="off">
+            <div style="display:grid; grid-template-columns:1fr 5rem; gap:0.5rem;">
+              <div><label for="fatt-via">Via</label><input type="text" id="fatt-via" autocomplete="off"></div>
+              <div><label for="fatt-civico">N.</label><input type="text" id="fatt-civico" autocomplete="off"></div>
+            </div>
+            <div style="display:grid; grid-template-columns:5rem 1fr; gap:0.5rem;">
+              <div><label for="fatt-cap">CAP</label><input type="text" id="fatt-cap" autocomplete="off"></div>
+              <div><label for="fatt-citta">Località</label><input type="text" id="fatt-citta" autocomplete="off"></div>
+            </div>
+            <label for="fatt-iban">IBAN</label><input type="text" id="fatt-iban" autocomplete="off" placeholder="CH.. .... .... .... .... ." spellcheck="false">
+            <label for="fatt-banca">Banca</label><input type="text" id="fatt-banca" autocomplete="off">
+            <label for="fatt-email">Email per domande</label><input type="email" id="fatt-email" autocomplete="off">
+            <label for="fatt-telefono">Telefono</label><input type="text" id="fatt-telefono" autocomplete="off">
+            <button type="button" onclick="salvaDatiFatture()" style="margin-top:0.75rem;">Salva dati fatture</button>
+            <div class="msg" id="fatt-msg"></div>
+          </details>
         </div>
       </div>
     </div>
@@ -1503,7 +1525,32 @@
     }
   }
 
+  const CAMPI_FATT = { 'fatt-intestatario': 'fatt_intestatario', 'fatt-via': 'fatt_via', 'fatt-civico': 'fatt_numero_civico', 'fatt-cap': 'fatt_cap', 'fatt-citta': 'fatt_citta', 'fatt-iban': 'fatt_iban', 'fatt-banca': 'fatt_banca', 'fatt-email': 'fatt_email', 'fatt-telefono': 'fatt_telefono' };
+  async function caricaDatiFatture() {
+    const { data } = await client.from('impostazioni').select(Object.values(CAMPI_FATT).join(',')).eq('id', 'default').maybeSingle();
+    if (!data) return;
+    Object.entries(CAMPI_FATT).forEach(([id, col]) => { const el = document.getElementById(id); if (el) el.value = data[col] || ''; });
+  }
+  function ibanValido(iban) {
+    const x = iban.replace(/\s+/g, '').toUpperCase();
+    if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(x)) return false;
+    const r = (x.slice(4) + x.slice(0, 4)).replace(/[A-Z]/g, c => c.charCodeAt(0) - 55);
+    let m = 0; for (const ch of r) m = (m * 10 + Number(ch)) % 97;
+    return m === 1;
+  }
+  async function salvaDatiFatture() {
+    const payload = {};
+    Object.entries(CAMPI_FATT).forEach(([id, col]) => { payload[col] = document.getElementById(id).value.trim() || null; });
+    if (payload.fatt_iban) {
+      if (!ibanValido(payload.fatt_iban)) { showMsg('fatt-msg', 'IBAN non valido: controlla le cifre.', false); return; }
+      payload.fatt_iban = payload.fatt_iban.replace(/\s+/g, '').toUpperCase();
+    }
+    const { error } = await client.from('impostazioni').update(payload).eq('id', 'default');
+    if (error) { showMsg('fatt-msg', 'Errore: ' + error.message, false); return; }
+    showMsg('fatt-msg', payload.fatt_iban ? 'Salvato. Le fatture ora propongono anche il bonifico.' : 'Salvato. Senza IBAN il bonifico non compare.', true);
+  }
   async function caricaFirmaDefault() {
+    caricaDatiFatture();
     const { data, error } = await client.from('impostazioni').select('firma_email').eq('id', 'default').maybeSingle();
     if (error || !data) return;
     window.firmaEmailDefault = data.firma_email || '';
