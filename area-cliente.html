@@ -515,6 +515,9 @@
     .video-voce-testa .vv-nuova { flex: none; }
     .video-voce-testa .vv-meta { display: none; }
   }
+  .attivita-cliente { margin: -0.75rem 0.25rem 1.25rem; padding: 0.6rem 0.7rem; border: 1px dashed rgba(26,26,230,0.35); border-radius: 8px; font-size: 0.7rem; line-height: 1.5; color: var(--black); }
+  .attivita-titolo { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.25rem; }
+  .attivita-etichetta { color: var(--grey); }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -567,6 +570,7 @@
             <div class="profile-tag">Cliente VISIBIL</div>
           </div>
         </div>
+        <div id="attivita-cliente-sidebar" class="attivita-cliente" style="display:none;"></div>
 
         <div class="sidebar-nav">
           <button class="sidebar-nav-item active" data-tab="home" onclick="return showTab('home', event)">
@@ -2019,6 +2023,7 @@
         ? '🔍 ANTEPRIMA di «' + (cliente.nome || '') + '» — stai scrivendo come Gianluca'
         : '👤 VISTA CLIENTE — sei dentro come «' + (cliente.nome || '') + '»: commenti e pulsanti valgono come cliente';
       document.getElementById('cliente-nome-sidebar').textContent = cliente.nome;
+      if (isPreview) mostraAttivitaCliente(cliente);
       const iniziali = cliente.nome.replace(/[^a-zA-Z\s]/g, '').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
       document.getElementById('avatar-iniziali-sidebar').textContent = iniziali;
       document.getElementById('topbar-avatar').textContent = iniziali;
@@ -2456,6 +2461,30 @@
     const attiva = (document.querySelector('.tab-panel.active') || {}).id || '';
     const mappa = { 'tab-home': 'progetti', 'tab-video': 'progetti', 'tab-documenti': 'cloud', 'tab-fatture': 'fatture', 'tab-contatti': 'comunicazioni', 'tab-account': 'cliente' };
     return 'admin.html?cliente=' + encodeURIComponent(uid) + '&scheda=' + (mappa[attiva] || 'progetti');
+  }
+  // Solo in anteprima (Gianluca): quando il cliente ha usato l'area cliente l'ultima volta e cosa ha fatto
+  async function mostraAttivitaCliente(cliente) {
+    const el = document.getElementById('attivita-cliente-sidebar'); if (!el) return;
+    const uid = cliente.user_id;
+    const [rv, rc, rm] = await Promise.all([
+      client.from('video_cliente').select('nome, chiave, visto_cliente_il, revisione_finita_il').eq('user_id', uid),
+      client.from('video_commenti').select('video_id, created_at').eq('user_id', uid).eq('autore', 'cliente').order('created_at', { ascending: false }).limit(1),
+      client.from('messaggi').select('created_at').eq('user_id', uid).eq('tipo', 'contatto').order('created_at', { ascending: false }).limit(1)
+    ]);
+    const nomi = {}; const azioni = [];
+    (rv.data || []).forEach(v => { nomi[v.chiave] = v.nome;
+      if (v.visto_cliente_il) azioni.push([v.visto_cliente_il, 'ha guardato «' + (v.nome || 'video') + '»']);
+      if (v.revisione_finita_il) azioni.push([v.revisione_finita_il, 'ha finito la revisione di «' + (v.nome || 'video') + '»']); });
+    ((rc.data || [])[0]) && azioni.push([rc.data[0].created_at, 'ha commentato «' + (nomi[rc.data[0].video_id] || 'un video') + '»']);
+    ((rm.data || [])[0]) && azioni.push([rm.data[0].created_at, 'ti ha scritto']);
+    azioni.sort((a, b) => (a[0] < b[0] ? 1 : -1));
+    const fa = d => { const m = Math.round((Date.now() - new Date(d)) / 60000); if (m < 60) return m <= 1 ? 'ora' : m + ' min fa'; const h = Math.round(m / 60); if (h < 24) return h + ' h fa'; const g = Math.round(h / 24); return g === 1 ? 'ieri' : g + ' giorni fa'; };
+    const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const righe = [];
+    righe.push('<span class="attivita-etichetta">Ultimo accesso</span> ' + (cliente.ultimo_accesso_il ? fa(cliente.ultimo_accesso_il) : 'mai'));
+    if (azioni[0]) righe.push('<span class="attivita-etichetta">Ultima azione</span> ' + esc(azioni[0][1]) + ' · ' + fa(azioni[0][0]));
+    el.innerHTML = '<div class="attivita-titolo">👁 Visibile solo a te</div>' + righe.map(r => '<div>' + r + '</div>').join('');
+    el.style.display = '';
   }
   function openContactSheet() { showTab('contatti'); setTimeout(() => { const t = document.getElementById('contact-messaggio'); if (t) t.focus(); }, 50); }
   function closeContactSheet() {}
