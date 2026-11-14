@@ -166,6 +166,8 @@
   .servizio-iniziale { display: flex; align-items: center; justify-content: center; background: #F2F2F2; color: var(--grey); font-size: 0.8rem; }
   .servizio span { font-size: 0.64rem; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .cl-attivita { display: block; font-size: 0.66rem; color: var(--grey); font-weight: 400; overflow: hidden; text-overflow: ellipsis; }
+  .sub-doc-panel > :first-child { margin-top: 0 !important; }
+  .cliente-attivita-riga { font-size: 0.66rem; color: var(--grey); margin: -0.6rem 0 0.9rem 0.25rem; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -285,6 +287,7 @@
       <button class="tab-tile" id="tab-comunicazioni" onclick="showTab('comunicazioni')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg><span>Comunicazioni</span></button>
       <button class="tab-tile" id="tab-da-fare" onclick="showTab('da-fare')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Cliente</span></button>
     </div>
+    <div id="cliente-attivita-riga" class="cliente-attivita-riga" style="display:none;"></div>
 
     <!-- NUOVO CLIENTE (creazione automatica account) -->
     <div class="tab-panel" id="panel-nuovo-cliente">
@@ -455,8 +458,7 @@
     <!-- COMUNICAZIONI (invio unificato + cronologia per il cliente attivo) -->
     <div class="tab-panel" id="panel-comunicazioni">
     <div class="card">
-      <h2>Comunicazioni</h2>
-      <p class="desc">Storico e invio di email per: <strong id="com-cliente-nome">—</strong></p>
+      <strong id="com-cliente-nome" style="display:none;">—</strong>
       <div id="com-avviso-preferenze"></div>
 
       <div class="section-label" style="margin-top:0;">Nuova comunicazione</div>
@@ -667,7 +669,7 @@
     <!-- DOCUMENTI (Preventivo/Pagamento/Documento/Report consolidati) -->
     <div class="tab-panel" id="panel-documenti">
     <div class="card">
-      <h2 id="doc-gruppo-titolo">Progetti</h2>
+      <h2 id="doc-gruppo-titolo" style="display:none;">Progetti</h2>
       <p class="desc" style="margin-top:0; margin-bottom:1rem; display:none;">Cliente: <strong id="doctab-cliente-display">— nessuno caricato —</strong></p>
 
       <div id="cloud-link">
@@ -1164,6 +1166,15 @@
       </div>`).join('');
     box.style.display = '';
   }
+  // Riga piccolissima sotto le schede: ultima visita del cliente attivo
+  function aggiornaRigaAttivita(nascondi) {
+    const el = document.getElementById('cliente-attivita-riga'); if (!el) return;
+    const uid = (document.getElementById('c-userid') || {}).value || '';
+    const a = uid && window.attivitaClienti && window.attivitaClienti[uid];
+    if (nascondi || !uid) { el.style.display = 'none'; return; }
+    el.textContent = a ? 'Ultima visita ' + tempoFa(a.quando) + ' · ' + a.cosa : 'Nessuna visita registrata';
+    el.style.display = '';
+  }
   function tempoFa(d) {
     const m = Math.round((Date.now() - new Date(d)) / 60000); if (m < 60) return m <= 1 ? 'ora' : m + ' min fa';
     const h = Math.round(m / 60); if (h < 24) return h + ' h fa';
@@ -1182,6 +1193,7 @@
     (window.messaggiCache || []).filter(m => m.tipo === 'contatto').forEach(m => segna(m.user_id, m.created_at, 'ti ha scritto'));
     window.attivitaClienti = att;
     renderClientiLista();
+    const tb = document.querySelector('.tabs-bar'); aggiornaRigaAttivita(!tb || tb.style.display === 'none');
     const box = document.getElementById('home-attivita-box'), el = document.getElementById('home-attivita');
     if (!box || !el) return;
     const top = Object.entries(att).filter(([uid]) => uid !== OWNER_ID_ADMIN()).sort((a, b) => (a[1].quando < b[1].quando ? 1 : -1)).slice(0, 4);
@@ -1933,6 +1945,7 @@
     if (btn) btn.classList.add('active');
 
     document.querySelector('.tabs-bar').style.display = (tabId === 'home') ? 'none' : 'flex';
+    aggiornaRigaAttivita(tabId === 'home');
     if (tabId === 'documenti') { const att = document.querySelector('.sub-doc-panel.active'); applicaDocGroup(gruppoDiSub(att ? att.id.replace('subpanel-', '') : 'progetto')); }
 
     if (tabId === 'home') {
@@ -2067,6 +2080,7 @@
     document.getElementById('c-instagram').value = c.instagram_url || '';
     document.getElementById('c-avanzamento').value = c.prossimo_passo || '';
     vidCarica(user_id);
+    aggiornaRigaAttivita(false);
     document.getElementById('c-upload').value = c.upload_link || '';
     document.getElementById('c-rinnovo-piano').value = c.rinnovo_piano || '';
     document.getElementById('c-rinnovo-data').value = c.rinnovo_data || '';
