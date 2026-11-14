@@ -35,7 +35,7 @@ export default async (req) => {
   const pagamento = rows[0];
 
   const clienteRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/clienti?user_id=eq.${pagamento.user_id}&select=nome,indirizzo,nome_fatturazione,email_contatto`,
+    `${SUPABASE_URL}/rest/v1/clienti?user_id=eq.${pagamento.user_id}&select=nome,referente,indirizzo,nome_fatturazione,indirizzo_fatturazione,fatturazione_uguale,email_contatto`,
     {
       headers: {
         apikey: SERVICE_KEY,
@@ -75,8 +75,9 @@ export default async (req) => {
       voci: pagamento.voci || [],
       payment_link: pagamento.payment_link || null,
       cliente_nome: clienteData.nome || "",
-      cliente_indirizzo: clienteData.indirizzo || "",
-      cliente_nome_fatturazione: clienteData.nome_fatturazione || "",
+      // Se il cliente ha indicato dati di fatturazione diversi, la fattura usa quelli
+      cliente_indirizzo: (clienteData.fatturazione_uguale === false && clienteData.indirizzo_fatturazione) ? clienteData.indirizzo_fatturazione : (clienteData.indirizzo || ""),
+      cliente_nome_fatturazione: clienteData.fatturazione_uguale === false ? (clienteData.nome_fatturazione || "") : "",
       cliente_email: clienteData.email_contatto || "",
       numero: pagamento.numero || null,
       pagato_il: pagamento.pagato_il || null,

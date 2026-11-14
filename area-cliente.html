@@ -519,6 +519,8 @@
   .attivita-titolo { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.25rem; }
   .attivita-etichetta { color: var(--grey); }
   body.vista-cliente #attivita-cliente-sidebar { display: none !important; }
+  .fatt-uguale { display: flex; align-items: center; gap: 0.5rem; margin-top: 1.25rem; font-size: 0.85rem; color: var(--black); cursor: pointer; text-transform: none; letter-spacing: normal; }
+  .fatt-uguale input { width: auto; margin: 0; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -775,29 +777,17 @@
               <input type="email" id="account-email-contatto" placeholder="nome@email.com" autocomplete="email">
             </div>
 
-            <div class="section-label" style="text-align:left; margin-top:1.75rem; display:flex; align-items:center; gap:0.4rem;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; opacity:0.6; flex-shrink:0;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-              Preferenze di contatto
-            </div>
-
-            <div class="account-field" style="display:flex; flex-direction:column; gap:0.5rem;">
-              <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
-                <input type="checkbox" id="account-pref-email" style="width:auto;"> Email
-              </label>
-              <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
-                <input type="checkbox" id="account-pref-whatsapp" style="width:auto;"> Messaggio WhatsApp
-              </label>
-              <label style="display:flex; align-items:center; gap:0.5rem; text-transform:none; letter-spacing:normal; font-size:0.85rem; color:var(--black); cursor:pointer;">
-                <input type="checkbox" id="account-pref-telefono" style="width:auto;"> Telefonata
-              </label>
-            </div>
-
             <div class="account-field">
-              <label for="account-orario">Orario preferito</label>
-              <input type="text" id="account-orario" placeholder="es. 9:00–12:00">
+              <label for="account-indirizzo">Indirizzo</label>
+              <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città" autocomplete="street-address">
             </div>
 
-            <div style="border-top: 1px solid rgba(0,0,0,0.1); margin-top: 1.75rem; padding-top: 1.5rem;">
+            <label class="fatt-uguale">
+              <input type="checkbox" id="account-fatt-uguale" checked onchange="aggiornaFattUguale()">
+              I dati di fatturazione sono gli stessi
+            </label>
+
+            <div id="blocco-fatturazione" style="display:none; border-top: 1px solid rgba(0,0,0,0.1); margin-top: 1.25rem; padding-top: 1.5rem;">
               <div class="section-label" style="text-align:left; margin-top:0; display:flex; align-items:center; gap:0.4rem;">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px; opacity:0.6; flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
                 Dati di fatturazione
@@ -809,8 +799,8 @@
               </div>
 
               <div class="account-field">
-                <label for="account-indirizzo">Indirizzo</label>
-                <input type="text" id="account-indirizzo" placeholder="Via, numero, CAP, città" autocomplete="street-address">
+                <label for="account-indirizzo-fatturazione">Indirizzo</label>
+                <input type="text" id="account-indirizzo-fatturazione" placeholder="Via, numero, CAP, città" autocomplete="off">
               </div>
             </div>
 
@@ -2075,10 +2065,9 @@
       document.getElementById('account-referente').value = cliente.referente || '';
       document.getElementById('account-email-contatto').value = cliente.email_contatto || (isPreview ? '' : user.email) || '';
       document.getElementById('account-nome-fatturazione').value = cliente.nome_fatturazione || '';
-      document.getElementById('account-pref-email').checked = !!cliente.pref_email;
-      document.getElementById('account-pref-whatsapp').checked = !!cliente.pref_whatsapp;
-      document.getElementById('account-pref-telefono').checked = !!cliente.pref_telefono;
-      document.getElementById('account-orario').value = cliente.orario_preferito || '';
+      document.getElementById('account-indirizzo-fatturazione').value = cliente.indirizzo_fatturazione || '';
+      document.getElementById('account-fatt-uguale').checked = cliente.fatturazione_uguale !== false;
+      aggiornaFattUguale();
 
 
       if (cliente.sito_url) {
@@ -2187,30 +2176,32 @@
         btn.style.opacity = '0.4';
         btn.style.cursor = 'not-allowed';
       });
-      document.querySelectorAll('#account-telefono, #account-referente, #account-email-contatto, #account-indirizzo, #account-nome-fatturazione, #account-pref-email, #account-pref-whatsapp, #account-pref-telefono, #account-orario, #nuova-password, #contact-form textarea').forEach(el => {
+      document.querySelectorAll('#account-telefono, #account-referente, #account-email-contatto, #account-indirizzo, #account-nome-fatturazione, #account-indirizzo-fatturazione, #account-fatt-uguale, #nuova-password, #contact-form textarea').forEach(el => {
         el.disabled = true;
       });
     }
   }
 
+  function aggiornaFattUguale() {
+    const uguale = document.getElementById('account-fatt-uguale').checked;
+    document.getElementById('blocco-fatturazione').style.display = uguale ? 'none' : '';
+  }
+
   async function salvaContatti() {
-    const telefono = document.getElementById('account-telefono').value;
-    const referente = document.getElementById('account-referente').value;
-    const email_contatto = document.getElementById('account-email-contatto').value;
-    const indirizzo = document.getElementById('account-indirizzo').value;
-    const nome_fatturazione = document.getElementById('account-nome-fatturazione').value;
-    const pref_email = document.getElementById('account-pref-email').checked;
-    const pref_whatsapp = document.getElementById('account-pref-whatsapp').checked;
-    const pref_telefono = document.getElementById('account-pref-telefono').checked;
-    const orario_preferito = document.getElementById('account-orario').value;
+    const val = id => document.getElementById(id).value.trim();
+    const uguale = document.getElementById('account-fatt-uguale').checked;
     const msg = document.getElementById('account-msg');
+    if (!uguale && !val('account-nome-fatturazione')) {
+      msg.textContent = "Inserisci il nome per la fatturazione, oppure spunta che i dati sono gli stessi.";
+      msg.className = "account-msg err"; return;
+    }
     msg.textContent = "Salvataggio...";
     msg.className = "account-msg";
-
-    const { error } = await client.from('clienti')
-      .update({ telefono, referente, email_contatto, indirizzo, nome_fatturazione, pref_email, pref_whatsapp, pref_telefono, orario_preferito })
-      .eq('user_id', window.currentUserId);
-
+    const { error } = await client.rpc('aggiorna_dati_cliente', {
+      p_user_id: window.currentUserId,
+      p_referente: val('account-referente'), p_telefono: val('account-telefono'), p_email_contatto: val('account-email-contatto'), p_indirizzo: val('account-indirizzo'),
+      p_fatturazione_uguale: uguale, p_nome_fatturazione: val('account-nome-fatturazione'), p_indirizzo_fatturazione: val('account-indirizzo-fatturazione')
+    });
     if (error) {
       msg.textContent = "Errore: " + error.message;
       msg.className = "account-msg err";
