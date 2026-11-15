@@ -718,6 +718,11 @@
             <div class="section-label" style="margin-bottom: 0.75rem;">Video in lavorazione</div>
             <div id="video-list" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
           </div>
+          <div id="pannello-documenti-sez" style="display:none; margin-bottom: 1.75rem;">
+            <div class="section-label" style="margin-bottom: 0.75rem;">Documenti</div>
+            <div id="pannello-documenti" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+            <a href="#" id="pannello-documenti-tutti" onclick="return showTab('documenti')" style="display:none; font-size:0.8rem; color:var(--ink); text-decoration:none; margin-top:0.6rem;">Tutti i documenti in Archivio →</a>
+          </div>
           <div id="archivio-preventivi-sez" style="display:none; margin-bottom: 1.75rem;">
             <div class="section-label" style="margin-bottom: 0.75rem;">Preventivi</div>
             <div id="archivio-preventivi" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
@@ -2418,6 +2423,12 @@
     const { data: documenti } = await client.from('documenti').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     window.documentiCache = documenti || [];
     renderDocumenti(false);
+    // Pannello: gli ultimi documenti (gli stessi dell'Archivio), con rimando all'Archivio se ce ne sono altri
+    if ((documenti || []).length) {
+      document.getElementById('pannello-documenti').innerHTML = document.getElementById('documenti-list').innerHTML;
+      document.getElementById('pannello-documenti-sez').style.display = '';
+      document.getElementById('pannello-documenti-tutti').style.display = documenti.length > 2 ? 'inline-block' : 'none';
+    }
 
     const { data: report } = await client.from('report').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     const reportList = document.getElementById('report-list');
