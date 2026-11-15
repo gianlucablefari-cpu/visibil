@@ -521,6 +521,7 @@
   body.vista-cliente #attivita-cliente-sidebar { display: none !important; }
   .fatt-uguale { display: flex; align-items: center; gap: 0.5rem; margin-top: 1.25rem; font-size: 0.85rem; color: var(--black); cursor: pointer; text-transform: none; letter-spacing: normal; }
   .fatt-uguale input { width: auto; margin: 0; }
+  .progetto-evidenza { box-shadow: 0 0 0 2px var(--ink); border-radius: 10px; transition: box-shadow 0.3s; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -1888,6 +1889,13 @@
       else if (!d.open && window._videoFocus === d) { if (history.state && history.state.video) history.back(); else esciVideoPagina(); }
     }));
     // link diretto: area-cliente.html?video=<id>
+    // link diretto a un progetto: area-cliente.html?progetto=<id> (es. dal titolo del progetto in admin)
+    const pq = new URLSearchParams(location.search).get('progetto');
+    if (pq && !window._progettoLinkFatto) {
+      const pv = document.querySelector('.progetto-video[data-pid="' + CSS.escape(pq) + '"]');
+      const card = pv && (pv.closest('.progetto-item') || pv.parentElement);
+      if (card) { window._progettoLinkFatto = true; setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); card.classList.add('progetto-evidenza'); setTimeout(() => card.classList.remove('progetto-evidenza'), 2200); }, 150); }
+    }
     const vq = new URLSearchParams(location.search).get('video');
     if (vq && !window._videoLinkFatto) { window._videoLinkFatto = true; const d = trovaVideoVoce(vq); if (d) d.open = true; }
   }

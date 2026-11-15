@@ -120,6 +120,8 @@
   .pr-video { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid rgba(0,0,0,0.06); }
   .pr-card:not(.aperto) .pr-video { display: none; }
   .pr-testa { cursor: pointer; }
+  .pr-titolo-link { color: inherit; text-decoration: none; border-bottom: 1px dotted rgba(0,0,0,0.3); }
+  .pr-titolo-link:hover { color: var(--ink); border-bottom-color: var(--ink); }
   .pr-nvideo { color: var(--grey); font-size: 0.72rem; font-weight: 400; }
   .pr-freccia { order: 99; color: var(--grey); font-size: 1.1rem; width: 1rem; text-align: center; transition: transform 0.15s; flex-shrink: 0; }
   .pr-card.aperto .pr-freccia { transform: rotate(90deg); }
@@ -2621,7 +2623,7 @@
       <div class="pr-card${(window.prAperti || new Set()).has(p.id) ? ' aperto' : ''}" data-pid="${p.id}">
       <div class="pr-testa" onclick="prToggle(event, '${p.id}')" style="font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
         <span style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;"><button type="button" onclick="spostaProgetto('${p.id}', -1)" ${idx === 0 ? 'disabled' : ''} title="Sposta su" class="mv-btn">▲</button><button type="button" onclick="spostaProgetto('${p.id}', 1)" ${idx === window.progettiCache.length - 1 ? 'disabled' : ''} title="Sposta giù" class="mv-btn">▼</button></span>
-        <span style="cursor:pointer; flex:1;">${p.titolo || '(senza titolo)'} <small class="pr-nvideo" data-pid="${p.id}"></small>
+        <span style="cursor:pointer; flex:1;"><a class="pr-titolo-link" href="area-cliente.html?preview=${encodeURIComponent(p.user_id)}&progetto=${encodeURIComponent(p.id)}" target="_blank" rel="noopener" title="Apri il pannello del cliente su questo progetto">${p.titolo || '(senza titolo)'}</a> <small class="pr-nvideo" data-pid="${p.id}"></small>
           <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${(p.modalita || 'avanzamento') === 'da_saldare' ? `🕒 ${fmtOre(Math.round((Number(p.ore_da_saldare) || 0) * 60))} da saldare`
             : p.modalita === 'pacchetto' ? `${(p.ore_stimate || 0) - (p.ore_fatte || 0)}h rimaste su ${p.ore_stimate || 0}h`
             : p.modalita === 'testo' ? 'Solo stato e note'
