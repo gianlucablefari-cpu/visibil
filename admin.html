@@ -923,7 +923,8 @@
         <input type="text" id="pr-titolo" placeholder="es. Mese 1 — Consulenza Instagram">
 
         <label for="pr-cartella">Cartella Dropbox del progetto (facoltativa)</label>
-        <input type="url" id="pr-cartella" placeholder="https://www.dropbox.com/...">
+        <input type="text" id="pr-cartella" placeholder="Incolla un link Dropbox, oppure scrivi un nome e la creo io">
+        <p class="desc" style="margin-top:0.25rem;">Se scrivi un nome (es. «Video reel»), al salvataggio creo la cartella dentro quella del cliente e ci metto il link.</p>
 
         <label for="pr-modalita">Come mostrarlo al cliente</label>
         <select id="pr-modalita" onchange="aggiornaModalitaProgetto()">
@@ -2817,7 +2818,7 @@
             : p.modalita === 'pacchetto' ? `${(p.ore_stimate || 0) - (p.ore_fatte || 0)}h rimaste su ${p.ore_stimate || 0}h`
             : p.modalita === 'testo' ? 'Solo stato e note'
             : `${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%${extraTag}` : ''}`}</span>
-          <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}${p.cartella_link ? ` <a href="${vcEsc(p.cartella_link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-weight:400; text-transform:none; color:var(--grey); margin-left:0.4rem;">📁 cartella</a>` : ''}</span>
+          <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}${p.cartella_link && /^https?:\/\//i.test(p.cartella_link) ? ` <a href="${vcEsc(p.cartella_link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-weight:400; text-transform:none; color:var(--grey); margin-left:0.4rem;">📁 cartella</a>` : p.cartella_link ? ` <a href="#" onclick="event.stopPropagation(); this.textContent='⏳ creo…'; creaCartellaProgetto('${p.id}', ${vcEsc(JSON.stringify(p.cartella_link)).replace(/"/g, '&quot;')}); return false;" style="font-weight:600; text-transform:none; color:#A32D2D; margin-left:0.4rem;" title="Al posto del link c'è solo un nome: tocca per creare la cartella in Dropbox">📁 crea cartella «${vcEsc(p.cartella_link)}»</a>` : ''}</span>
         </span>
         <button type="button" class="pr-timer" data-pid="${p.id}" onclick="cronoToggle('${p.id}', '${p.user_id}', this)" title="Avvia o ferma il cronometro su questo progetto">▶</button>
         <button type="button" onclick="caricaProgettoNelForm('${p.id}')" title="Modifica progetto" class="pr-icon-btn">✎</button>
@@ -2931,16 +2932,43 @@
     };
 
     if (!isEditing) payload.ordine = Math.max(0, ...(window.progettiCache || []).map(x => x.ordine || 0)) + 1;
-    let error;
+    // Un nome al posto del link: la cartella va creata in Dropbox dopo il salvataggio
+    const nomeCartellaNuova = payload.cartella_link && !/^https?:\/\//i.test(payload.cartella_link) ? payload.cartella_link : null;
+    if (nomeCartellaNuova) payload.cartella_link = null;
+    let error, salvatoId = editingId;
     if (isEditing) {
       ({ error } = await client.from('progetti').update(payload).eq('id', editingId));
     } else {
-      ({ error } = await client.from('progetti').insert(payload));
+      let ins; ({ data: ins, error } = await client.from('progetti').insert(payload).select('id').single());
+      if (ins) salvatoId = ins.id;
     }
     if (error) { showMsg('progetto-msg', 'Errore: ' + error.message, false); return; }
+    if (nomeCartellaNuova && salvatoId) {
+      showMsg('progetto-msg', 'Progetto salvato, creo la cartella in Dropbox…', true);
+      const ok = await creaCartellaProgetto(salvatoId, nomeCartellaNuova, user_id, true);
+      if (!ok) { caricaProgettiEsistenti(user_id); if (!isEditing) resetFormProgetto(); return; }
+    }
     showMsg('progetto-msg', isEditing ? 'Progetto aggiornato.' : 'Progetto aggiunto.', true);
     caricaProgettiEsistenti(user_id);
     if (!isEditing) resetFormProgetto();
+  }
+
+  // Crea la cartella del progetto dentro quella Dropbox del cliente e salva il link nel progetto
+  async function creaCartellaProgetto(progettoId, nome, userId, silenzioso) {
+    userId = userId || document.getElementById('c-userid').value.trim();
+    try {
+      const { data: sd } = await client.auth.getSession();
+      const r = await fetch('/api/crea-cartella-progetto', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sd.session.access_token}` }, body: JSON.stringify({ user_id: userId, nome, progetto_id: progettoId }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.url) throw new Error(d.error || 'errore sconosciuto');
+      showMsg('progetto-msg', 'Cartella creata in Dropbox: ' + (d.percorso || nome), true);
+      if (!silenzioso) caricaProgettiEsistenti(userId);
+      return true;
+    } catch (e) {
+      showMsg('progetto-msg', 'Progetto salvato, ma la cartella non è stata creata: ' + e.message, false);
+      if (!silenzioso) alert('Cartella non creata: ' + e.message);
+      return false;
+    }
   }
 
   let vociCounter = 0;
