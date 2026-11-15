@@ -218,10 +218,13 @@
   .progetto-video { flex-direction: column; gap: 0.5rem; margin-top: 0.85rem; }
   .video-voce { border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; background: #fff; }
   .video-voce-testa { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; cursor: pointer; list-style: none; position: relative; }
-  .vv-barra { position: absolute; left: 1rem; right: 1rem; bottom: 0; height: 2px; background: rgba(0,0,0,0.06); border-radius: 2px; overflow: hidden; }
-  .vv-barra > span { display: block; height: 100%; background: var(--ink); border-radius: 2px; transition: width 0.4s; }
-  .vv-barra.completa > span { background: #1E6B3C; }
-  #tab-video .vv-barra { left: 0; right: 0; }
+  .vv-anello { display: inline-flex; align-items: center; gap: 0.3rem; flex: none; font-size: 0.72rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .vv-anello svg { width: 18px; height: 18px; transform: rotate(-90deg); }
+  .vv-anello circle { fill: none; stroke-width: 3; }
+  .vv-anello .sfondo { stroke: rgba(0,0,0,0.08); }
+  .vv-anello .avanzamento { stroke: var(--ink); stroke-linecap: round; transition: stroke-dashoffset 0.4s; }
+  .vv-anello.completo { color: #1E6B3C; }
+  .vv-anello.completo .avanzamento { stroke: #1E6B3C; }
   .video-voce-testa::-webkit-details-marker { display: none; }
   .vv-icona { font-size: 0.7rem; color: var(--ink); }
   .vv-nome { font-size: 0.9rem; font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -518,6 +521,10 @@
     .video-voce-testa .vv-nome { flex: 1 1 auto; min-width: 0; max-width: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .video-voce-testa .vv-nuova { flex: none; }
     .video-voce-testa .vv-meta { display: none; }
+    .vv-anello span { display: none; }
+    .video-voce-testa .vv-nome { min-width: 4.5rem; }
+    .video-voce-testa { gap: 0.45rem; padding: 0.75rem 0.8rem; }
+    .video-voce-testa .vv-nuova { font-size: 0.55rem; padding: 0.2rem 0.4rem; }
   }
   .attivita-cliente { margin: -0.75rem 0.25rem 1.25rem; padding: 0.6rem 0.7rem; border: 1px dashed rgba(26,26,230,0.35); border-radius: 8px; font-size: 0.7rem; line-height: 1.5; color: var(--black); }
   .attivita-titolo { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); margin-bottom: 0.25rem; }
@@ -1341,14 +1348,15 @@
         um.textContent = 'Ultima modifica il ' + d.toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit' }) + ' alle ' + d.toLocaleTimeString('it-CH', { hour: '2-digit', minute: '2-digit' }) + ' (' + chi + ')';
       } else um.textContent = '';
       m.textContent = [its.length ? its.length + (its.length === 1 ? ' commento' : ' commenti') : '', ris ? ris + ' risolti' : '', box.dataset.finita ? 'revisione inviata' : '', consegnato ? 'consegnato' : ''].filter(Boolean).join(' · ');
-      // barra sottile: commenti risolti sul totale
-      let bar = vv.querySelector('.vv-barra');
+      // anello: percentuale di commenti risolti, subito dopo il numero dei commenti
+      let an = vv.querySelector('.vv-anello');
       if (its.length) {
-        if (!bar) { bar = document.createElement('span'); bar.className = 'vv-barra'; bar.innerHTML = '<span></span>'; vv.querySelector('.video-voce-testa').appendChild(bar); }
-        const pct = Math.round(ris / its.length * 100);
-        bar.firstChild.style.width = pct + '%'; bar.title = pct + '% dei commenti risolti';
-        bar.classList.toggle('completa', pct >= 100);
-      } else if (bar) bar.remove();
+        if (!an) { an = document.createElement('span'); an.className = 'vv-anello'; m.after(an); }
+        const pct = Math.round(ris / its.length * 100), r = 8, c = 2 * Math.PI * r;
+        an.classList.toggle('completo', pct >= 100);
+        an.title = pct + '% dei commenti risolti';
+        an.innerHTML = `<svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="${r}" class="sfondo"/><circle cx="10" cy="10" r="${r}" class="avanzamento" stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/></svg><span>${pct >= 100 ? '✓' : pct + '%'}</span>`;
+      } else if (an) an.remove();
     } }
     const videoId = box.dataset.video;
     const listaPrima = box.querySelector('.vc-lista');
