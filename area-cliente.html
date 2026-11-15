@@ -2174,13 +2174,13 @@
 
     // Azioni rapide
     const az = [];
-    if ((dovuti || []).length) az.push({ ico: HA_ICO.paga, lbl: 'Paga', badge: dovuti.length, href: dovuti.length === 1 ? 'pagamento.html?id=' + dovuti[0].id : null, blank: dovuti.length === 1, onclick: dovuti.length === 1 ? '' : "return showTab('fatture')" });
     if (c.upload_link) az.push({ ico: HA_ICO.invia, lbl: 'Invia file', href: c.upload_link, blank: true });
     if (c.onedrive_link) az.push({ ico: HA_ICO.file, lbl: 'I tuoi file', href: c.onedrive_link, blank: true });
     if (c.sito_url) az.push({ ico: HA_ICO.sito, lbl: 'Il tuo sito', href: c.sito_url, blank: true });
     if (c.instagram_url) az.push({ ico: HA_ICO.insta, lbl: 'Instagram', href: c.instagram_url, blank: true });
     if (az.length < 4) az.push({ ico: HA_ICO.fatture, lbl: 'Fatture', onclick: "return showTab('fatture')" });
     if (az.length < 4) az.push({ ico: HA_ICO.scrivi, lbl: 'Scrivimi', onclick: "return showTab('contatti')" });
+    if ((dovuti || []).length) { az.splice(3); az.push({ ico: HA_ICO.paga, lbl: 'Paga', badge: dovuti.length, href: dovuti.length === 1 ? 'pagamento.html?id=' + dovuti[0].id : null, blank: dovuti.length === 1, onclick: dovuti.length === 1 ? '' : "return showTab('fatture')" }) }
     document.getElementById('ha-azioni').innerHTML = az.slice(0, 4).map(a => {
       const attr = (a.href ? `href="${escHtml(a.href).replace(/"/g, "&quot;")}"` + (a.blank ? ' target="_blank" rel="noopener"' : '') : 'href="#"') + (a.onclick ? ` onclick="${a.onclick}"` : '');
       return `<a class="ha-az" ${attr}><span class="ha-az-ico">${a.ico}${a.badge ? `<span class="ha-az-badge">${a.badge}</span>` : ''}</span><span class="ha-az-lbl">${a.lbl}</span></a>`;
