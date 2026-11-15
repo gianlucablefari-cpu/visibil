@@ -118,6 +118,11 @@
   .pr-icon-btn { display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0 !important; margin:0 !important; background:none !important; border:1px solid rgba(0,0,0,0.15) !important; border-radius:5px; color:var(--grey) !important; cursor:pointer; flex-shrink:0; font-size:0.9rem; letter-spacing:0; }
   .pr-icon-btn:hover { color: var(--black) !important; }
   .pr-video { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid rgba(0,0,0,0.06); }
+  .pr-card:not(.aperto) .pr-video { display: none; }
+  .pr-testa { cursor: pointer; }
+  .pr-nvideo { color: var(--grey); font-size: 0.72rem; font-weight: 400; }
+  .pr-freccia { order: 99; color: var(--grey); font-size: 1.1rem; width: 1rem; text-align: center; transition: transform 0.15s; flex-shrink: 0; }
+  .pr-card.aperto .pr-freccia { transform: rotate(90deg); }
   .pr-video:empty { display: none; }
   .vid-agg-btn { background: none !important; border: 0 !important; color: var(--grey) !important; padding: 0.3rem 0 !important; margin: 0 !important; font-size: 0.7rem; cursor: pointer; }
   .vid-agg-btn:hover { color: var(--black) !important; }
@@ -1251,6 +1256,7 @@
     showDocGroup('progetti');
     for (let i = 0; i < 30 && !vidDati.some(v => v.chiave === chiave); i++) await new Promise(r => setTimeout(r, 100));
     window.vidAperti = window.vidAperti || new Set(); window.vidAperti.add(chiave);
+    const vv = vidDati.find(v => v.chiave === chiave); if (vv && vv.progetto_id) prApri(vv.progetto_id);
     vidRender();
     const c = document.querySelector('.vid-card[data-k="' + CSS.escape(chiave) + '"]');
     if (c) { c.scrollIntoView({ behavior: 'smooth', block: 'center' }); c.classList.add('vid-evidenza'); setTimeout(() => c.classList.remove('vid-evidenza'), 1600); }
@@ -2369,6 +2375,7 @@
     progettiMenu.forEach(p => {
       const idx = vidDati.map((v, i) => i).filter(i => vidDati[i].progetto_id === p.id);
       const cont = document.querySelector('.pr-video[data-pid="' + p.id + '"]');
+      const nv = document.querySelector('.pr-nvideo[data-pid="' + p.id + '"]'); if (nv) nv.textContent = idx.length ? '· ' + idx.length + ' video' : '';
       if (cont) cont.innerHTML = cardsDi(idx) + `<button type="button" class="vid-agg-btn" onclick="vidAggiungi('${p.id}')">+ Aggiungi video a questo progetto</button>`;
       else if (idx.length) fuori.push({ titolo: p.titolo || '(senza titolo)', idx });
     });
@@ -2376,6 +2383,18 @@
     box.innerHTML = fuori.map(g => `<div class="vid-gruppo"><div class="vid-gruppo-titolo">📁 ${vcEsc(g.titolo)}</div>${cardsDi(g.idx)}</div>`).join('') + cardsDi(senza);
     const va = document.getElementById('vid-admin');
     if (va) { const wrap = va.closest('.acc') || va; wrap.style.display = (senza.length || fuori.length || !progettiMenu.length) ? '' : 'none'; }
+  }
+  // Carte progetto chiuse di default: si aprono cliccando la testa (non i pulsanti)
+  window.prAperti = window.prAperti || new Set();
+  function prToggle(e, pid) {
+    if (e && e.target.closest('button, a, select, input')) return;
+    const c = document.querySelector('.pr-card[data-pid="' + pid + '"]'); if (!c) return;
+    const ap = c.classList.toggle('aperto');
+    if (ap) window.prAperti.add(pid); else window.prAperti.delete(pid);
+  }
+  function prApri(pid) {
+    window.prAperti.add(pid);
+    const c = document.querySelector('.pr-card[data-pid="' + pid + '"]'); if (c) c.classList.add('aperto');
   }
   function vidGruppo(v) { return (v.progetto_id && progettiMenu.some(p => p.id === v.progetto_id) ? v.progetto_id : '') + '|' + (v.stato === 'consegnato' ? 'c' : 'a'); }
   // Salvataggio: alla chiusura della scheda (se ci sono modifiche), con "Salva", o subito per spostamenti/eliminazioni
@@ -2388,7 +2407,8 @@
     if (ap) window.vidAperti.add(c.dataset.k); else { window.vidAperti.delete(c.dataset.k); if (window.vidSporco) vidSalva(); }
   }
   function vidNome(i, val) { vidDati[i].nome = val.trim(); window.vidSporco = true; }
-  function vidAggiungi(pid) { vidDati.push({ id: null, nome: '', stato: 'in_lavorazione', progetto_id: pid || '', chiave: vidNuovaChiave(), commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
+  function vidAggiungi(pid) {
+    if (pid) prApri(pid); vidDati.push({ id: null, nome: '', stato: 'in_lavorazione', progetto_id: pid || '', chiave: vidNuovaChiave(), commenti_attivi: true, versioni: [{ link: '', qualita: '', info: '' }] }); vidRender(); }
   function vidAggiungiVersione(i) { vidDati[i].versioni.push({ link: '', qualita: '', info: '' }); vidModificato(); }
   function vidRimuoviVersione(i, j) { vidDati[i].versioni.splice(j, 1); vidModificato(); }
   function vidElimina(i) { if (confirm('Eliminare questo video? I commenti restano salvati.')) { vidDati.splice(i, 1); vidModificato(true); } }
@@ -2598,10 +2618,10 @@
       const pctColore = pct !== null && pct > 100 ? '#A32D2D' : 'var(--grey)';
       const extraTag = (pct !== null && pct > 100) ? (p.extra_gratuito ? ' · extra gratuito' : ' · extra da fatturare') : '';
       return `
-      <div class="pr-card">
-      <div style="font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
+      <div class="pr-card${(window.prAperti || new Set()).has(p.id) ? ' aperto' : ''}" data-pid="${p.id}">
+      <div class="pr-testa" onclick="prToggle(event, '${p.id}')" style="font-size:0.82rem; display:flex; justify-content:space-between; align-items:center; gap:0.5rem;">
         <span style="display:flex; flex-direction:column; gap:2px; flex-shrink:0;"><button type="button" onclick="spostaProgetto('${p.id}', -1)" ${idx === 0 ? 'disabled' : ''} title="Sposta su" class="mv-btn">▲</button><button type="button" onclick="spostaProgetto('${p.id}', 1)" ${idx === window.progettiCache.length - 1 ? 'disabled' : ''} title="Sposta giù" class="mv-btn">▼</button></span>
-        <span onclick="caricaProgettoNelForm('${p.id}')" style="cursor:pointer; flex:1;">${p.titolo || '(senza titolo)'}
+        <span style="cursor:pointer; flex:1;">${p.titolo || '(senza titolo)'} <small class="pr-nvideo" data-pid="${p.id}"></small>
           <span style="display:block; font-size:0.7rem; color:${pctColore}; margin-top:0.15rem;">${(p.modalita || 'avanzamento') === 'da_saldare' ? `🕒 ${fmtOre(Math.round((Number(p.ore_da_saldare) || 0) * 60))} da saldare`
             : p.modalita === 'pacchetto' ? `${(p.ore_stimate || 0) - (p.ore_fatte || 0)}h rimaste su ${p.ore_stimate || 0}h`
             : p.modalita === 'testo' ? 'Solo stato e note'
@@ -2609,6 +2629,7 @@
           <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}${p.cartella_link ? ` <a href="${vcEsc(p.cartella_link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-weight:400; text-transform:none; color:var(--grey); margin-left:0.4rem;">📁 cartella</a>` : ''}</span>
         </span>
         <button type="button" onclick="caricaProgettoNelForm('${p.id}')" title="Modifica progetto" class="pr-icon-btn">✎</button>
+        <span class="pr-freccia" aria-hidden="true">›</span>
         <button type="button" onclick="eliminaProgetto('${p.id}', '${(p.titolo || '').replace(/'/g, "\\'")}')"  title="Elimina" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px; height:15px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         </button>
