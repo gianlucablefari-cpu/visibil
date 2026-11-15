@@ -111,6 +111,12 @@
     .tab-tile > span { display: none; }
     .tab-tile { padding: 0.75rem 0.25rem; }
     .tab-tile svg { width: 21px; height: 21px; }
+    /* Home: niente riquadro esterno, recenti come lista compatta */
+    #panel-home > .card { background: none; border: 0; padding: 0.25rem 0.1rem; box-shadow: none; }
+    #panel-home .recenti-griglia { grid-template-columns: 1fr; gap: 0.4rem; }
+    #panel-home .recente { padding: 0.6rem 2.2rem 0.6rem 0.8rem; }
+    #panel-home .recente-nome { font-size: 0.9rem; margin-top: 0.1rem; }
+    #panel-home .recente-cliente, #panel-home .recente-quando { font-size: 0.74rem; }
     /* meno scatole una dentro l'altra: più spazio in larghezza */
     main { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
     .card { padding: 1rem 0.8rem; border-radius: 10px; margin-bottom: 1.25rem; }
@@ -120,6 +126,21 @@
     .tabs-bar { padding: 0; gap: 0.25rem; border: 0; background: none; }
     .cliente-attivo-bar, #cliente-attivo-bar { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
   }
+  .tt-testa { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+  .tt-apri { font-size: 0.75rem; color: var(--grey); text-decoration: none; }
+  .tt-gruppo { border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 0.7rem 0.85rem; margin-bottom: 0.6rem; background: var(--white); }
+  .tt-cliente { font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem; }
+  .tt-cliente a { color: var(--black); text-decoration: none; }
+  .tt-cosa { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0; font-size: 0.86rem; cursor: pointer; text-transform: none; letter-spacing: 0; font-weight: 400; margin: 0; color: var(--black); }
+  .tt-cosa input { width: 18px; height: 18px; flex: none; margin: 0; accent-color: var(--ink); }
+  .tt-cosa .tt-tit { flex: 1; min-width: 0; }
+  .tt-cosa.fatta .tt-tit { text-decoration: line-through; color: var(--grey); }
+  .tt-data { font-size: 0.72rem; color: var(--grey); white-space: nowrap; font-weight: 500; }
+  .tt-data.oggi { color: var(--ink); font-weight: 700; }
+  .tt-data.scaduta { color: #A32D2D; font-weight: 700; }
+  .tt-vuoto { font-size: 0.8rem; color: var(--grey); }
+  .tt-agg { font-size: 0.7rem; color: var(--grey); margin-top: 0.3rem; }
+  .tt-summary { cursor: pointer; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); padding: 0.4rem 0; }
   .titolo-occhio { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; color: var(--black); vertical-align: middle; margin-left: 0.6rem; text-decoration: none; }
   .titolo-occhio:hover { border-color: var(--ink); color: var(--ink); }
   .titolo-occhio svg { width: 17px; height: 17px; }
@@ -721,6 +742,16 @@
     <div class="tab-panel active" id="panel-home">
     <div class="card">
       <h2>Bentornato, Gianluca</h2>
+      <div id="home-tt-box" style="display:none; margin:0.75rem 0 1.5rem;">
+        <div class="tt-testa">
+          <div class="section-label" style="margin:0;">Da fare · VISIBIL Clienti</div>
+          <a href="https://ticktick.com/webapp/#p/690f3d468f08fd9565a3d55b/tasks/6ac64c5944adf07565b889f8" target="_blank" rel="noopener" class="tt-apri" title="Apri in TickTick">TickTick ↗</a>
+        </div>
+        <div id="home-tt"></div>
+        <div id="home-tt-agg" class="tt-agg"></div>
+      </div>
+      <details id="home-attivita-det" style="margin:0 0 1.5rem;">
+      <summary class="tt-summary">Attività recenti dei clienti</summary>
       <div id="home-recenti-box" style="display:none; margin:0.75rem 0 1.5rem;">
         <div class="section-label" style="margin-top:0;">Recenti</div>
         <div id="home-recenti" class="recenti-griglia"></div>
@@ -729,6 +760,7 @@
         <div class="section-label" style="margin-top:0;">Attività dei clienti</div>
         <div id="home-attivita" class="recenti-griglia"></div>
       </div>
+      </details>
       <div id="home-servizi-box" style="margin:0 0 1.5rem;">
         <div class="section-label" style="margin-top:0;">Servizi</div>
         <div class="servizi-griglia">
@@ -1315,6 +1347,7 @@
     await caricaTemplateList();
     caricaStatistiche();
     caricaRecenti();
+    caricaTickTick();
     cronoCarica();
     // Arrivo dall'anteprima dell'area cliente: apre quel cliente nella scheda indicata
     const qp = new URLSearchParams(location.search), qCliente = qp.get('cliente');
@@ -1333,6 +1366,43 @@
   }
 
   // Home: scorciatoie ai video con cambiamenti più recenti (nuova versione, commenti, revisione del cliente)
+  // Home: copia della sezione "VISIBIL CLIENTI" di TickTick (aggiornata ogni ora dalla sincronizzazione)
+  async function caricaTickTick() {
+    const box = document.getElementById('home-tt-box'), el = document.getElementById('home-tt');
+    if (!box || !el) return;
+    const { data, error } = await client.from('ticktick_cose').select('*').order('ordine', { ascending: true });
+    if (error || !data || !data.length) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    const figli = {}; data.forEach(t => (figli[t.parent_id || ''] = figli[t.parent_id || ''] || []).push(t));
+    const clientiPerTask = {}; (clientiCache || []).forEach(c => { if (c.ticktick_task_id) clientiPerTask[c.ticktick_task_id] = c; });
+    const oggi = new Date(); oggi.setHours(0, 0, 0, 0);
+    const quando = t => {
+      if (!t.scadenza) return '';
+      const d = new Date(t.scadenza), g = new Date(d); g.setHours(0, 0, 0, 0);
+      const diff = Math.round((g - oggi) / 864e5);
+      const txt = diff === 0 ? 'oggi' : diff === 1 ? 'domani' : diff === -1 ? 'ieri' : d.toLocaleDateString('it-CH', { day: 'numeric', month: 'short' });
+      return `<span class="tt-data${diff < 0 ? ' scaduta' : diff === 0 ? ' oggi' : ''}">${txt}</span>`;
+    };
+    const discendenti = id => (figli[id] || []).flatMap(t => [t, ...discendenti(t.id)]);
+    const gruppi = data.filter(t => t.livello === 1);
+    el.innerHTML = gruppi.map(g => {
+      const cose = discendenti(g.id);
+      const cl = clientiPerTask[g.id];
+      const nome = vcEsc(g.titolo.replace(/^VISIBIL\s+/i, ''));
+      const testa = cl ? `<a href="#" onclick="apriClienteDaHome('${cl.user_id}'); return false;">${nome}</a>` : nome;
+      return `<div class="tt-gruppo"><div class="tt-cliente">${testa}${quando(g)}</div>${cose.length ? cose.map(t => `
+        <label class="tt-cosa${t.da_completare ? ' fatta' : ''}"><input type="checkbox" ${t.da_completare ? 'checked' : ''} onchange="ttSpunta('${t.id}', this.checked, this.closest('.tt-cosa'))"><span class="tt-tit">${vcEsc(t.titolo)}</span>${quando(t)}</label>`).join('') : '<div class="tt-vuoto">niente da fare</div>'}</div>`;
+    }).join('');
+    const agg = data.reduce((m, t) => t.aggiornato_il > m ? t.aggiornato_il : m, '');
+    document.getElementById('home-tt-agg').textContent = agg ? 'Copiato da TickTick alle ' + new Date(agg).toLocaleTimeString('it-CH', { hour: '2-digit', minute: '2-digit' }) + ' · le spunte vengono chiuse in TickTick entro un\'ora' : '';
+  }
+  async function ttSpunta(id, fatto, riga) {
+    riga.classList.toggle('fatta', fatto);
+    const { error } = await client.from('ticktick_cose').update({ da_completare: fatto }).eq('id', id);
+    if (error) { riga.classList.toggle('fatta', !fatto); alert('Non salvato: ' + error.message); }
+  }
+  function apriClienteDaHome(uid) { caricaNelForm(uid); }
+
   async function caricaRecenti() {
     const box = document.getElementById('home-recenti-box'), el = document.getElementById('home-recenti');
     if (!box || !el) return;
@@ -1397,7 +1467,7 @@
     const tb = document.querySelector('.tabs-bar'); aggiornaRigaAttivita(!tb || tb.style.display === 'none');
     const box = document.getElementById('home-attivita-box'), el = document.getElementById('home-attivita');
     if (!box || !el) return;
-    const top = Object.entries(att).filter(([uid]) => uid !== OWNER_ID_ADMIN()).sort((a, b) => (a[1].quando < b[1].quando ? 1 : -1)).slice(0, 4);
+    const top = Object.entries(att).filter(([uid]) => uid !== OWNER_ID_ADMIN() && !/^(gianluca blefari|visibil \(test\))$/i.test(String(nomeClienteById(uid) || '').trim())).sort((a, b) => (a[1].quando < b[1].quando ? 1 : -1)).slice(0, 4);
     if (!top.length) { box.style.display = 'none'; return; }
     el.innerHTML = top.map(([uid, a]) => `
       <div class="recente" role="button" tabindex="0" onclick="caricaNelForm('${uid}')">
