@@ -2677,7 +2677,6 @@
     const p = (window._progettiTutti || []).find(x => x.id === pid) || {};
     const data = x => x ? new Date(x).toLocaleDateString('it-CH', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     const righe = [];
-    righe.push(`<div class="pd-riga"><span>Inizio</span><b>${data(p.data || p.created_at) || '—'}</b></div>`);
     righe.push(`<div class="pd-riga"><span>Stato</span><b>${escHtml(p.stato || 'In corso')}</b></div>`);
     const prev = (window.preventiviTutti || []).filter(q => q.progetto_id === pid);
     prev.forEach(q => righe.push(`<div class="pd-riga"><span>Preventivo</span><b>${q.link_approvazione ? `<a href="${escHtml(q.link_approvazione).replace(/"/g, '&quot;')}" target="_blank" rel="noopener">${escHtml(q.titolo || 'Preventivo')}</a>` : escHtml(q.titolo || 'Preventivo')}${q.importo ? ' · CHF ' + q.importo + '.–' : ''}</b></div>`));
