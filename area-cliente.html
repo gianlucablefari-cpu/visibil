@@ -76,7 +76,7 @@
   .page-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 3rem; }
 
   /* LOGIN */
-  #login-box { max-width: 360px; margin: 0 auto; }
+  #login-box, #reset-box { max-width: 360px; margin: 0 auto; }
   label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grey); display: block; margin-bottom: 0.4rem; }
   input { width: 100%; font-family: var(--sans); font-size: 0.9rem; font-weight: 300; padding: 0.85rem 1rem; margin-bottom: 1.25rem; border: 1px solid rgba(0,0,0,0.1); border-radius: 3px; outline: none; }
   input:focus { border-color: var(--ink); }
@@ -684,6 +684,18 @@
     <input type="password" id="password" placeholder="••••••••">
     <button onclick="login()">Accedi</button>
     <div id="msg"></div>
+    <a href="#" onclick="return passwordDimenticata()" style="display:inline-block; margin-top:1rem; font-size:0.85rem; color:var(--ink); text-decoration:none;">Password dimenticata?</a>
+  </div>
+
+  <div id="reset-box" style="display:none;">
+    <span class="page-eyebrow">Nuova password</span>
+    <h1 class="page-title">Scegli una nuova password</h1>
+    <label for="reset-pw">Nuova password (almeno 8 caratteri)</label>
+    <input type="password" id="reset-pw" placeholder="••••••••" autocomplete="new-password">
+    <label for="reset-pw2">Ripeti la password</label>
+    <input type="password" id="reset-pw2" placeholder="••••••••" autocomplete="new-password">
+    <button onclick="salvaNuovaPassword()">Salva e entra</button>
+    <div id="reset-msg"></div>
   </div>
 
   <div id="dashboard" class="app-shell">
@@ -3018,7 +3030,38 @@
     }
   });
 
+  // Password dimenticata: email con il link per sceglierne una nuova
+  async function passwordDimenticata() {
+    const email = document.getElementById('email').value.trim();
+    const msg = document.getElementById('msg');
+    if (!email) { msg.textContent = "Scrivi prima la tua email qui sopra, poi tocca di nuovo «Password dimenticata?»."; document.getElementById('email').focus(); return false; }
+    msg.textContent = "Invio in corso…";
+    const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: 'https://vsbl.ch/area-cliente.html?reimposta=1' });
+    msg.textContent = error ? "Errore: " + error.message : "Ti ho mandato un'email con il link per scegliere una nuova password. Se non arriva in qualche minuto, controlla lo spam.";
+    return false;
+  }
+  function mostraReset() {
+    document.getElementById('login-box').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('reset-box').style.display = 'block';
+  }
+  async function salvaNuovaPassword() {
+    const a = document.getElementById('reset-pw').value, b = document.getElementById('reset-pw2').value;
+    const msg = document.getElementById('reset-msg');
+    if (a.length < 8) { msg.textContent = "La password deve avere almeno 8 caratteri."; return; }
+    if (a !== b) { msg.textContent = "Le due password non coincidono."; return; }
+    msg.textContent = "Salvataggio…";
+    const { data, error } = await client.auth.updateUser({ password: a });
+    if (error) { msg.textContent = "Errore: " + error.message + " — se il link è scaduto, richiedine uno nuovo."; return; }
+    document.getElementById('reset-box').style.display = 'none';
+    history.replaceState(null, '', 'area-cliente.html');
+    loadDashboard(data.user);
+  }
+  const _inRecupero = /type=recovery/.test(location.hash) || new URLSearchParams(location.search).has('reimposta');
+  client.auth.onAuthStateChange((evento) => { if (evento === 'PASSWORD_RECOVERY') mostraReset(); });
+
   client.auth.getSession().then(({ data }) => {
+    if (_inRecupero && data.session) { mostraReset(); return; }
     if (data.session) loadDashboard(data.session.user);
   });
 </script>
