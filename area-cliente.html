@@ -1796,7 +1796,8 @@
       const statoCls = p.stato === 'Completato' ? 'completato' : p.stato === 'In pausa' ? 'in-pausa' : '';
       if (modalita === 'da_saldare') {
         const o = Number(p.ore_da_saldare) || 0, t = Number(p.tariffa_oraria) || 0;
-        const fmtOre = x => { const min = Math.round(x * 60), h = Math.floor(min / 60), m = min % 60; return m ? (h ? h + ' h ' + String(m).padStart(2, '0') : m + ' min') : h + (h === 1 ? ' ora' : ' ore'); };
+        const fmtOre = x => { const min = Math.ceil(Math.round(x * 60) / 15) * 15, // al quarto d'ora, come in fattura
+              h = Math.floor(min / 60), m = min % 60; return m ? (h ? h + ' h ' + String(m).padStart(2, '0') : m + ' min') : h + (h === 1 ? ' ora' : ' ore'); };
         return `
         <div class="progetto-item ${statoCls}">
           <div class="progetto-item-top">

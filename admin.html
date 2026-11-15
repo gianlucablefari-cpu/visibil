@@ -3643,7 +3643,7 @@
       const minA = somma(aperte.filter(o => !o.escluso)), minF = somma(fatt.filter(o => !o.escluso));
       return `<div class="tempi-gruppo" data-pid="${g.id}">
         <div class="tempi-gruppo-testa">
-          <div><strong>${vcEsc(g.titolo)}</strong><span class="tempi-gruppo-sotto">${minA ? fmtOre(minA) + ' da fatturare' : 'niente da fatturare'}${minF ? ' · ' + fmtOre(minF) + ' fatturate' : ''}</span></div>
+          <div><strong>${vcEsc(g.titolo)}</strong><span class="tempi-gruppo-sotto">${minA ? fmtOre(minA) + ' da fatturare (in fattura ' + fmtOre(minFatturabili(aperte)) + ')' : 'niente da fatturare'}${minF ? ' · ' + fmtOre(minF) + ' fatturate' : ''}</span></div>
           ${aperte.some(o => !o.escluso) ? `<button type="button" class="btn-small tempi-fattura" data-pid="${g.id}" onclick="tempiCreaFattura('${g.id}')">🧾 Crea fattura</button>` : ''}
         </div>
         ${aperte.map(o => riga(o, false)).join('')}
@@ -3651,6 +3651,11 @@
       </div>`;
     }).join('');
     tempiAggiornaPulsanti();
+  }
+  // Minuti che finiscono in fattura: somma per giorno, arrotondata per eccesso al quarto d'ora
+  function minFatturabili(lista) {
+    const g = {}; lista.filter(o => !o.escluso).forEach(o => { const k = fmtData(o.inizio); g[k] = (g[k] || 0) + (o.minuti || 0); });
+    return Object.values(g).reduce((a, m) => a + Math.ceil(m / 15) * 15, 0);
   }
   function tempiAggiornaPulsanti() {
     document.querySelectorAll('.tempi-fattura').forEach(b => {
@@ -3749,7 +3754,7 @@
     document.querySelectorAll('#pg-voci-lista > .voce-pg').forEach(r => { if (!r.querySelector('.vp-desc').value && !r.querySelector('.vp-importo').value) r.remove(); });
     Object.entries(perGiorno).forEach(([g, lista]) => {
       const min = lista.reduce((a, o) => a + o.minuti, 0);
-      const ore = Math.round(min / 60 * 100) / 100;
+      const ore = Math.ceil(min / 15) * 0.25; // per giorno, arrotondato per eccesso al quarto d'ora
       aggiungiVocePagamento(`Lavoro del ${g}`, tariffa !== '' ? Math.round(ore * tariffa * 100) / 100 : '', ore, tariffa);
       const righe = document.querySelectorAll('#pg-voci-lista > .voce-pg'); righe[righe.length - 1].dataset.sessioni = lista.map(o => o.id).join(',');
     });

@@ -43,7 +43,8 @@ export default async (req) => {
     (perGiorno[g] = perGiorno[g] || []).push(s);
   }
   const nuove = Object.entries(perGiorno).map(([g, l]) => {
-    const ore = Math.round(l.reduce((a, s) => a + s.minuti, 0) / 60 * 100) / 100;
+    // fatturazione per giorno, arrotondata per eccesso al quarto d'ora
+    const ore = Math.ceil(l.reduce((a, s) => a + s.minuti, 0) / 15) * 0.25;
     return { descrizione: `Lavoro del ${g}`, ore, tariffa, importo: Math.round(ore * tariffa * 100) / 100, sessioni: l.map(s => s.id) };
   });
 
