@@ -522,6 +522,15 @@
   .fatt-uguale { display: flex; align-items: center; gap: 0.5rem; margin-top: 1.25rem; font-size: 0.85rem; color: var(--black); cursor: pointer; text-transform: none; letter-spacing: normal; }
   .fatt-uguale input { width: auto; margin: 0; }
   .progetto-evidenza { box-shadow: 0 0 0 2px var(--ink); border-radius: 10px; transition: box-shadow 0.3s; }
+  .risorse-sotto { font-size: 0.75rem; color: var(--grey); margin: 0 0 0.6rem; }
+  .risorse-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.6rem; }
+  .risorsa { display: flex; gap: 0.7rem; align-items: flex-start; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 0.8rem 0.9rem; background: var(--white, #fff); color: var(--black); text-decoration: none; }
+  a.risorsa:hover { border-color: var(--ink); }
+  .risorsa-ico { font-size: 1.1rem; line-height: 1.2; }
+  .risorsa-testo { display: flex; flex-direction: column; min-width: 0; }
+  .risorsa-testo strong { font-size: 0.88rem; font-weight: 600; word-break: break-word; }
+  .risorsa-testo small { font-size: 0.72rem; color: var(--grey); }
+  .zip-link { margin-top: 0.6rem; font-size: 0.75rem; color: var(--ink); text-decoration: none; font-weight: 600; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -582,8 +591,8 @@
             Pannello di controllo
           </button>
           <button class="sidebar-nav-item" data-tab="documenti" onclick="return showTab('documenti', event)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
-            Cloud
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+            Archivio
           </button>
           <button class="sidebar-nav-item" data-tab="fatture" onclick="return showTab('fatture', event)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
@@ -635,12 +644,12 @@
 
         <section class="tab-panel" id="tab-documenti">
           <div class="tab-panel-title">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
-            Cloud
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+            Archivio
           </div>
 
           <div id="collegamenti-home" style="margin-bottom:1.75rem;">
-            <div class="section-label" style="margin-bottom: 0.75rem;">Collegamenti</div>
+            <div class="section-label" style="margin-bottom: 0.75rem;">Sito e collegamenti</div>
           <div class="row-card" id="link-sito" style="display:none;">
             <div>
               <a href="#" id="link-sito-url" target="_blank">Sito web</a>
@@ -658,6 +667,8 @@
           </div>
 
           </div>
+          <div id="risorse-cliente"></div>
+
           <div style="margin-bottom: 1.75rem;">
             <div class="section-label" style="margin-bottom: 0.75rem;">I tuoi file</div>
             <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
@@ -679,9 +690,10 @@
                 </div>
               </a>
             </div>
+            <a id="onedrive-zip" class="zip-link" href="#" style="display:none;">⬇ Scarica tutta la cartella (zip)</a>
           </div>
           <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Archivio documenti</div>
+            <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
             <div id="documenti-list"></div>
             <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
           </div>
@@ -847,8 +859,8 @@
         Pannello
       </button>
       <button class="bottom-nav-item" data-tab="documenti" onclick="return showTab('documenti', event)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
-        Cloud
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+        Archivio
       </button>
       <button class="bottom-nav-item" data-tab="fatture" onclick="return showTab('fatture', event)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
@@ -2025,6 +2037,7 @@
         : '👤 VISTA CLIENTE — sei dentro come «' + (cliente.nome || '') + '»: commenti e pulsanti valgono come cliente';
       document.getElementById('cliente-nome-sidebar').textContent = cliente.nome;
       if (isPreview) mostraAttivitaCliente(cliente);
+      caricaRisorseCliente(cliente.user_id);
       const iniziali = cliente.nome.replace(/[^a-zA-Z\s]/g, '').trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join('').toUpperCase();
       document.getElementById('avatar-iniziali-sidebar').textContent = iniziali;
       document.getElementById('topbar-avatar').textContent = iniziali;
@@ -2044,6 +2057,7 @@
       if (typeof risolviPercorsiVideo === 'function') risolviPercorsiVideo();
       if (cliente.onedrive_link) {
         onedriveLink.href = cliente.onedrive_link;
+        try { const uz = new URL(cliente.onedrive_link); if (/dropbox\.com$/.test(uz.hostname)) { uz.searchParams.set('dl', '1'); const z = document.getElementById('onedrive-zip'); z.href = uz.toString(); z.style.display = 'inline-block'; } } catch (e) {}
         onedriveLink.classList.remove('folder-card-disabled');
         document.getElementById('onedrive-desc').textContent = 'Foto, video e progetti grafici';
       } else {
@@ -2487,6 +2501,22 @@
     if (azioni[0]) righe.push('<span class="attivita-etichetta">Ultima azione</span> ' + esc(azioni[0][1]) + ' · ' + fa(azioni[0][0]));
     el.innerHTML = '<div class="attivita-titolo">👁 Visibile solo a te</div>' + righe.map(r => '<div>' + r + '</div>').join('');
     el.style.display = '';
+  }
+  // Archivio: risorse del cliente (dominio, email, account…), divise tra sue e gestite da VISIBIL
+  async function caricaRisorseCliente(uid) {
+    const el = document.getElementById('risorse-cliente'); if (!el) return;
+    const { data } = await client.from('risorse_cliente').select('*').eq('user_id', uid).eq('visibile', true).order('ordine').order('created_at');
+    const lista = data || [];
+    if (!lista.length) { el.innerHTML = ''; return; }
+    const icone = { file: '📁', sito: '🌐', dominio: '🔤', email: '✉️', social: '📣', altro: '🧩' };
+    const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+    const card = r => `<${r.url ? `a href="${esc(r.url)}" target="_blank" rel="noopener"` : 'div'} class="risorsa">
+        <span class="risorsa-ico">${icone[r.tipo] || '🧩'}</span>
+        <span class="risorsa-testo"><strong>${esc(r.nome)}</strong><small>${[r.fornitore, r.scadenza ? 'rinnovo ' + new Date(r.scadenza).toLocaleDateString('it-CH') : ''].filter(Boolean).map(esc).join(' · ')}</small>${r.nota ? `<small>${esc(r.nota)}</small>` : ''}</span>
+      </${r.url ? 'a' : 'div'}>`;
+    const gruppo = (titolo, sotto, l) => l.length ? `<div style="margin-bottom:1.5rem;"><div class="section-label" style="margin-bottom:0.25rem;">${titolo}</div><p class="risorse-sotto">${sotto}</p><div class="risorse-griglia">${l.map(card).join('')}</div></div>` : '';
+    el.innerHTML = gruppo('Di tua proprietà', 'Intestati a te.', lista.filter(r => r.titolare !== 'visibil'))
+      + gruppo('Gestiti da VISIBIL per te', 'Intestati a VISIBIL: se un giorno ti servono, li trasferiamo a te.', lista.filter(r => r.titolare === 'visibil'));
   }
   function openContactSheet() { showTab('contatti'); setTimeout(() => { const t = document.getElementById('contact-messaggio'); if (t) t.focus(); }, 50); }
   function closeContactSheet() {}

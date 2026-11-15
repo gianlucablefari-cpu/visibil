@@ -195,6 +195,33 @@
   .vid-etichetta { display: block; font-size: 0.6rem !important; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin: 0.35rem 0 0.2rem !important; font-weight: 600; }
   .vid-versione input, .vid-versione select { margin: 0 !important; }
   .vid-versione-riga { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
+  .arch-testa { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+  .arch-testa button { margin: 0; flex: none; }
+  .arch-titolo { font-size: 1rem; font-weight: 700; }
+  .arch-sotto { font-size: 0.78rem; color: var(--grey); max-width: 46ch; }
+  .arch-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; }
+  .arch-blocco { border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; background: #fff; padding: 0.75rem 0.9rem; }
+  .arch-blocco-testa { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .arch-voce { display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0; border-top: 1px solid rgba(0,0,0,0.06); }
+  .arch-voce.nascosta { opacity: 0.6; }
+  .arch-voce-testo { min-width: 0; }
+  .arch-voce-nome { font-size: 0.85rem; font-weight: 600; word-break: break-word; }
+  .arch-voce-nome a { color: var(--black); text-decoration: none; }
+  .arch-voce-nome a:hover { color: var(--ink); }
+  .arch-voce-meta { font-size: 0.68rem; color: var(--grey); }
+  .arch-voce-nota { font-size: 0.7rem; color: var(--grey); font-style: italic; margin-top: 0.15rem; }
+  .arch-voce-azioni { display: flex; gap: 0.25rem; align-items: flex-start; flex: none; }
+  .arch-mini { background: none !important; border: 1px solid rgba(0,0,0,0.12) !important; color: var(--black) !important; border-radius: 5px; padding: 0.2rem 0.45rem !important; margin: 0 !important; font-size: 0.65rem !important; letter-spacing: 0 !important; text-transform: none !important; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .arch-mini.rosso { color: #c0392b !important; }
+  .arch-tit { font-weight: 600; }
+  .arch-tit.cliente { color: #1E6B3C; }
+  .arch-tit.visibil { color: var(--ink); }
+  .arch-scad.vicina { color: #B3261E; font-weight: 600; }
+  .arch-vuoto { font-size: 0.75rem; color: var(--grey); padding: 0.4rem 0; border-top: 1px solid rgba(0,0,0,0.06); }
+  .arch-form { border: 1px dashed rgba(26,26,230,0.35); border-radius: 10px; padding: 0.9rem; margin-bottom: 1rem; background: #FAFAFF; }
+  .arch-form-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 0.75rem; }
+  .arch-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; margin-top: 0.5rem; text-transform: none; letter-spacing: 0; }
+  .arch-check input { width: auto; margin: 0; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -328,7 +355,7 @@
 
     <div class="tabs-bar" style="display:none;">
       <button class="tab-tile" id="tab-progetti" onclick="showDocGroup('progetti')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span>Progetti</span></button>
-      <button class="tab-tile" id="tab-cloud" onclick="showDocGroup('cloud')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg><span>Cloud</span></button>
+      <button class="tab-tile" id="tab-cloud" onclick="showDocGroup('cloud')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg><span>Archivio</span></button>
       <button class="tab-tile" id="tab-fatture" onclick="showDocGroup('fatture')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg><span>Fatture</span></button>
       <button class="tab-tile" id="tab-comunicazioni" onclick="showTab('comunicazioni')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg><span>Comunicazioni</span></button>
       <button class="tab-tile" id="tab-da-fare" onclick="showTab('da-fare')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span>Cliente</span></button>
@@ -717,7 +744,37 @@
       <h2 id="doc-gruppo-titolo" style="display:none;">Progetti</h2>
       <p class="desc" style="margin-top:0; margin-bottom:1rem; display:none;">Cliente: <strong id="doctab-cliente-display">— nessuno caricato —</strong></p>
 
+      <div id="archivio-box">
+        <div class="arch-testa">
+          <div>
+            <div class="arch-titolo">Archivio del cliente</div>
+            <div class="arch-sotto">Tutto ciò che è del cliente o che gestisci per lui: file, sito, dominio, email, account. Il cliente lo vede in "Archivio".</div>
+          </div>
+          <button type="button" onclick="preparaConsegna()">📦 Prepara consegna</button>
+        </div>
+        <div id="arch-form" class="arch-form" style="display:none;">
+          <input type="hidden" id="ar-id">
+          <div class="arch-form-griglia">
+            <div><label for="ar-tipo">Tipo</label><select id="ar-tipo"><option value="file">📁 File</option><option value="sito">🌐 Sito</option><option value="dominio">🔤 Dominio</option><option value="email">✉️ Email</option><option value="social">📣 Social e account</option><option value="altro">🧩 Altro</option></select></div>
+            <div><label for="ar-nome">Nome</label><input type="text" id="ar-nome" placeholder="es. sketchy.ch"></div>
+            <div><label for="ar-fornitore">Fornitore</label><input type="text" id="ar-fornitore" placeholder="es. Hostpoint, Netlify, Meta"></div>
+            <div><label for="ar-url">Link</label><input type="text" id="ar-url" placeholder="https://…"></div>
+            <div><label for="ar-titolare">Intestato a</label><select id="ar-titolare"><option value="cliente">Cliente</option><option value="visibil">VISIBIL (gestito da te)</option></select></div>
+            <div><label for="ar-scadenza">Scadenza / rinnovo</label><input type="date" id="ar-scadenza"></div>
+          </div>
+          <label for="ar-nota">Nota</label><input type="text" id="ar-nota" placeholder="es. accesso nel portachiavi alla voce “Sketchy Hostpoint” (niente password qui)">
+          <label class="arch-check"><input type="checkbox" id="ar-visibile" checked> Visibile al cliente</label>
+          <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+            <button type="button" onclick="salvaRisorsa()">Salva</button>
+            <button type="button" class="secondary" onclick="chiudiFormRisorsa()">Annulla</button>
+          </div>
+          <div class="msg" id="ar-msg"></div>
+        </div>
+        <div id="arch-griglia" class="arch-griglia"></div>
+      </div>
+
       <div id="cloud-link">
+      <div class="section-label" style="margin:1.5rem 0 0.6rem;">🔗 Link di lavoro</div>
       <div id="pan-link-lavoro" style="display:none; gap:0.6rem; flex-wrap:wrap; margin-bottom:1.25rem;"></div>
 
     <div class="acc-item" id="acc-link-abbonamento">
@@ -733,8 +790,8 @@
     </div>
       </div>
 
-      <details class="cloud-dati" id="cloud-dati" open>
-        <summary>📁 Cartelle e collegamenti del cliente</summary>
+      <details class="cloud-dati" id="cloud-dati">
+        <summary>✎ Dati base: cartella Dropbox, upload, sito, Instagram, TickTick</summary>
         <div class="cloud-dati-corpo">
           <p class="desc" style="margin-top:0;">Il cliente li vede in Cloud: in cima i collegamenti (sito, Instagram), poi "I tuoi file" e "Invia qui".</p>
           <label for="c-onedrive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Link cartella materiali (Dropbox)</label>
@@ -1309,7 +1366,11 @@
       const data = new Date(c.rinnovo_data);
       return data >= oggi && data <= tra30giorni;
     }).sort((a, b) => new Date(a.rinnovo_data) - new Date(b.rinnovo_data));
-    renderListaHome('home-rinnovi-scadenza', rinnoviInScadenza, c => `${c.nome || c.user_id} — ${c.rinnovo_piano || ''} — scade il ${new Date(c.rinnovo_data).toLocaleDateString('it-CH')}`);
+    const { data: risorseScad } = await client.from('risorse_cliente').select('user_id, nome, fornitore, scadenza').not('scadenza', 'is', null).lte('scadenza', tra30giorni.toISOString().slice(0, 10)).gte('scadenza', oggi.toISOString().slice(0, 10));
+    const rinnoviTutti = rinnoviInScadenza.map(c => ({ user_id: c.user_id, testo: `${c.nome || c.user_id} — ${c.rinnovo_piano || ''} — scade il ${new Date(c.rinnovo_data).toLocaleDateString('it-CH')}`, d: c.rinnovo_data }))
+      .concat((risorseScad || []).map(r => ({ user_id: r.user_id, testo: `${nomeClienteById(r.user_id)} — ${r.nome}${r.fornitore ? ' (' + r.fornitore + ')' : ''} — scade il ${new Date(r.scadenza).toLocaleDateString('it-CH')}`, d: r.scadenza })))
+      .sort((a, b) => new Date(a.d) - new Date(b.d));
+    renderListaHome('home-rinnovi-scadenza', rinnoviTutti, r => r.testo);
 
     if (document.getElementById('home-messaggi-recenti')) renderListaHome('home-messaggi-recenti', (window.messaggiCache || []).slice(0, 5), m => `${nomeClienteById(m.user_id)} — ${m.tipo === 'contatto' ? 'Dal cliente' : 'Inviata da te'} — ${(m.contenuto || '').slice(0, 60)}${(m.contenuto || '').length > 60 ? '…' : ''}`);
 
@@ -1672,6 +1733,7 @@
     showMsg('cliente-msg-2', 'Cliente salvato.', true);
     showMsg('cliente-msg-2b', 'Cliente salvato.', true);
     showMsg('cliente-msg-cloud', 'Salvato.', true);
+    if (typeof renderArchivio === 'function') renderArchivio();
     showMsg('cliente-msg-3', 'Cliente salvato.', true);
     updateDatiPersonaliSummary(payload);
     tornaAlRiepilogoDatiPersonali();
@@ -2039,14 +2101,14 @@
   }
 
   const DOC_GRUPPI = { progetti: ['progetto'], fatture: ['pagamento', 'preventivo'], cloud: ['documento', 'report'] };
-  const DOC_TITOLI = { progetti: 'Progetti', fatture: 'Fatture', cloud: 'Cloud' };
+  const DOC_TITOLI = { progetti: 'Progetti', fatture: 'Fatture', cloud: 'Archivio' };
   const ultimoSubDoc = {};
   function gruppoDiSub(tipo) { return Object.keys(DOC_GRUPPI).find(g => DOC_GRUPPI[g].includes(tipo)) || 'progetti'; }
   function applicaDocGroup(g) {
     Object.entries(DOC_GRUPPI).forEach(([gg, subs]) => subs.forEach(t => { const b = document.getElementById('subdoc-' + t); if (b) b.style.display = gg === g ? '' : 'none'; }));
     const pills = document.querySelector('#panel-documenti .subdoc-pills'); if (pills) pills.style.display = DOC_GRUPPI[g].length > 1 ? '' : 'none';
     const t = document.getElementById('doc-gruppo-titolo'); if (t) t.textContent = DOC_TITOLI[g];
-    const cd = document.getElementById('cloud-dati'); if (cd) cd.style.display = g === 'cloud' ? '' : 'none'; const cl = document.getElementById('cloud-link'); if (cl) cl.style.display = g === 'cloud' ? '' : 'none';
+    const cd = document.getElementById('cloud-dati'); if (cd) cd.style.display = g === 'cloud' ? '' : 'none'; const cl = document.getElementById('cloud-link'); if (cl) cl.style.display = g === 'cloud' ? '' : 'none'; const ab = document.getElementById('archivio-box'); if (ab) ab.style.display = g === 'cloud' ? '' : 'none'; if (g === 'cloud' && typeof renderArchivio === 'function') renderArchivio();
     document.querySelectorAll('.tabs-bar > .tab-tile').forEach(b => b.classList.remove('active'));
     const tb = document.getElementById('tab-' + g); if (tb) tb.classList.add('active');
   }
@@ -2163,6 +2225,7 @@
     document.getElementById('c-avanzamento').value = c.prossimo_passo || '';
     vidCarica(user_id);
     caricaOre(user_id);
+    caricaRisorse(user_id);
     aggiornaRigaAttivita(false);
     document.getElementById('c-upload').value = c.upload_link || '';
     document.getElementById('c-rinnovo-piano').value = c.rinnovo_piano || '';
@@ -3499,6 +3562,140 @@
     for (const [pid, min] of Object.entries(perProg)) await oreAggiustaProgetto(pid, -min);
     caricaOre(document.getElementById('c-userid').value.trim());
     caricaProgettiEsistenti(document.getElementById('c-userid').value.trim());
+  }
+
+  // ---- Archivio del cliente: risorse (file, sito, dominio, email, account) ----
+  window.risorseCache = [];
+  const ARCH_TIPI = [
+    ['file', '📁', 'File'], ['sito', '🌐', 'Sito'], ['dominio', '🔤', 'Dominio'],
+    ['email', '✉️', 'Email'], ['social', '📣', 'Social e account'], ['altro', '🧩', 'Altro']
+  ];
+  const archEsc = t => vcEsc(t == null ? '' : String(t)).replace(/"/g, '&quot;');
+  function linkZip(url) { try { const u = new URL(url); if (/dropbox\.com$/.test(u.hostname)) { u.searchParams.set('dl', '1'); return u.toString(); } } catch (e) {} return ''; }
+  async function caricaRisorse(user_id) {
+    window.risorseCache = [];
+    if (user_id) {
+      const { data } = await client.from('risorse_cliente').select('*').eq('user_id', user_id).order('ordine').order('created_at');
+      window.risorseCache = data || [];
+    }
+    renderArchivio();
+  }
+  // Voci "di base" già presenti nei dati del cliente (cartella Dropbox, upload, sito, Instagram)
+  function archivioBase() {
+    const v = id => ((document.getElementById(id) || {}).value || '').trim();
+    const base = [];
+    if (v('c-onedrive')) base.push({ tipo: 'file', nome: v('c-cartella-nome') || 'Cartella materiali', url: v('c-onedrive'), fornitore: 'Dropbox', titolare: 'cliente', base: true, zip: linkZip(v('c-onedrive')) });
+    if (v('c-upload')) base.push({ tipo: 'file', nome: '"Invia qui" (upload file)', url: v('c-upload'), fornitore: 'Dropbox', titolare: 'cliente', base: true });
+    if (v('c-sito-url')) base.push({ tipo: 'sito', nome: v('c-sito-url').replace(/^https?:\/\//, '').replace(/\/$/, ''), url: v('c-sito-url'), fornitore: (document.getElementById('c-sito-stato') || {}).value || '', titolare: 'cliente', base: true });
+    if (v('c-instagram')) base.push({ tipo: 'social', nome: 'Instagram', url: v('c-instagram'), fornitore: 'Meta', titolare: 'cliente', base: true });
+    return base;
+  }
+  function renderArchivio() {
+    const el = document.getElementById('arch-griglia'); if (!el) return;
+    const tutte = archivioBase().concat(window.risorseCache);
+    const docs = (window.documentiCache || []).length;
+    const oggi = new Date(); const tra30 = new Date(Date.now() + 30 * 86400000);
+    el.innerHTML = ARCH_TIPI.map(([tipo, ico, nome]) => {
+      const voci = tutte.filter(r => r.tipo === tipo);
+      if (tipo === 'altro' && !voci.length) return '';
+      const righe = voci.map(r => {
+        const sc = r.scadenza ? new Date(r.scadenza) : null;
+        const scTxt = sc ? `<span class="arch-scad${sc < tra30 ? ' vicina' : ''}">${sc < oggi ? 'scaduto' : 'scade'} ${sc.toLocaleDateString('it-CH')}</span>` : '';
+        return `<div class="arch-voce${r.visibile === false ? ' nascosta' : ''}">
+          <div class="arch-voce-testo">
+            <div class="arch-voce-nome">${r.url ? `<a href="${archEsc(r.url)}" target="_blank" rel="noopener">${vcEsc(r.nome)} ↗</a>` : vcEsc(r.nome)}</div>
+            <div class="arch-voce-meta">${[r.fornitore ? vcEsc(r.fornitore) : '', `<span class="arch-tit ${r.titolare}">${r.titolare === 'visibil' ? 'Gestito da te' : 'Del cliente'}</span>`, scTxt, r.visibile === false ? '🙈 nascosto al cliente' : ''].filter(Boolean).join(' · ')}</div>
+            ${r.nota ? `<div class="arch-voce-nota">${vcEsc(r.nota)}</div>` : ''}
+          </div>
+          <div class="arch-voce-azioni">
+            ${r.zip ? `<a class="arch-mini" href="${archEsc(r.zip)}" title="Scarica tutta la cartella in uno zip">⬇ zip</a>` : ''}
+            ${r.base ? `<button type="button" class="arch-mini" onclick="document.getElementById('cloud-dati').open = true; document.getElementById('cloud-dati').scrollIntoView({behavior:'smooth', block:'start'})" title="Modifica nei dati base">✎</button>`
+                     : `<button type="button" class="arch-mini" onclick="modificaRisorsa('${r.id}')" title="Modifica">✎</button><button type="button" class="arch-mini rosso" onclick="eliminaRisorsa('${r.id}')" title="Elimina">✕</button>`}
+          </div>
+        </div>`;
+      }).join('');
+      const extra = tipo === 'file' && docs ? `<div class="arch-voce-meta" style="padding:0.3rem 0;">📄 ${docs} document${docs === 1 ? 'o' : 'i'} nella sezione Documenti qui sotto</div>` : '';
+      return `<div class="arch-blocco">
+        <div class="arch-blocco-testa"><span>${ico} ${nome}</span><button type="button" class="arch-mini" onclick="nuovaRisorsa('${tipo}')" title="Aggiungi">+ Aggiungi</button></div>
+        ${righe || extra ? righe + extra : '<div class="arch-vuoto">Niente ancora</div>'}
+      </div>`;
+    }).join('');
+  }
+  function nuovaRisorsa(tipo) {
+    ['ar-id', 'ar-nome', 'ar-fornitore', 'ar-url', 'ar-scadenza', 'ar-nota'].forEach(id => { document.getElementById(id).value = ''; });
+    document.getElementById('ar-tipo').value = tipo || 'altro';
+    document.getElementById('ar-titolare').value = 'cliente';
+    document.getElementById('ar-visibile').checked = true;
+    const f = document.getElementById('arch-form'); f.style.display = ''; f.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('ar-nome').focus();
+  }
+  function modificaRisorsa(id) {
+    const r = window.risorseCache.find(x => x.id === id); if (!r) return;
+    nuovaRisorsa(r.tipo);
+    document.getElementById('ar-id').value = r.id;
+    document.getElementById('ar-nome').value = r.nome || '';
+    document.getElementById('ar-fornitore').value = r.fornitore || '';
+    document.getElementById('ar-url').value = r.url || '';
+    document.getElementById('ar-titolare').value = r.titolare || 'cliente';
+    document.getElementById('ar-scadenza').value = r.scadenza || '';
+    document.getElementById('ar-nota').value = r.nota || '';
+    document.getElementById('ar-visibile').checked = r.visibile !== false;
+  }
+  function chiudiFormRisorsa() { document.getElementById('arch-form').style.display = 'none'; }
+  async function salvaRisorsa() {
+    const user_id = document.getElementById('c-userid').value.trim();
+    if (!user_id) { showMsg('ar-msg', 'Carica prima un cliente.', false); return; }
+    const val = id => document.getElementById(id).value.trim();
+    if (!val('ar-nome')) { showMsg('ar-msg', 'Serve almeno un nome.', false); return; }
+    let url = val('ar-url'); if (url && !/^https?:\/\//i.test(url) && !/^mailto:/i.test(url)) url = 'https://' + url;
+    const payload = { user_id, tipo: val('ar-tipo'), nome: val('ar-nome'), fornitore: val('ar-fornitore') || null, url: url || null,
+      titolare: val('ar-titolare'), scadenza: val('ar-scadenza') || null, nota: val('ar-nota') || null, visibile: document.getElementById('ar-visibile').checked };
+    const id = val('ar-id');
+    const { error } = id ? await client.from('risorse_cliente').update(payload).eq('id', id) : await client.from('risorse_cliente').insert(payload);
+    if (error) { showMsg('ar-msg', 'Errore: ' + error.message, false); return; }
+    chiudiFormRisorsa();
+    caricaRisorse(user_id);
+  }
+  async function eliminaRisorsa(id) {
+    const r = window.risorseCache.find(x => x.id === id);
+    if (!confirm(`Eliminare "${r ? r.nome : ''}" dall'archivio?`)) return;
+    const { error } = await client.from('risorse_cliente').delete().eq('id', id);
+    if (error) { alert('Errore: ' + error.message); return; }
+    caricaRisorse(document.getElementById('c-userid').value.trim());
+  }
+  // Pagina di consegna: riepilogo stampabile/PDF di tutto ciò che appartiene al cliente
+  function preparaConsegna() {
+    const nome = (document.getElementById('c-nome') || {}).value || (document.getElementById('cliente-attivo-titolo') || {}).textContent || 'Cliente';
+    const tutte = archivioBase().concat(window.risorseCache);
+    const e = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+    const riga = r => `<tr><td>${(ARCH_TIPI.find(t => t[0] === r.tipo) || ['', '🧩'])[1]} <strong>${e(r.nome)}</strong>${r.nota ? `<div class="n">${e(r.nota)}</div>` : ''}</td><td>${e(r.fornitore || '')}</td><td>${r.scadenza ? new Date(r.scadenza).toLocaleDateString('it-CH') : ''}</td><td>${r.url ? `<a href="${e(r.url)}">${e(r.url)}</a>` : ''}${r.zip ? `<br><a href="${e(r.zip)}">⬇ Scarica tutto (zip)</a>` : ''}</td></tr>`;
+    const tabella = (titolo, lista, sotto) => lista.length ? `<h2>${titolo}</h2><p class="s">${sotto}</p><table><tr><th>Cosa</th><th>Fornitore</th><th>Scadenza</th><th>Link</th></tr>${lista.map(riga).join('')}</table>` : '';
+    const docs = (window.documentiCache || []).map(d => `<li>${e(d.titolo || 'Documento')}${d.stato ? ' — ' + e(d.stato) : ''}</li>`).join('');
+    // Nella consegna solo ciò che il cliente può vedere; l'upload "Invia qui" non serve più
+    const daConsegnare = tutte.filter(r => r.visibile !== false && !(r.base && /Invia qui/.test(r.nome)));
+    const tuoi = daConsegnare.filter(r => r.titolare !== 'visibil'), miei = daConsegnare.filter(r => r.titolare === 'visibil');
+    const w = window.open('', '_blank');
+    if (!w) { alert('Il browser ha bloccato la nuova finestra: consentila per vsbl.ch e riprova.'); return; }
+    w.document.write(`<!DOCTYPE html><html lang="it"><head><meta charset="utf-8"><title>Consegna — ${e(nome)}</title>
+      <style>body{font-family:Inter,Arial,sans-serif;max-width:820px;margin:2rem auto;padding:0 1.5rem;color:#0F0F0F;line-height:1.5}
+      .logo{font-weight:900;letter-spacing:.22em}h1{font-size:1.6rem;margin:.5rem 0 .2rem}h2{font-size:1rem;margin:2rem 0 .2rem}.s{color:#8A8A8A;font-size:.85rem;margin:0 0 .6rem}
+      table{width:100%;border-collapse:collapse;font-size:.85rem}th{text-align:left;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:#8A8A8A;border-bottom:1px solid #ddd;padding:.4rem 0}
+      td{border-bottom:1px solid #eee;padding:.55rem .5rem .55rem 0;vertical-align:top;word-break:break-word}.n{color:#8A8A8A;font-size:.78rem}a{color:#1A1AE6}
+      ul.c{list-style:none;padding:0}ul.c li{padding:.25rem 0}ul.c li:before{content:"☐ ";}.bar{margin:1.5rem 0}button{font:inherit;padding:.6rem 1.2rem;border:0;border-radius:6px;background:#0F0F0F;color:#fff;cursor:pointer}
+      @media print{.bar{display:none}body{margin:0}}</style></head><body>
+      <div class="logo">VISIBIL</div><h1>Consegna — ${e(nome)}</h1><p class="s">Riepilogo di tutto ciò che riguarda il tuo progetto, aggiornato al ${new Date().toLocaleDateString('it-CH')}.</p>
+      <div class="bar"><button onclick="print()">📄 Salva come PDF / stampa</button></div>
+      ${tabella('Di tua proprietà', tuoi, 'Questi elementi sono intestati a te: conserva link e accessi.')}
+      ${tabella('Gestiti da VISIBIL per te', miei, 'Questi servizi sono intestati a VISIBIL: si possono trasferire a te o disdire.')}
+      ${docs ? `<h2>Documenti</h2><ul>${docs}</ul>` : ''}
+      <h2>Checklist di consegna</h2><ul class="c">
+        <li>Scarica la cartella dei materiali (link "⬇ Scarica tutto")</li>
+        ${daConsegnare.some(r => r.tipo === 'dominio' && r.titolare === 'visibil') ? '<li>Trasferimento del dominio: richiedere il codice di autorizzazione (auth code) al fornitore</li>' : ''}
+        ${miei.length ? '<li>Decidere per ogni servizio gestito da VISIBIL: trasferimento al cliente o disdetta</li>' : ''}
+        <li>Cambiare le password degli account condivisi durante il lavoro</li>
+        <li>Verificare di avere accesso a sito, email e social</li>
+      </ul></body></html>`);
+    w.document.close();
   }
 
   async function salvaPagamento() {
