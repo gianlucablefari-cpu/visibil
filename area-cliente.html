@@ -575,7 +575,7 @@
 
     <header class="app-topbar">
       <span class="app-topbar-logo">VISIBIL</span>
-      <a href="#" class="app-topbar-avatar" id="topbar-avatar" onclick="return showTab('account', event)"></a>
+      <a href="#" class="app-topbar-avatar" id="topbar-avatar" onclick="return clickProfilo(event)"></a>
     </header>
 
     <div class="app-body">
@@ -583,7 +583,7 @@
       <aside class="app-sidebar">
         <div class="sidebar-logo">VISIBIL</div>
 
-        <div class="sidebar-profile" data-tab="account" role="button" tabindex="0" title="I tuoi dati" onclick="return showTab('account', event)" style="cursor:pointer;">
+        <div class="sidebar-profile" data-tab="account" role="button" tabindex="0" title="I tuoi dati" onclick="return clickProfilo(event)" style="cursor:pointer;">
           <div class="avatar avatar-sm" id="avatar-iniziali-sidebar"></div>
           <div>
             <div class="profile-name" id="cliente-nome-sidebar" style="font-size:0.9rem;"></div>
@@ -2016,6 +2016,8 @@
     const isPreview = !!(previewId && user.id === OWNER_ID);
     const targetUserId = isPreview ? previewId : user.id;
     window.isPreviewMode = isPreview;
+    window.utenteOwner = user.id === OWNER_ID; window.clienteMostratoId = targetUserId;
+    if (window.utenteOwner) { const sp = document.querySelector('.sidebar-profile'); if (sp) sp.title = 'Apri questo cliente nell\'admin'; }
 
     // Striscia in alto che dice con quale ruolo si sta guardando la pagina (solo per Gianluca)
     const sonoOwner = user.id === OWNER_ID;
@@ -2527,6 +2529,11 @@
     const gruppo = (titolo, sotto, l) => l.length ? `<div style="margin-bottom:1.5rem;"><div class="section-label" style="margin-bottom:0.25rem;">${titolo}</div><p class="risorse-sotto">${sotto}</p><div class="risorse-griglia">${l.map(card).join('')}</div></div>` : '';
     el.innerHTML = gruppo('Di tua proprietà', 'Intestati a te.', lista.filter(r => r.titolare !== 'visibil'))
       + gruppo('Gestiti da VISIBIL per te', 'Intestati a VISIBIL: se un giorno ti servono, li trasferiamo a te.', lista.filter(r => r.titolare === 'visibil'));
+  }
+  // Nome e avatar: per il cliente aprono i suoi dati; per Gianluca aprono la sua scheda nell'admin
+  function clickProfilo(e) {
+    if (window.utenteOwner && window.clienteMostratoId) { location.href = linkAdminCliente(window.clienteMostratoId); return false; }
+    return showTab('account', e);
   }
   function openContactSheet() { showTab('contatti'); setTimeout(() => { const t = document.getElementById('contact-messaggio'); if (t) t.focus(); }, 50); }
   function closeContactSheet() {}
