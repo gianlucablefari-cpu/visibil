@@ -111,6 +111,14 @@
     .tab-tile > span { display: none; }
     .tab-tile { padding: 0.75rem 0.25rem; }
     .tab-tile svg { width: 21px; height: 21px; }
+    /* meno scatole una dentro l'altra: più spazio in larghezza */
+    main { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
+    .card { padding: 1rem 0.8rem; border-radius: 10px; margin-bottom: 1.25rem; }
+    .card div[style*="background:var(--surface)"], .card details[style*="background:var(--surface)"] { background: none !important; border: 0 !important; padding: 0 !important; border-radius: 0 !important; }
+    .card .card { border: 0; padding: 0; }
+    .pr-card, .vid-card { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
+    .tabs-bar { padding: 0; gap: 0.25rem; border: 0; background: none; }
+    .cliente-attivo-bar, #cliente-attivo-bar { padding-left: 0.6rem !important; padding-right: 0.6rem !important; }
   }
   .titolo-occhio { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; color: var(--black); vertical-align: middle; margin-left: 0.6rem; text-decoration: none; }
   .titolo-occhio:hover { border-color: var(--ink); color: var(--ink); }
