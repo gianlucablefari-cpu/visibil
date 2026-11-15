@@ -25,7 +25,9 @@
   .testa { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
   .eyebrow { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); }
   .numero { font-size: 0.8rem; color: var(--grey); margin-top: 0.2rem; }
-  h1 { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; margin: 1.1rem 0 1.25rem; }
+  h1 { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; margin: 0 0 0.35rem; }
+  .sottotitolo { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; font-size: 0.78rem; color: var(--black); padding-bottom: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--line); }
+  .sottotitolo .scad, #f-progetto-box { color: var(--grey); }
 
   .badge { display:inline-block; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 0.35rem 0.75rem; border-radius: 100px; white-space: nowrap; }
   .badge.attesa { background: #FFF4DE; color: #7A4E00; }
@@ -36,7 +38,7 @@
   .meta-voce span { display: block; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.15rem; }
   .meta-voce strong { font-size: 0.9rem; font-weight: 600; }
 
-  .parti { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1.5rem 0; font-size: 0.85rem; line-height: 1.6; }
+  .parti { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1.25rem 0 1.5rem; font-size: 0.82rem; line-height: 1.55; }
   .parti .etichetta { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.3rem; }
   .parti strong { font-weight: 600; }
 
@@ -128,14 +130,6 @@
         </div>
         <div id="f-stato"></div>
       </div>
-      <h1 id="f-titolo"></h1>
-
-      <div class="meta">
-        <div class="meta-voce"><span>Data</span><strong id="f-data">—</strong></div>
-        <div class="meta-voce"><span>Scadenza</span><strong id="f-scadenza">—</strong></div>
-        <div class="meta-voce" id="f-progetto-box" style="display:none;"><span>Progetto</span><strong id="f-progetto"></strong></div>
-      </div>
-
       <div class="parti">
         <div>
           <div class="etichetta">Da</div>
@@ -146,6 +140,14 @@
           <div id="f-per"></div>
         </div>
       </div>
+
+      <h1 id="f-titolo"></h1>
+      <div class="sottotitolo">
+        <span id="f-data">—</span>
+        <span class="scad">Scadenza <span id="f-scadenza">—</span></span>
+        <span id="f-progetto-box" style="display:none;">Progetto <span id="f-progetto"></span></span>
+      </div>
+
 
       <table class="voci">
         <thead><tr><th>Descrizione</th><th class="num col-ore">Ore</th><th class="num col-tariffa">Tariffa</th><th class="num">Importo</th></tr></thead>
