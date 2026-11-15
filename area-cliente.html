@@ -569,6 +569,24 @@
   .contatti-btn svg { width: 22px; height: 22px; color: var(--ink); }
   .contatti-btn.wa svg { color: #25D366; }
   #archivio-preventivi .row-card { background: var(--white); }
+  .app-card { display: flex; align-items: center; gap: 0.9rem; background: var(--black); color: #fff; border-radius: 14px; padding: 0.85rem 1rem; margin-bottom: 0.6rem; }
+  .app-cal { width: 46px; flex: none; background: #fff; color: var(--black); border-radius: 10px; text-align: center; overflow: hidden; }
+  .app-cal span { display: block; background: #E5484D; color: #fff; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.15rem 0; }
+  .app-cal b { display: block; font-size: 1.2rem; font-weight: 800; padding: 0.1rem 0 0.2rem; }
+  .app-tit { font-weight: 700; font-size: 0.95rem; line-height: 1.25; }
+  .app-quando { font-size: 0.8rem; opacity: 0.75; margin-top: 0.15rem; }
+  .marcia { background: var(--white); border: 1px solid rgba(0,0,0,0.07); border-radius: 12px; padding: 0.4rem 0.9rem; }
+  .marcia-riga { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.6rem 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.86rem; position: relative; }
+  .marcia-riga:last-child { border-bottom: 0; }
+  .marcia-punto { margin-top: 1px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--ink); flex: none; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #fff; font-weight: 800; }
+  .marcia-riga.fatto .marcia-punto { background: #1E6B3C; border-color: #1E6B3C; }
+  .marcia-riga.fatto .marcia-tit { color: var(--grey); }
+  .marcia-tit { flex: 1; min-width: 0; font-weight: 600; line-height: 1.3; }
+  .marcia-sub { display: flex; align-items: center; gap: 0.45rem; margin-top: 0.25rem; font-weight: 400; }
+  .marcia-chi { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--grey); background: var(--surface); padding: 0.2rem 0.45rem; border-radius: 100px; flex: none; }
+  .marcia-chi.tu { color: var(--ink); background: rgba(26,26,230,0.08); }
+  .marcia-q { font-size: 0.74rem; color: var(--grey); white-space: nowrap; flex: none; }
+  .marcia-q.scaduto { color: #A32D2D; font-weight: 600; }
   .progetto-ore-testo { font-weight: 500; color: var(--grey); margin-right: 0.5rem; white-space: nowrap; }
   .progetto-item-pct { white-space: nowrap; }
   .progetto-item-top { cursor: pointer; }
@@ -736,6 +754,11 @@
             <div id="avanzamento-card" style="display:none; margin-bottom: 1.5rem;">
               <div id="da-fare-items" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
             </div>
+          </div>
+          <div id="sez-programma" style="display:none; margin-bottom: 1.75rem;">
+            <div class="section-label" style="margin-bottom: 0.75rem;">In programma</div>
+            <div id="programma-appuntamenti"></div>
+            <div id="programma-marcia" class="marcia"></div>
           </div>
           <div id="progetti-avanzamento-section" style="display:none; margin-bottom: 1.75rem;">
             <div class="section-label" style="margin-bottom: 0.75rem;">Progetti in corso</div>
@@ -2187,6 +2210,7 @@
       const nuova = !!v.aggiornato_il && (!v.visto_cliente_il || new Date(v.visto_cliente_il) < new Date(v.aggiornato_il));
       todo.push({ ico: '▶️', bg: '#E6F4EA', t: nuova ? 'Nuova versione da guardare' : 'Guarda e commenta il video', s: v.nome || '', onclick: "return haVaiVideo('" + String(v.chiave || v.id).replace(/'/g, "\\'") + "')" });
     });
+    (window.condivisiCache || []).filter(c => c.tipo === 'cliente_fa' && !c.fatto).forEach(c => todo.push({ ico: '✋', bg: '#EEF0FF', t: c.titolo, s: c.quando ? 'entro ' + new Date(c.quando).toLocaleDateString('it-CH', { weekday: 'short', day: 'numeric', month: 'short' }) : 'tocca a te', onclick: "return false" }));
     // le fatture per ultime: prima le cose di lavoro
     (dovuti || []).forEach(p => todo.push({ ico: '💳', bg: '#FBEAEA', t: 'Fattura da saldare' + (p.numero ? ' · ' + p.numero : ''), s: (p.titolo || '') + (p.importo ? ' · ' + chf(p.importo) : ''), href: 'pagamento.html?id=' + p.id, blank: true }));
     document.getElementById('ha-dafare').innerHTML = todo.map(x => {
@@ -2451,6 +2475,9 @@
     }
 
     const { data: documenti } = await client.from('documenti').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
+    const { data: condivisi } = await client.from('condivisi_cliente').select('*').eq('user_id', targetUserId);
+    window.condivisiCache = condivisi || [];
+    try { renderProgramma(); } catch (e) { console.error('programma', e); }
     window.documentiCache = documenti || [];
     renderDocumenti(false);
     // Pannello: i documenti di un progetto stanno dentro la sua scheda; gli altri nella sezione Documenti
@@ -2652,6 +2679,35 @@
       const giorni = Object.entries(perGiorno);
       box.querySelector('.pd-ore-lista').innerHTML = giorni.length ? giorni.map(([g, m]) => `<div class="pd-riga"><span>${g}</span><b>${fmt(m)}</b></div>`).join('') : '<span style="color:var(--grey);">Ancora nessuna ora registrata.</span>';
     } catch (e) { box.querySelector('.pd-ore').remove(); }
+  }
+  // "In programma": appuntamenti e tabella di marcia condivisi da TickTick (tag #cliente / #cliente-fa)
+  function renderProgramma() {
+    const cc = window.condivisiCache || [];
+    const sez = document.getElementById('sez-programma'); if (!sez) return;
+    if (!cc.length) { sez.style.display = 'none'; return; }
+    const ora = Date.now();
+    const giorno = d => new Date(d).toLocaleDateString('it-CH', { weekday: 'short', day: 'numeric', month: 'short' });
+    const orario = d => new Date(d).toLocaleTimeString('it-CH', { hour: '2-digit', minute: '2-digit' });
+    const appuntamenti = cc.filter(c => c.tipo === 'appuntamento' && !c.fatto && c.quando && new Date(c.quando).getTime() > ora - 3 * 3600e3)
+      .sort((a, b) => new Date(a.quando) - new Date(b.quando));
+    document.getElementById('programma-appuntamenti').innerHTML = appuntamenti.map(a => {
+      const d = new Date(a.quando), oggi = new Date(); const domani = new Date(); domani.setDate(oggi.getDate() + 1);
+      const rel = d.toDateString() === oggi.toDateString() ? 'Oggi' : d.toDateString() === domani.toDateString() ? 'Domani' : giorno(a.quando);
+      return `<div class="app-card"><div class="app-cal"><span>${d.toLocaleDateString('it-CH', { month: 'short' }).replace('.', '')}</span><b>${d.getDate()}</b></div><div class="app-txt"><div class="app-tit">${escHtml(a.titolo)}</div><div class="app-quando">${rel}${a.tutto_il_giorno ? '' : ' · ' + orario(a.quando)}</div></div></div>`;
+    }).join('');
+    // tabella di marcia: impegni miei e del cliente (+ appuntamenti passati), le ultime 3 fatte e tutte quelle da fare
+    const marcia = cc.filter(c => !appuntamenti.includes(c));
+    const fatte = marcia.filter(c => c.fatto).sort((a, b) => new Date(a.fatto_il || a.quando || 0) - new Date(b.fatto_il || b.quando || 0)).slice(-3);
+    const daFare = marcia.filter(c => !c.fatto).sort((a, b) => (a.quando ? new Date(a.quando).getTime() : 9e15) - (b.quando ? new Date(b.quando).getTime() : 9e15));
+    const riga = c => {
+      const chi = c.tipo === 'cliente_fa' ? '<span class="marcia-chi tu">tu</span>' : '<span class="marcia-chi">Gianluca</span>';
+      const q = c.fatto ? (c.fatto_il ? 'fatto ' + giorno(c.fatto_il) : 'fatto') : (c.quando ? (c.tipo === 'appuntamento' ? giorno(c.quando) : 'entro ' + giorno(c.quando)) : '');
+      const scaduto = !c.fatto && c.quando && new Date(c.quando).getTime() < ora;
+      return `<div class="marcia-riga${c.fatto ? ' fatto' : ''}"><span class="marcia-punto">${c.fatto ? '✓' : ''}</span><span class="marcia-tit">${escHtml(c.titolo)}<span class="marcia-sub">${chi}${q ? `<span class="marcia-q${scaduto ? ' scaduto' : ''}">${q}</span>` : ''}</span></span></div>`;
+    };
+    document.getElementById('programma-marcia').innerHTML = fatte.concat(daFare).map(riga).join('');
+    document.getElementById('programma-marcia').style.display = (fatte.length + daFare.length) ? '' : 'none';
+    sez.style.display = (appuntamenti.length || fatte.length || daFare.length) ? '' : 'none';
   }
   function docCompattoHtml(d) {
     const vedi = d.documento_url ? `<a href="${escHtml(linkDoc(d.documento_url, 'vedi')).replace(/"/g, '&quot;')}" target="_blank" rel="noopener" class="pdoc-vedi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>Visualizza</a>` : '';
