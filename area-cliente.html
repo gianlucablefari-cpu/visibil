@@ -1950,10 +1950,24 @@
     if (window._videoFocus && !(history.state && history.state.video)) esciVideoPagina();
     else if (history.state && history.state.video && !window._videoFocus) { const d = trovaVideoVoce(history.state.video); if (d) d.open = true; }
   });
+  // Salda: aggiorna (o crea) la fattura del progetto con le ore non ancora fatturate, poi la apre
   function saldaProgetto(pid, e) {
+    if (e) e.preventDefault();
     const aperte = (window.pagamentiCache || []).filter(x => x.progetto_id === pid && (x.stato === 'In attesa' || x.stato === 'Scaduto'));
-    if (aperte.length === 1) { if (e) e.preventDefault(); window.open('pagamento.html?id=' + aperte[0].id, '_blank'); return false; }
-    return showTab('fatture', e);
+    const win = window.open('about:blank', '_blank'); // aperta subito, così il browser non la blocca
+    if (win) { try { win.document.write('<p style="font-family:Inter,sans-serif;padding:2rem;color:#8A8A8A;">Preparo la fattura aggiornata…</p>'); } catch (x) {} }
+    (async () => {
+      let id = aperte.length === 1 ? aperte[0].id : null;
+      try {
+        const { data } = await client.auth.getSession();
+        const res = await fetch('/api/aggiorna-saldo', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + data.session.access_token }, body: JSON.stringify({ progetto_id: pid }) });
+        const r = await res.json();
+        if (res.ok && r.id) id = r.id;
+      } catch (x) {}
+      if (id) { if (win) win.location.href = 'pagamento.html?id=' + id; else location.href = 'pagamento.html?id=' + id; }
+      else { if (win) win.close(); showTab('fatture'); }
+    })();
+    return false;
   }
   function renderConclusi() {
     const sez = document.getElementById('conclusi-section');

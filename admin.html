@@ -3758,11 +3758,9 @@
   }
   async function oreSegnaFatturate(pagamentoId, ids) {
     if (!ids.length) return;
-    const ss = window.oreCache.filter(o => ids.includes(o.id));
     const { error } = await client.from('ore_lavoro').update({ pagamento_id: pagamentoId }).in('id', ids);
     if (error) { showMsg('pagamento-msg', 'Pagamento salvato, ma errore nel segnare le ore: ' + error.message, false); return; }
-    const perProg = {}; ss.forEach(o => { if (o.progetto_id) perProg[o.progetto_id] = (perProg[o.progetto_id] || 0) + o.minuti; });
-    for (const [pid, min] of Object.entries(perProg)) await oreAggiustaProgetto(pid, -min);
+    // le ore da saldare del progetto scendono quando la fattura risulta pagata (trigger nel database)
     caricaOre(document.getElementById('c-userid').value.trim());
     caricaProgettiEsistenti(document.getElementById('c-userid').value.trim());
   }
