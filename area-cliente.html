@@ -2594,6 +2594,11 @@
     }
   }
 
+  // Link Dropbox: "vedi" apre il PDF direttamente nel browser, "scarica" lo scarica
+  function linkDoc(url, modo) {
+    try { const u = new URL(url); if (/dropbox\.com$/.test(u.hostname)) { u.searchParams.delete('dl'); u.searchParams.delete('raw'); u.searchParams.set(modo === 'vedi' ? 'raw' : 'dl', '1'); return u.toString(); } } catch (e) {}
+    return url;
+  }
   function renderDocumenti(mostraTutti) {
     const documenti = window.documentiCache || [];
     const list = document.getElementById('documenti-list');
@@ -2631,7 +2636,7 @@
           </div>
           <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0;">
             ${badge}
-            ${d.documento_url ? `<a href="${d.documento_url}" target="_blank" style="display:inline-flex; align-items:center; gap:0.3rem; color:var(--ink); font-size:0.78rem; text-decoration:none; white-space:nowrap;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Scarica</a>` : ''}
+            ${d.documento_url ? `<a href="${escHtml(linkDoc(d.documento_url, 'vedi')).replace(/"/g, '&quot;')}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:0.3rem; color:var(--ink); font-size:0.78rem; text-decoration:none; white-space:nowrap;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>Visualizza</a><a href="${escHtml(linkDoc(d.documento_url, 'scarica')).replace(/"/g, '&quot;')}" title="Scarica" aria-label="Scarica" style="display:inline-flex; align-items:center; color:var(--grey); text-decoration:none; padding:0.1rem;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></a>` : ''}
           </div>
         </div>`;
     });
