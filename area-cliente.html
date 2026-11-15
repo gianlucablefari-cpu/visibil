@@ -718,6 +718,10 @@
             <div class="section-label" style="margin-bottom: 0.75rem;">Video in lavorazione</div>
             <div id="video-list" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
           </div>
+          <div id="archivio-preventivi-sez" style="display:none; margin-bottom: 1.75rem;">
+            <div class="section-label" style="margin-bottom: 0.75rem;">Preventivi</div>
+            <div id="archivio-preventivi" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+          </div>
           <div id="conclusi-section" style="display:none; margin-top: 1.75rem;"></div>
         </section>
 
@@ -761,14 +765,14 @@
             <div class="section-label" style="margin-bottom: 0.75rem;">Sito e collegamenti</div>
           <div class="row-card" id="link-sito" style="display:none;">
             <div>
-              <a href="#" id="link-sito-url" target="_blank">Sito web</a>
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px; height:17px; flex:none; vertical-align:-3px; margin-right:0.45rem;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg><a href="#" id="link-sito-url" target="_blank">Sito web</a>
               <span class="site-status" id="link-sito-stato"></span>
               <div style="font-size:0.75rem; color:var(--grey); margin-top:0.15rem; word-break:break-all;" id="link-sito-display"></div>
               <div class="site-password" id="link-sito-password" style="display:none;"></div>
             </div>
           </div>
           <div class="row-card" id="link-instagram" style="display:none;">
-            <a href="#" id="link-instagram-url" target="_blank">Instagram</a>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="#C13584" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px; height:17px; flex:none; vertical-align:-3px; margin-right:0.45rem;"><rect x="2" y="2" width="20" height="20" rx="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg><a href="#" id="link-instagram-url" target="_blank">Instagram</a></span>
           </div>
           <div id="strumenti-section" style="display:none; margin-top: 0.75rem;">
             <div class="section-label" style="margin-bottom: 0.5rem;">Strumenti</div>
@@ -778,16 +782,11 @@
           </div>
           <div id="risorse-cliente"></div>
 
-          <p class="scorciatoie-nota">↓ Qui sotto alcune scorciatoie: documenti, preventivi e report si trovano comunque tutti anche nella tua cartella.</p>
+          <p class="scorciatoie-nota">↓ Qui sotto alcune scorciatoie: documenti e report si trovano comunque tutti anche nella tua cartella.</p>
           <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
             <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
             <div id="documenti-list"></div>
             <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
-          </div>
-
-          <div id="archivio-preventivi-sez" style="display:none; margin-top: 1.75rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
-            <div class="section-label" style="margin-bottom: 0.5rem;">Preventivi</div>
-            <div id="archivio-preventivi"></div>
           </div>
 
           <div style="margin-top: 1.75rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
@@ -2212,6 +2211,18 @@
   }
   if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('/sw-cliente.js').catch(() => {});
 
+  // Icona adatta al tipo di collegamento (sito, Instagram, ecc.)
+  function iconaLink(url, nome) {
+    const u = String(url || '').toLowerCase(), n = String(nome || '').toLowerCase();
+    const st = 'style="width:16px; height:16px; flex:none;"';
+    if (/instagram\.com/.test(u) || /insta/.test(n)) return `<svg viewBox="0 0 24 24" fill="none" stroke="#C13584" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${st}><rect x="2" y="2" width="20" height="20" rx="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>`;
+    if (/facebook\.com/.test(u)) return `<svg viewBox="0 0 24 24" fill="none" stroke="#1877F2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${st}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>`;
+    if (/linkedin\.com/.test(u)) return `<svg viewBox="0 0 24 24" fill="none" stroke="#0A66C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${st}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>`;
+    if (/youtube\.com|youtu\.be/.test(u)) return `<svg viewBox="0 0 24 24" fill="none" stroke="#FF0000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${st}><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>`;
+    if (/sito|web|www/.test(n) || /^https?:\/\/[^/]+\/?$/.test(u)) return `<svg viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${st}><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${st}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+  }
+
   const OWNER_ID = "45d74677-8f95-4d75-86a0-c7d9c586d68a";
 
   async function loadDashboard(user) {
@@ -2308,7 +2319,7 @@
         document.getElementById('strumenti-section').style.display = 'block';
         document.getElementById('strumenti-lista').innerHTML = strumentiList.map(l => `
           <a href="${l.url}" target="_blank" style="font-size:0.8rem; font-weight:600; padding:0.6rem 1rem; border:1px solid rgba(0,0,0,0.1); border-radius:6px; color:var(--black); text-decoration:none; display:flex; align-items:center; gap:0.4rem;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+            ${iconaLink(l.url, l.nome)}
             ${l.nome}
           </a>`).join('');
       }
@@ -2366,7 +2377,7 @@
 
     const { data: preventivi, error: errPrev } = await client.from('preventivi').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     window.preventiviPendenti = (preventivi || []).filter(p => p.stato === 'In attesa');
-    // Archivio: tutti i preventivi, anche quelli già approvati
+    // Pannello: tutti i preventivi, anche quelli già approvati
     document.getElementById('archivio-preventivi-sez').style.display = (preventivi || []).length ? '' : 'none';
     document.getElementById('archivio-preventivi').innerHTML = (preventivi || []).map(p => {
       const data = p.data ? new Date(p.data).toLocaleDateString('it-CH', {day:'numeric', month:'short', year:'numeric'}) : '';
