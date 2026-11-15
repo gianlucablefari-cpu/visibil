@@ -2142,7 +2142,6 @@
 
     // Cose da fare per il cliente
     const todo = [];
-    (dovuti || []).forEach(p => todo.push({ ico: '💳', bg: '#FBEAEA', t: 'Fattura da saldare' + (p.numero ? ' · ' + p.numero : ''), s: (p.titolo || '') + (p.importo ? ' · ' + chf(p.importo) : ''), href: 'pagamento.html?id=' + p.id, blank: true }));
     (preventivi || []).forEach(p => todo.push({ ico: '📝', bg: '#FFF4DC', t: 'Preventivo da approvare', s: (p.titolo || '') + (p.importo ? ' · ' + chf(p.importo) : ''), href: p.link_approvazione || null, blank: !!p.link_approvazione, onclick: p.link_approvazione ? '' : "return showTab('fatture')" }));
     (documenti || []).filter(d => d.stato === 'Da firmare').forEach(d => todo.push({ ico: '✍️', bg: '#EEF0FF', t: 'Documento da firmare', s: d.titolo || '', onclick: "return showTab('documenti')" }));
     const progAttivi = new Set((window._progettiTutti || []).filter(p => p.stato !== 'Completato').map(p => p.id));
@@ -2150,6 +2149,8 @@
       const nuova = !!v.aggiornato_il && (!v.visto_cliente_il || new Date(v.visto_cliente_il) < new Date(v.aggiornato_il));
       todo.push({ ico: '▶️', bg: '#E6F4EA', t: nuova ? 'Nuova versione da guardare' : 'Guarda e commenta il video', s: v.nome || '', onclick: "return haVaiVideo('" + String(v.chiave || v.id).replace(/'/g, "\\'") + "')" });
     });
+    // le fatture per ultime: prima le cose di lavoro
+    (dovuti || []).forEach(p => todo.push({ ico: '💳', bg: '#FBEAEA', t: 'Fattura da saldare' + (p.numero ? ' · ' + p.numero : ''), s: (p.titolo || '') + (p.importo ? ' · ' + chf(p.importo) : ''), href: 'pagamento.html?id=' + p.id, blank: true }));
     document.getElementById('ha-dafare').innerHTML = todo.map(x => {
       const attr = (x.href ? `href="${escHtml(x.href).replace(/"/g, "&quot;")}"` + (x.blank ? ' target="_blank" rel="noopener"' : '') : 'href="#"') + (x.onclick ? ` onclick="${x.onclick}"` : '');
       return `<a class="ha-todo" ${attr}><span class="ha-todo-ico" style="background:${x.bg};">${x.ico}</span><span class="ha-todo-txt"><span class="ha-todo-t" style="display:block;">${escHtml(x.t)}</span>${x.s ? `<span class="ha-todo-s" style="display:block;">${escHtml(x.s)}</span>` : ''}</span><span class="ha-todo-fr">›</span></a>`;
