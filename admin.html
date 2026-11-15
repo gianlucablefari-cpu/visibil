@@ -239,6 +239,31 @@
   .dbx-btn.primario:hover { color: #fff !important; opacity: 0.9; }
   .dbx-vuota { display: flex; align-items: center; gap: 0.85rem; border: 1px dashed rgba(0,0,0,0.2); border-radius: 12px; padding: 1rem; }
   .dbx-vuota button { margin: 0 0 0 auto; flex: none; }
+  .tempi-testa { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .tempi-totali { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: 0.85rem; color: var(--grey); }
+  .tempi-totali strong { color: var(--black); font-size: 1.05rem; }
+  .tempi-azioni { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+  .tempi-azioni select { width: auto; max-width: 200px; margin: 0; }
+  .tempi-azioni button { margin: 0; }
+  .tempi-manuale { border: 1px dashed rgba(26,26,230,0.35); border-radius: 10px; padding: 0.8rem; margin-bottom: 1rem; background: #FAFAFF; }
+  .tempi-manuale-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0 0.6rem; }
+  .tempi-gruppo { border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; background: #fff; padding: 0.7rem 0.9rem; margin-bottom: 0.75rem; }
+  .tempi-gruppo-testa { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.06); margin-bottom: 0.3rem; }
+  .tempi-gruppo-testa strong { font-size: 0.9rem; }
+  .tempi-gruppo-sotto { display: block; font-size: 0.72rem; color: var(--grey); }
+  .tempi-gruppo-testa button { margin: 0; flex: none; }
+  .tempo-riga { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; padding: 0.3rem 0; font-variant-numeric: tabular-nums; }
+  .tempo-riga.escluso { opacity: 0.45; text-decoration: line-through; }
+  .tempo-check { width: 15px !important; height: 15px; margin: 0 !important; flex: none; display: inline-block; }
+  .tempo-giorno { width: 6.2rem; flex: none; }
+  .tempo-orario { width: 6.4rem; flex: none; color: var(--grey); }
+  .tempo-durata { width: 4.2rem; flex: none; font-weight: 600; }
+  .tempo-fonte { flex: 1; color: var(--grey); font-size: 0.7rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 640px) { .tempo-riga { flex-wrap: wrap; } .tempo-fonte { display: none; } }
+  .tempo-sposta { width: auto !important; max-width: 160px; margin: 0 !important; padding: 0.2rem 0.35rem !important; font-size: 0.72rem !important; }
+  .tempo-x { margin: 0 !important; padding: 0.15rem 0.45rem !important; background: none !important; border: 1px solid rgba(0,0,0,0.12) !important; color: var(--grey) !important; font-size: 0.7rem !important; border-radius: 5px; }
+  .tempi-fatturate { margin-top: 0.4rem; }
+  .tempi-fatturate > summary { cursor: pointer; font-size: 0.72rem; color: var(--grey); padding: 0.3rem 0; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -372,6 +397,7 @@
 
     <div class="tabs-bar" style="display:none;">
       <button class="tab-tile" id="tab-progetti" onclick="showDocGroup('progetti')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg><span>Progetti</span></button>
+      <button class="tab-tile" id="tab-tempi" onclick="showTab('tempi')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><polyline points="12 9 12 13 14.5 15.5"></polyline><line x1="9" y1="2" x2="15" y2="2"></line></svg><span>Tempi</span></button>
       <button class="tab-tile" id="tab-cloud" onclick="showDocGroup('cloud')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg><span>Archivio</span></button>
       <button class="tab-tile" id="tab-fatture" onclick="showDocGroup('fatture')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg><span>Fatture</span></button>
       <button class="tab-tile" id="tab-comunicazioni" onclick="showTab('comunicazioni')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg><span>Comunicazioni</span></button>
@@ -541,6 +567,35 @@
       </div>
     </div>
       </div>
+    </div>
+    </div><!-- /tab-panel -->
+
+    <!-- TEMPI: sessioni di lavoro del cliente, per progetto; da qui si creano le fatture a ore -->
+    <div class="tab-panel" id="panel-tempi">
+    <div class="card">
+      <div class="tempi-testa">
+        <div class="tempi-totali" id="tempi-totali"></div>
+        <div class="tempi-azioni">
+          <select id="tempi-avvia-prog" title="Progetto su cui avviare il cronometro"></select>
+          <button type="button" class="btn-small" onclick="tempiAvvia()">▶ Avvia</button>
+          <button type="button" class="secondary btn-small" onclick="tempiManuale(true)">+ Aggiungi a mano</button>
+        </div>
+      </div>
+      <div id="tempi-manuale" class="tempi-manuale" style="display:none;">
+        <div class="tempi-manuale-griglia">
+          <div><label for="tm-prog">Progetto</label><select id="tm-prog"></select></div>
+          <div><label for="tm-data">Giorno</label><input type="date" id="tm-data"></div>
+          <div><label for="tm-dalle">Dalle</label><input type="time" id="tm-dalle"></div>
+          <div><label for="tm-alle">Alle</label><input type="time" id="tm-alle"></div>
+        </div>
+        <div style="display:flex; gap:0.5rem; margin-top:0.6rem;">
+          <button type="button" class="btn-small" onclick="tempiSalvaManuale()">Salva</button>
+          <button type="button" class="secondary btn-small" onclick="tempiManuale(false)">Annulla</button>
+        </div>
+        <div class="msg" id="tm-msg"></div>
+      </div>
+      <div id="tempi-lista"><p class="desc">Carica un cliente per vedere i suoi tempi.</p></div>
+      <p class="desc" style="margin-top:1rem;">Le sessioni arrivano dal cronometro di TickTick (importate ogni sera) e dal cronometro del sito; quelle del sito vengono copiate anche in TickTick.</p>
     </div>
     </div><!-- /tab-panel -->
 
@@ -915,11 +970,6 @@
 
         <div style="background:var(--surface); border:1px solid rgba(0,0,0,0.1); border-radius:8px; padding:1rem; margin-top:2rem;">
           <div class="section-label" style="margin-top:0;">📋 Progetti e video</div>
-          <div id="ore-box" style="display:none;" class="ore-box">
-            <div id="ore-box-titolo" class="ore-box-titolo"></div>
-            <div id="ore-lista"></div>
-            <p class="desc" style="margin:0.4rem 0 0;">Importate ogni sera dal cronometro TickTick. Spariscono da qui quando le metti in un pagamento (Fatture → Pagamenti → ⏱).</p>
-          </div>
           <div id="pr-lista-esistenti"><p style="font-size:0.85rem; color:var(--grey);">Carica un cliente per vederli.</p></div>
           <button type="button" id="pr-nuovo-btn" class="secondary" onclick="resetFormProgetto()" style="width:100%; margin-top:0.75rem; display:none;">+ Nuovo progetto</button>
         </div>
@@ -3514,7 +3564,7 @@
     if (!a) { if (pill) pill.remove(); return; }
     if (!pill) { pill = document.createElement('button'); pill.id = 'crono-pill'; pill.type = 'button'; document.body.appendChild(pill);
       pill.onclick = () => cronoFerma(); }
-    const prog = (window.progettiMenu || []).concat(window.progettiCache || []).find(p => p.id === a.progetto_id);
+    const prog = (typeof progettiMenu !== 'undefined' ? progettiMenu : []).concat(window.progettiCache || []).find(p => p.id === a.progetto_id);
     pill.textContent = `⏱ ${prog ? prog.titolo + ' · ' : ''}${nomeClienteById(a.user_id)}  ${cronoDurata(a.inizio)}  ■ Ferma`;
   }
   setInterval(() => { if (window.cronoAttivo) cronoAggiornaPulsanti(); }, 1000);
@@ -3545,27 +3595,109 @@
   }
 
   async function caricaOre(user_id) {
-    window.oreCache = [];
+    window.oreCache = []; window.tempiCache = [];
     if (user_id) {
-      const { data } = await client.from('ore_lavoro').select('*').eq('user_id', user_id).is('pagamento_id', null).order('inizio', { ascending: true });
-      window.oreCache = (data || []).filter(o => o.fine); // il cronometro in corso non si conta finché non lo fermi
+      const { data } = await client.from('ore_lavoro').select('*').eq('user_id', user_id).order('inizio', { ascending: false });
+      window.tempiCache = (data || []).filter(o => o.fine); // il cronometro in corso non si conta finché non lo fermi
+      window.oreCache = window.tempiCache.filter(o => !o.pagamento_id).sort((a, b) => (a.inizio < b.inizio ? -1 : 1));
     }
     renderOre(); pgMostraOre();
   }
-  function renderOre() {
-    const box = document.getElementById('ore-box'); if (!box) return;
-    const righe = window.oreCache;
-    if (!righe.length) { box.style.display = 'none'; return; }
-    box.style.display = '';
-    const tot = righe.filter(o => !o.escluso).reduce((a, o) => a + o.minuti, 0);
-    document.getElementById('ore-box-titolo').textContent = `⏱ Ore da TickTick non ancora fatturate · ${fmtOre(tot)}`;
-    document.getElementById('ore-lista').innerHTML = righe.map(o => `
-      <div class="ore-riga${o.escluso ? ' ore-esclusa' : ''}">
-        <span class="ore-data">${fmtData(o.inizio)}</span>
-        <span class="ore-durata">${fmtOre(o.minuti)}</span>
-        <select onchange="oreCambiaProgetto('${o.id}', this.value)" title="Progetto a cui vanno queste ore">${opzioniProgetto(o.progetto_id || '')}</select>
-        <button type="button" class="secondary btn-small" onclick="oreEscludi('${o.id}', ${!o.escluso})" title="${o.escluso ? 'Rimetti nel conteggio' : 'Non conteggiare questa sessione'}">${o.escluso ? '↺' : '✕'}</button>
-      </div>`).join('');
+  function renderOre() { renderTempi(); }
+  function renderTempi() {
+    const lista = document.getElementById('tempi-lista'); if (!lista) return;
+    const uid = (document.getElementById('c-userid') || {}).value || '';
+    const opzProg = sel => `<option value="">— nessun progetto —</option>` + (typeof progettiMenu !== 'undefined' ? progettiMenu : []).map(p => `<option value="${p.id}"${p.id === sel ? ' selected' : ''}>${vcEsc(p.titolo || '(senza titolo)')}</option>`).join('');
+    ['tempi-avvia-prog', 'tm-prog'].forEach(id => { const el = document.getElementById(id); if (el) { const v = el.value; el.innerHTML = opzProg(v || ((typeof progettiMenu !== 'undefined' ? progettiMenu : [])[0] || {}).id || ''); } });
+    if (!uid) { lista.innerHTML = '<p class="desc">Carica un cliente per vedere i suoi tempi.</p>'; document.getElementById('tempi-totali').innerHTML = ''; return; }
+    const tutte = (window.tempiCache || []);
+    const valide = tutte.filter(o => !o.escluso);
+    const somma = l => l.reduce((a, o) => a + (o.minuti || 0), 0);
+    const meseOra = new Date(); const inMese = o => { const d = new Date(o.inizio); return d.getMonth() === meseOra.getMonth() && d.getFullYear() === meseOra.getFullYear(); };
+    document.getElementById('tempi-totali').innerHTML =
+      `<span><strong>${fmtOre(somma(valide.filter(o => !o.pagamento_id)))}</strong> da fatturare</span><span>${fmtOre(somma(valide.filter(inMese)))} questo mese</span><span>${fmtOre(somma(valide))} in totale</span>`;
+    if (!tutte.length) { lista.innerHTML = '<p class="desc">Nessuna sessione di lavoro registrata per questo cliente.</p>'; return; }
+    const fatture = {}; (window.pagamentiCache || []).forEach(p => { fatture[p.id] = p; });
+    const nomeFattura = id => { const p = fatture[id]; if (!p) return 'una fattura'; const anno = new Date(p.data || p.created_at || Date.now()).getFullYear(); return p.numero ? `VIS-${anno}-${String(p.numero).padStart(3, '0')}` : (p.descrizione || 'una fattura'); };
+    const fonte = o => o.fonte === 'vsbl' ? 'cronometro sito' : 'TickTick';
+    const orario = o => `${new Date(o.inizio).toLocaleTimeString('it-CH', { hour: '2-digit', minute: '2-digit' })}–${new Date(o.fine).toLocaleTimeString('it-CH', { hour: '2-digit', minute: '2-digit' })}`;
+    const giorno = o => new Date(o.inizio).toLocaleDateString('it-CH', { weekday: 'short', day: '2-digit', month: '2-digit', year: '2-digit' });
+    const riga = (o, fatturata) => `<div class="tempo-riga${o.escluso ? ' escluso' : ''}">
+        ${fatturata ? '<span class="tempo-check"></span>' : `<input type="checkbox" class="tempo-check" data-id="${o.id}" ${o.escluso ? 'disabled' : 'checked'} onchange="tempiAggiornaPulsanti()">`}
+        <span class="tempo-giorno">${giorno(o)}</span>
+        <span class="tempo-orario">${orario(o)}</span>
+        <span class="tempo-durata">${fmtOre(o.minuti || 0)}</span>
+        <span class="tempo-fonte">${fatturata ? '🧾 ' + vcEsc(nomeFattura(o.pagamento_id)) : fonte(o)}</span>
+        ${fatturata ? '' : `<select class="tempo-sposta" onchange="oreCambiaProgetto('${o.id}', this.value)" title="Sposta su un altro progetto">${opzProg(o.progetto_id || '')}</select>
+        <button type="button" class="tempo-x" onclick="oreEscludi('${o.id}', ${!o.escluso})" title="${o.escluso ? 'Rimetti nel conteggio' : 'Non conteggiare'}">${o.escluso ? '↺' : '✕'}</button>`}
+      </div>`;
+    const gruppi = (typeof progettiMenu !== 'undefined' ? progettiMenu : []).map(p => ({ id: p.id, titolo: p.titolo || '(senza titolo)' }));
+    gruppi.push({ id: '', titolo: 'Senza progetto' });
+    lista.innerHTML = gruppi.map(g => {
+      const sue = tutte.filter(o => (o.progetto_id || '') === g.id || (g.id === '' && o.progetto_id && !(typeof progettiMenu !== 'undefined' ? progettiMenu : []).some(p => p.id === o.progetto_id)));
+      if (!sue.length) return '';
+      const aperte = sue.filter(o => !o.pagamento_id), fatt = sue.filter(o => o.pagamento_id);
+      const minA = somma(aperte.filter(o => !o.escluso)), minF = somma(fatt.filter(o => !o.escluso));
+      return `<div class="tempi-gruppo" data-pid="${g.id}">
+        <div class="tempi-gruppo-testa">
+          <div><strong>${vcEsc(g.titolo)}</strong><span class="tempi-gruppo-sotto">${minA ? fmtOre(minA) + ' da fatturare' : 'niente da fatturare'}${minF ? ' · ' + fmtOre(minF) + ' fatturate' : ''}</span></div>
+          ${aperte.some(o => !o.escluso) ? `<button type="button" class="btn-small tempi-fattura" data-pid="${g.id}" onclick="tempiCreaFattura('${g.id}')">🧾 Crea fattura</button>` : ''}
+        </div>
+        ${aperte.map(o => riga(o, false)).join('')}
+        ${fatt.length ? `<details class="tempi-fatturate"><summary>Già fatturate (${fatt.length})</summary>${fatt.map(o => riga(o, true)).join('')}</details>` : ''}
+      </div>`;
+    }).join('');
+    tempiAggiornaPulsanti();
+  }
+  function tempiAggiornaPulsanti() {
+    document.querySelectorAll('.tempi-fattura').forEach(b => {
+      const g = b.closest('.tempi-gruppo');
+      const n = g.querySelectorAll('input.tempo-check:checked').length;
+      b.disabled = !n; b.textContent = n ? `🧾 Crea fattura (${n})` : '🧾 Crea fattura';
+    });
+  }
+  // Apre Fatture → Pagamenti già compilato con le sessioni spuntate del progetto
+  function tempiCreaFattura(pid) {
+    const g = document.querySelector('.tempi-gruppo[data-pid="' + pid + '"]'); if (!g) return;
+    const ids = [...g.querySelectorAll('input.tempo-check:checked')].map(c => c.dataset.id);
+    if (!ids.length) return;
+    showDocGroup('fatture'); showSubDoc('pagamento');
+    resetFormPagamento();
+    const f = document.querySelector('#subpanel-pagamento .acc-nuovo'); if (f) f.classList.remove('acc-chiuso');
+    document.getElementById('pg-progetto').value = pid;
+    const prog = (typeof progettiMenu !== 'undefined' ? progettiMenu : []).find(p => p.id === pid);
+    const desc = document.getElementById('pg-descrizione'); if (desc && !desc.value) desc.value = (prog ? prog.titolo + ' — ' : '') + 'ore di lavoro';
+    window._pgSoloSessioni = new Set(ids);
+    pgAggiungiOre();
+    window._pgSoloSessioni = null;
+    pgMostraOre();
+    setTimeout(() => { const el = document.getElementById('pg-descrizione'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 80);
+  }
+  function tempiAvvia() {
+    const uid = (document.getElementById('c-userid') || {}).value || '';
+    const pid = document.getElementById('tempi-avvia-prog').value;
+    if (!uid) return;
+    if (!pid) { alert('Scegli il progetto su cui avviare il cronometro.'); return; }
+    cronoToggle(pid, uid);
+  }
+  function tempiManuale(apri) {
+    const box = document.getElementById('tempi-manuale'); box.style.display = apri ? '' : 'none';
+    if (apri) { document.getElementById('tm-data').value = new Date().toISOString().slice(0, 10); document.getElementById('tm-dalle').value = ''; document.getElementById('tm-alle').value = ''; }
+  }
+  async function tempiSalvaManuale() {
+    const uid = (document.getElementById('c-userid') || {}).value || '';
+    const pid = document.getElementById('tm-prog').value || null;
+    const d = document.getElementById('tm-data').value, da = document.getElementById('tm-dalle').value, a = document.getElementById('tm-alle').value;
+    if (!uid || !d || !da || !a) { showMsg('tm-msg', 'Compila giorno, dalle e alle.', false); return; }
+    const inizio = new Date(`${d}T${da}`), fine = new Date(`${d}T${a}`);
+    if (fine <= inizio) fine.setDate(fine.getDate() + 1); // oltre la mezzanotte
+    const minuti = Math.round((fine - inizio) / 60000);
+    if (minuti < 1 || minuti > 12 * 60) { showMsg('tm-msg', 'Durata non valida (massimo 12 ore).', false); return; }
+    const { error } = await client.from('ore_lavoro').insert({ sessione_id: 'vsbl_' + (crypto.randomUUID ? crypto.randomUUID() : Date.now()), user_id: uid, progetto_id: pid, inizio: inizio.toISOString(), fine: fine.toISOString(), minuti, fonte: 'vsbl', attivita: 'Aggiunta a mano' });
+    if (error) { showMsg('tm-msg', 'Errore: ' + error.message, false); return; }
+    await oreAggiustaProgetto(pid, minuti);
+    tempiManuale(false);
+    caricaOre(uid); caricaProgettiEsistenti(uid);
   }
   async function oreAggiustaProgetto(pid, deltaMin) {
     if (!pid || !deltaMin) return;
@@ -3593,7 +3725,7 @@
   function pgSessioniDisponibili() {
     const pid = (document.getElementById('pg-progetto') || {}).value || '';
     const giaInVoci = new Set([...document.querySelectorAll('#pg-voci-lista > .voce-pg[data-sessioni]')].flatMap(r => r.dataset.sessioni.split(',')));
-    return window.oreCache.filter(o => !o.escluso && (o.progetto_id || '') === pid && !giaInVoci.has(o.id));
+    return window.oreCache.filter(o => !o.escluso && (o.progetto_id || '') === pid && !giaInVoci.has(o.id) && (!window._pgSoloSessioni || window._pgSoloSessioni.has(o.id)));
   }
   function pgMostraOre() {
     const el = document.getElementById('pg-ore-ticktick'); if (!el) return;
