@@ -80,7 +80,8 @@ export default async (req) => {
       nome,
       email_accesso: email,
       email_contatto: email,
-      prossimo_passo: `Benvenuto ${nome}! Stiamo preparando la proposta per il tuo progetto. Nel frattempo dai un'occhiata all'Area Clienti e, se non l'hai ancora fatto, riempi i Dati personali e salva.`
+      messaggio_cliente_il: new Date().toISOString(),
+      messaggio_cliente: `Benvenuto ${nome}! Stiamo preparando la proposta per il tuo progetto. Nel frattempo dai un'occhiata all'Area Clienti e, se non l'hai ancora fatto, riempi i Dati personali e salva.`
     })
   });
 
