@@ -187,6 +187,14 @@
   .fatt-dati { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.08); }
   .fatt-dati > summary { cursor: pointer; font-size: 0.75rem; font-weight: 600; }
   .account-pop { max-height: calc(100vh - 120px); overflow-y: auto; }
+  .vid-card-icona { flex: none; width: 26px; height: 26px; border-radius: 6px; background: #F5F6FF; color: var(--ink); display: flex; align-items: center; justify-content: center; }
+  .vid-card-icona svg { width: 15px; height: 15px; }
+  .vid-versione { border: 1px solid rgba(0,0,0,0.1); border-left: 3px solid var(--ink); border-radius: 8px; background: #FAFAFF; padding: 0.6rem 0.75rem 0.7rem; margin: 0.6rem 0; }
+  .vid-versione-testa { display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 0.35rem; }
+  .vid-versione-x { background: none !important; border: 0 !important; color: #c0392b !important; font-size: 0.68rem; padding: 0 !important; margin: 0 !important; cursor: pointer; }
+  .vid-etichetta { display: block; font-size: 0.6rem !important; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin: 0.35rem 0 0.2rem !important; font-weight: 600; }
+  .vid-versione input, .vid-versione select { margin: 0 !important; }
+  .vid-versione-riga { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -2321,14 +2329,27 @@
         return (altro && altro.nome ? altro.nome : k) + (n ? ` (${n} comment${n === 1 ? 'o' : 'i'})` : ''); };
       const chiavi = Array.from(new Set([v.chiave].concat(vidChiaviEsistenti).filter(k => k && (k === v.chiave || !usateDaAltri.has(k)))));
       const opzioniChiave = chiavi.map(k => `<option value="${attr(k)}"${k === v.chiave ? ' selected' : ''}>${k === v.chiave ? 'Commenti di questo video' + (vidConteggi[k] ? ` (${vidConteggi[k]})` : '') : 'Commenti di: ' + vcEsc(etichetta(k))}</option>`).join('');
+      const etichettaQ = { Bassa: 'LOW', Alta: 'HD', '4K': '4K' };
       const versioni = v.versioni.map((x, j) => `
-        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.4rem; align-items:center;">
-          <input type="text" value="${attr(x.link)}" placeholder="Link Dropbox del file" style="flex:1 1 260px; min-width:0;" onchange="vidCampo(${i},${j},'link',this.value)">
-          <select onchange="vidCampo(${i},${j},'qualita',this.value)" style="width:auto;">
-            ${[['', 'Qualità —'], ['Bassa', 'LOW'], ['Alta', 'HD'], ['4K', '4K']].map(([val, t]) => `<option value="${val}"${x.qualita === val ? ' selected' : ''}>${t}</option>`).join('')}
-          </select>
-          <input type="text" value="${attr(x.info)}" placeholder="Info (es. 1280×720, H.264, 25 fps)" style="flex:1 1 180px; min-width:0;" onchange="vidCampo(${i},${j},'info',this.value)">
-          ${v.versioni.length > 1 ? `<button type="button" class="secondary btn-small" title="Rimuovi versione" onclick="vidRimuoviVersione(${i},${j})">✕</button>` : ''}
+        <div class="vid-versione">
+          <div class="vid-versione-testa">
+            <span>📄 File ${j + 1}${x.qualita ? ' · ' + (etichettaQ[x.qualita] || x.qualita) : ''}</span>
+            ${v.versioni.length > 1 ? `<button type="button" class="vid-versione-x" title="Rimuovi questo file" onclick="vidRimuoviVersione(${i},${j})">✕ Rimuovi</button>` : ''}
+          </div>
+          <label class="vid-etichetta">Link Dropbox</label>
+          <input type="text" value="${attr(x.link)}" placeholder="https://www.dropbox.com/scl/fi/…" onchange="vidCampo(${i},${j},'link',this.value)">
+          <div class="vid-versione-riga">
+            <div style="flex:none;">
+              <label class="vid-etichetta">Qualità</label>
+              <select onchange="vidCampo(${i},${j},'qualita',this.value); vidRender()" style="width:auto;">
+                ${[['', '—'], ['Bassa', 'LOW'], ['Alta', 'HD'], ['4K', '4K']].map(([val, t]) => `<option value="${val}"${x.qualita === val ? ' selected' : ''}>${t}</option>`).join('')}
+              </select>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <label class="vid-etichetta">Info tecniche</label>
+              <input type="text" value="${attr(x.info)}" placeholder="es. 1280×720, 625 Mb, 1h41min" onchange="vidCampo(${i},${j},'info',this.value)">
+            </div>
+          </div>
         </div>`).join('');
       const k = v.chiave || v.id || ('n' + i);
       const aperto = !v.id || window.vidAperti.has(k);
@@ -2337,6 +2358,7 @@
       return `
       <div class="vid-card${aperto ? ' aperto' : ''}" data-k="${attr(k)}">
         <div class="vid-card-testa" onclick="vidToggleCard(this)">
+          <span class="vid-card-icona" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg></span>
           <span class="vid-card-nome">${vcEsc(v.nome || 'Video senza nome')}</span>
           ${v.stato === 'consegnato' ? '<span class="vid-card-badge">Consegnato</span>' : ''}
           ${v.id && v.chiave ? `<button type="button" class="secondary btn-small vid-link-btn" title="Copia il link diretto a questo video, da mandare al cliente" onclick="event.stopPropagation(); copiaLinkVideo('${attr(v.chiave)}', this)">🔗 Link</button>` : ''}
@@ -2358,7 +2380,7 @@
         </div>
         ${versioni}
         <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; margin-top:0.3rem;">
-          <button type="button" class="secondary btn-small" onclick="vidAggiungiVersione(${i})">+ Versione (HD/4K…)</button>
+          <button type="button" class="secondary btn-small" onclick="vidAggiungiVersione(${i})">+ Altro file (HD/4K…)</button>
           ${chiavi.length > 1 ? `<span style="font-size:0.75rem; color:var(--grey);">Commenti:</span>
           <select style="width:auto; max-width:100%;" onchange="vidChiave(${i},this.value)">${opzioniChiave}</select>` : ''}
           <span style="flex:1"></span>
