@@ -2179,8 +2179,8 @@
 
     // Azioni rapide
     const az = [];
-    if (c.upload_link) az.push({ ico: HA_ICO.invia, lbl: 'Invia file', href: c.upload_link, blank: true });
     if (c.onedrive_link) az.push({ ico: HA_ICO.file, lbl: 'I tuoi file', href: c.onedrive_link, blank: true });
+    if (c.upload_link) az.push({ ico: HA_ICO.invia, lbl: 'Invia file', href: c.upload_link, blank: true });
     if (c.sito_url) az.push({ ico: HA_ICO.sito, lbl: 'Il tuo sito', href: c.sito_url, blank: true });
     if (c.instagram_url) az.push({ ico: HA_ICO.insta, lbl: 'Instagram', href: c.instagram_url, blank: true });
     if (az.length < 4) az.push({ ico: HA_ICO.fatture, lbl: 'Fatture', onclick: "return showTab('fatture')" });
