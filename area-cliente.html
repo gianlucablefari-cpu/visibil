@@ -563,6 +563,13 @@
   .progetto-item-ore { flex-shrink: 0; }
   .progetto-ore-n { white-space: nowrap; }
   #home-app { display: none; }
+  .progetto-doc { display: none; flex-direction: column; gap: 0.45rem; margin-top: 0.6rem; }
+  .pdoc { display: flex; align-items: center; gap: 0.6rem; background: var(--white); border: 1px solid rgba(0,0,0,0.07); border-radius: 10px; padding: 0.7rem 0.85rem; }
+  .pdoc-ico { font-size: 1rem; flex: none; }
+  .pdoc-titolo { flex: 1; min-width: 0; font-size: 0.86rem; font-weight: 600; line-height: 1.3; }
+  .pdoc-firma { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; background: #FFF4DE; color: #7A4E00; padding: 0.25rem 0.5rem; border-radius: 100px; flex: none; }
+  .pdoc-vedi { display: inline-flex; align-items: center; gap: 0.3rem; color: var(--ink); font-size: 0.8rem; font-weight: 600; text-decoration: none; flex: none; }
+  .pdoc-vedi svg { width: 15px; height: 15px; }
   .msg-gianluca { border: 1px solid rgba(26,26,230,0.18); background: rgba(26,26,230,0.04); border-radius: 12px; padding: 1rem 1.1rem; }
   .msg-gianluca-testa { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.5rem; }
   .msg-gianluca-av { width: 28px; height: 28px; border-radius: 50%; background: var(--black); color: #fff; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none; }
@@ -1946,6 +1953,14 @@
       }
       const stimate = Number(p.ore_stimate) || 0;
       const fatte = Number(p.ore_fatte) || 0;
+      if (!stimate && !fatte) return `
+        <div class="progetto-item ${statoCls}">
+          <div class="progetto-item-top">
+            <div class="progetto-item-titolo">${titolo}</div>
+            <div class="progetto-item-pct">${statoTxt}</div>
+          </div>
+          ${noteHtml}
+        </div>`;
       const pct = stimate > 0 ? Math.round((fatte / stimate) * 100) : 0;
       const sforato = pct > 100;
       const statoClasse = sforato ? 'sforato' : (p.stato === 'Completato' ? 'completato' : p.stato === 'In pausa' ? 'in-pausa' : '');
@@ -1971,7 +1986,7 @@
         </div>`;
     };
     // Ogni progetto ha in fondo lo spazio per i suoi video (riempito da renderVideoSezione)
-    const cardDi = p => { const h = cardBase(p); const i = h.lastIndexOf('</div>'); return h.slice(0, i) + `<div class="progetto-video" data-pid="${p.id}"></div>` + h.slice(i); };
+    const cardDi = p => { const h = cardBase(p); const i = h.lastIndexOf('</div>'); return h.slice(0, i) + `<div class="progetto-doc" data-pid="${p.id}"></div><div class="progetto-video" data-pid="${p.id}"></div>` + h.slice(i); };
     window.progettiIds = new Set((progetti || []).map(p => p.id));
     const attivi = (progetti || []).filter(p => p.stato !== 'Completato');
     window._progettiConclusiHtml = (progetti || []).filter(p => p.stato === 'Completato').map(cardDi).join('');
@@ -2423,12 +2438,8 @@
     const { data: documenti } = await client.from('documenti').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     window.documentiCache = documenti || [];
     renderDocumenti(false);
-    // Pannello: gli ultimi documenti (gli stessi dell'Archivio), con rimando all'Archivio se ce ne sono altri
-    if ((documenti || []).length) {
-      document.getElementById('pannello-documenti').innerHTML = document.getElementById('documenti-list').innerHTML;
-      document.getElementById('pannello-documenti-sez').style.display = '';
-      document.getElementById('pannello-documenti-tutti').style.display = documenti.length > 2 ? 'inline-block' : 'none';
-    }
+    // Pannello: i documenti di un progetto stanno dentro la sua scheda; gli altri nella sezione Documenti
+    renderDocumentiPannello();
 
     const { data: report } = await client.from('report').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     const reportList = document.getElementById('report-list');
@@ -2598,6 +2609,25 @@
   function linkDoc(url, modo) {
     try { const u = new URL(url); if (/dropbox\.com$/.test(u.hostname)) { u.searchParams.delete('dl'); u.searchParams.delete('raw'); u.searchParams.set(modo === 'vedi' ? 'raw' : 'dl', '1'); return u.toString(); } } catch (e) {}
     return url;
+  }
+  function docCompattoHtml(d) {
+    const vedi = d.documento_url ? `<a href="${escHtml(linkDoc(d.documento_url, 'vedi')).replace(/"/g, '&quot;')}" target="_blank" rel="noopener" class="pdoc-vedi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>Visualizza</a>` : '';
+    const firma = d.stato === 'Da firmare' ? '<span class="pdoc-firma">Da firmare</span>' : '';
+    return `<div class="pdoc"><span class="pdoc-ico">📄</span><span class="pdoc-titolo">${escHtml(d.titolo || 'Documento')}</span>${firma}${vedi}</div>`;
+  }
+  function renderDocumentiPannello() {
+    const docs = window.documentiCache || [];
+    const boxes = [...document.querySelectorAll('.progetto-doc')];
+    const ids = new Set(boxes.map(b => b.dataset.pid));
+    boxes.forEach(box => {
+      const dd = docs.filter(d => d.progetto_id === box.dataset.pid);
+      box.innerHTML = dd.map(docCompattoHtml).join('');
+      box.style.display = dd.length ? 'flex' : 'none';
+    });
+    const sciolti = docs.filter(d => !(d.progetto_id && ids.has(d.progetto_id)));
+    document.getElementById('pannello-documenti').innerHTML = sciolti.slice(0, 2).map(docCompattoHtml).join('');
+    document.getElementById('pannello-documenti-sez').style.display = sciolti.length ? '' : 'none';
+    document.getElementById('pannello-documenti-tutti').style.display = sciolti.length > 2 ? 'inline-block' : 'none';
   }
   function renderDocumenti(mostraTutti) {
     const documenti = window.documentiCache || [];

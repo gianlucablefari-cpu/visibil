@@ -28,7 +28,7 @@ export default async (req) => {
 
   // Legge il preventivo per sapere titolo/importo/cliente (per l'email di notifica)
   const getRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/preventivi?id=eq.${id}&select=titolo,importo,stato,user_id,richiedi_scelta_piano`,
+    `${SUPABASE_URL}/rest/v1/preventivi?id=eq.${id}&select=titolo,importo,stato,user_id,richiedi_scelta_piano,progetto_id,created_at`,
     { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` } }
   );
   const rows = await getRes.json();
@@ -86,6 +86,24 @@ export default async (req) => {
       // non blocca l'approvazione se questo fallisce
     }
   }
+
+  // Crea il progetto (se il preventivo non ne ha già uno) e ci collega preventivo e documenti recenti del cliente
+  try {
+    const sh = { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" };
+    let progettoId = preventivo.progetto_id || null;
+    if (!progettoId) {
+      const ord = await fetch(`${SUPABASE_URL}/rest/v1/progetti?user_id=eq.${preventivo.user_id}&select=ordine&order=ordine.desc.nullslast&limit=1`, { headers: sh }).then(r => r.json()).catch(() => []);
+      const pr = await fetch(`${SUPABASE_URL}/rest/v1/progetti`, { method: "POST", headers: { ...sh, Prefer: "return=representation" },
+        body: JSON.stringify({ user_id: preventivo.user_id, titolo: preventivo.titolo || "Nuovo progetto", stato: "In corso", modalita: "testo", data: new Date().toISOString().slice(0, 10), ordine: ((ord[0] && ord[0].ordine) || 0) + 1 }) });
+      const nuovo = pr.ok ? (await pr.json())[0] : null;
+      progettoId = nuovo && nuovo.id;
+      if (progettoId) await fetch(`${SUPABASE_URL}/rest/v1/preventivi?id=eq.${id}`, { method: "PATCH", headers: sh, body: JSON.stringify({ progetto_id: progettoId }) });
+    }
+    if (progettoId) {
+      const da = new Date(new Date(preventivo.created_at || Date.now()).getTime() - 30 * 864e5).toISOString();
+      await fetch(`${SUPABASE_URL}/rest/v1/documenti?user_id=eq.${preventivo.user_id}&progetto_id=is.null&created_at=gte.${encodeURIComponent(da)}`, { method: "PATCH", headers: sh, body: JSON.stringify({ progetto_id: progettoId }) });
+    }
+  } catch (e) { /* non blocca l'approvazione */ }
 
   // Notifica Gianluca via email
   const RESEND_API_KEY = Netlify.env.get("RESEND_API_KEY");

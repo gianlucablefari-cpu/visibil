@@ -1146,6 +1146,9 @@
         <label for="doc-data">Data</label>
         <input type="date" id="doc-data">
 
+        <label for="doc-progetto">Progetto</label>
+        <select id="doc-progetto"><option value="">— nessuno (solo in Archivio) —</option></select>
+
         <label for="doc-file">Carica file (va nella cartella "Da Gianluca" del cliente)</label>
         <input type="file" id="doc-file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
         <button type="button" class="secondary" onclick="caricaFileSuDropbox()" style="width:100%; margin-top:0.5rem;">📤 Carica su Dropbox</button>
@@ -2807,6 +2810,7 @@
     const { data, error } = await client.from('progetti').select('*').eq('user_id', user_id).order('ordine', { ascending: true }).order('data', { ascending: true });
     if (error) { container.innerHTML = '<p style="font-size:0.85rem; color:#c0392b;">Errore nel caricamento.</p>'; return; }
     window.progettiCache = data || [];
+    if (!document.getElementById('doc-editing-id').value) riempiDocProgetti(); else riempiDocProgetti(document.getElementById('doc-progetto').value);
     if (window.progettiCache.length === 0) {
       container.innerHTML = '<p style="font-size:0.85rem; color:var(--grey);">Nessun progetto ancora.</p>';
       vidRender();
@@ -4183,6 +4187,15 @@
       </div>`).join('');
   }
 
+  // Menu progetti del documento: di default il progetto in corso più recente
+  function riempiDocProgetti(selezionato) {
+    const sel = document.getElementById('doc-progetto'); if (!sel) return;
+    const lista = (window.progettiCache || []).slice();
+    const attivi = lista.filter(p => p.stato !== 'Completato');
+    const recente = attivi.sort((a, b) => (b.ordine || 0) - (a.ordine || 0) || String(b.created_at || '').localeCompare(String(a.created_at || '')))[0];
+    sel.innerHTML = '<option value="">— nessuno (solo in Archivio) —</option>' + lista.map(p => `<option value="${p.id}">${vcEsc(p.titolo || '(senza titolo)')}${p.stato === 'Completato' ? ' (completato)' : ''}</option>`).join('');
+    sel.value = selezionato === undefined ? (recente ? recente.id : '') : (selezionato || '');
+  }
   function caricaDocumentoNelForm(id) {
     const d = (window.documentiCache || []).find(x => x.id === id);
     if (!d) return;
@@ -4197,6 +4210,7 @@
     document.getElementById('doc-data').value = d.data || '';
     document.getElementById('doc-documento').value = d.documento_url || '';
     document.getElementById('doc-dropbox-path').value = d.dropbox_path || '';
+    riempiDocProgetti(d.progetto_id || '');
 
     window.scrollTo({ top: document.getElementById('subpanel-documento').offsetTop, behavior: 'smooth' });
   }
@@ -4211,6 +4225,7 @@
     document.getElementById('doc-data').value = '';
     document.getElementById('doc-documento').value = '';
     document.getElementById('doc-dropbox-path').value = '';
+    riempiDocProgetti();
     document.getElementById('documento-msg').textContent = '';
   }
 
@@ -4260,7 +4275,8 @@
       stato: document.getElementById('doc-stato').value,
       data: document.getElementById('doc-data').value || new Date().toISOString().slice(0,10),
       documento_url: document.getElementById('doc-documento').value || null,
-      dropbox_path: document.getElementById('doc-dropbox-path').value || null
+      dropbox_path: document.getElementById('doc-dropbox-path').value || null,
+      progetto_id: document.getElementById('doc-progetto').value || null
     };
 
     let error;
