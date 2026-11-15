@@ -563,6 +563,8 @@
   .progetto-item-ore { flex-shrink: 0; }
   .progetto-ore-n { white-space: nowrap; }
   #home-app { display: none; }
+  .progetto-ore-testo { font-weight: 500; color: var(--grey); margin-right: 0.5rem; white-space: nowrap; }
+  .progetto-item-pct { white-space: nowrap; }
   .progetto-doc { display: none; flex-direction: column; gap: 0.45rem; margin-top: 0.6rem; }
   .pdoc { display: flex; align-items: center; gap: 0.6rem; background: var(--white); border: 1px solid rgba(0,0,0,0.07); border-radius: 10px; padding: 0.7rem 0.85rem; }
   .pdoc-ico { font-size: 1rem; flex: none; }
@@ -1974,13 +1976,10 @@
         <div class="progetto-item ${statoClasse}">
           <div class="progetto-item-top">
             <div class="progetto-item-titolo">${titolo}</div>
-            <div class="progetto-item-pct">${pct}%</div>
+            <div class="progetto-item-pct">${oreTesto ? `<span class="progetto-ore-testo">${oreTesto}</span>` : ''}${pct}%</div>
           </div>
           <div class="progetto-bar-track"><div class="progetto-bar-fill" style="width:${Math.min(100, pct)}%;"></div></div>
-          <div class="progetto-item-meta">
-            <span>${oreTesto}</span>
-            <span>${statoTxt}</span>
-          </div>
+          ${statoTxt ? `<div class="progetto-item-meta"><span></span><span>${statoTxt}</span></div>` : ''}
           ${extraNota}
           ${p.note ? `<div class="progetto-item-note">${renderNota(p.note)}</div>` : ''}
         </div>`;
