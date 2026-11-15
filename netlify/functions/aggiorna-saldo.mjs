@@ -65,6 +65,10 @@ export default async (req) => {
   } else {
     voci.push({ descrizione: `${progetto.titolo || "Lavoro"} — ore di lavoro`, ore: oreNuove, tariffa, importo: Math.round(oreNuove * tariffa * 100) / 100, sessioni: idsNuove });
   }
+  // Data della fattura = oggi; se il titolo contiene una data (es. "… 13.11.2026") la aggiorna
+  const oggi = new Date(), fmt = new Intl.DateTimeFormat("de-CH", { timeZone: "Europe/Zurich", day: "2-digit", month: "2-digit", year: "numeric" });
+  const oggiIso = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Zurich" }).format(oggi);
+  fattura.descrizione = String(fattura.descrizione || "").replace(/\b\d{1,2}\.\d{1,2}\.\d{2,4}\b/g, fmt.format(oggi)) || fattura.descrizione;
   const totale = Math.round(voci.reduce((a, v) => a + (Number(v.importo) || 0), 0) * 100) / 100;
 
   // Nuovo link Stripe con il totale aggiornato; il vecchio (se trovato) viene disattivato
@@ -92,7 +96,7 @@ export default async (req) => {
     link = `${sd.url}?client_reference_id=${fattura.id}`;
   }
 
-  const up = await fetch(`${SUPABASE_URL}/rest/v1/pagamenti?id=eq.${fattura.id}`, { method: "PATCH", headers: h, body: JSON.stringify({ voci, importo: totale, payment_link: link }) });
+  const up = await fetch(`${SUPABASE_URL}/rest/v1/pagamenti?id=eq.${fattura.id}`, { method: "PATCH", headers: h, body: JSON.stringify({ voci, importo: totale, payment_link: link, data: oggiIso, descrizione: fattura.descrizione }) });
   if (!up.ok) return json({ error: "Impossibile aggiornare la fattura" }, 500);
   await fetch(`${SUPABASE_URL}/rest/v1/ore_lavoro?id=in.(${sessioni.map(s => s.id).join(",")})`, { method: "PATCH", headers: h, body: JSON.stringify({ pagamento_id: fattura.id }) });
 
