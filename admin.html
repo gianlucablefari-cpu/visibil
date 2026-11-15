@@ -3568,6 +3568,9 @@
     pill.textContent = `⏱ ${prog ? prog.titolo + ' · ' : ''}${nomeClienteById(a.user_id)}  ${cronoDurata(a.inizio)}  ■ Ferma`;
   }
   setInterval(() => { if (window.cronoAttivo) cronoAggiornaPulsanti(); }, 1000);
+  // se il cronometro viene fermato da un'altra pagina o da un altro dispositivo
+  setInterval(() => { if (typeof client !== 'undefined') cronoCarica(); }, 30000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && typeof client !== 'undefined') cronoCarica(); });
   async function cronoToggle(pid, uid, btn) {
     if (window.cronoAttivo && window.cronoAttivo.progetto_id === pid) return cronoFerma();
     if (window.cronoAttivo && !confirm('C\'è già un cronometro in corso su un altro progetto. Lo fermo e avvio questo?')) return;
