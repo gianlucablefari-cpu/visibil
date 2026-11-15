@@ -3752,12 +3752,10 @@
     ss.forEach(o => { const g = fmtData(o.inizio); (perGiorno[g] = perGiorno[g] || []).push(o); });
     // tolgo la voce vuota iniziale, se c'è
     document.querySelectorAll('#pg-voci-lista > .voce-pg').forEach(r => { if (!r.querySelector('.vp-desc').value && !r.querySelector('.vp-importo').value) r.remove(); });
-    Object.entries(perGiorno).forEach(([g, lista]) => {
-      const min = lista.reduce((a, o) => a + o.minuti, 0);
-      const ore = Math.ceil(min / 15) * 0.25; // per giorno, arrotondato per eccesso al quarto d'ora
-      aggiungiVocePagamento(`Lavoro del ${g}`, tariffa !== '' ? Math.round(ore * tariffa * 100) / 100 : '', ore, tariffa);
-      const righe = document.querySelectorAll('#pg-voci-lista > .voce-pg'); righe[righe.length - 1].dataset.sessioni = lista.map(o => o.id).join(',');
-    });
+    // una sola riga per il progetto: ore per giorno arrotondate per eccesso al quarto d'ora, poi sommate (il dettaglio va nell'allegato)
+    const ore = Object.values(perGiorno).reduce((t, lista) => t + Math.ceil(lista.reduce((x, o) => x + o.minuti, 0) / 15) * 0.25, 0);
+    aggiungiVocePagamento(`${prog ? prog.titolo : 'Lavoro'} — ore di lavoro`, tariffa !== '' ? Math.round(ore * tariffa * 100) / 100 : '', ore, tariffa);
+    const righe = document.querySelectorAll('#pg-voci-lista > .voce-pg'); righe[righe.length - 1].dataset.sessioni = ss.map(o => o.id).join(',');
     ricalcolaTotalePagamento(); pgMostraOre();
     if (tariffa === '') showMsg('pagamento-msg', 'Il progetto non ha una tariffa oraria: inserisci i CHF/ora nelle voci.', false);
   }

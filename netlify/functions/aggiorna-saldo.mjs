@@ -42,11 +42,9 @@ export default async (req) => {
     const g = new Date(s.inizio).toLocaleDateString("it-CH", { timeZone: "Europe/Zurich", day: "2-digit", month: "2-digit", year: "numeric" });
     (perGiorno[g] = perGiorno[g] || []).push(s);
   }
-  const nuove = Object.entries(perGiorno).map(([g, l]) => {
-    // fatturazione per giorno, arrotondata per eccesso al quarto d'ora
-    const ore = Math.ceil(l.reduce((a, s) => a + s.minuti, 0) / 15) * 0.25;
-    return { descrizione: `Lavoro del ${g}`, ore, tariffa, importo: Math.round(ore * tariffa * 100) / 100, sessioni: l.map(s => s.id) };
-  });
+  // ore per giorno arrotondate per eccesso al quarto d'ora, poi sommate
+  const oreNuove = Object.values(perGiorno).reduce((a, l) => a + Math.ceil(l.reduce((x, s) => x + s.minuti, 0) / 15) * 0.25, 0);
+  const idsNuove = sessioni.map(s => s.id);
 
   // Fattura aperta del progetto, oppure una nuova
   if (!fattura) {
@@ -56,7 +54,17 @@ export default async (req) => {
     fattura = righe[0];
     if (!fattura) return json({ error: "Impossibile creare la fattura" }, 500);
   }
-  const voci = (fattura.voci || []).concat(nuove);
+  // Le ore si aggiungono alla riga a ore già presente (stessa tariffa); altrimenti una riga unica per il progetto.
+  // Il dettaglio giorno per giorno sta nell'allegato della fattura.
+  const voci = (fattura.voci || []).map(v => ({ ...v }));
+  const riga = voci.find(v => v.ore != null && Number(v.tariffa) === tariffa);
+  if (riga) {
+    riga.ore = Math.round((Number(riga.ore) + oreNuove) * 100) / 100;
+    riga.importo = Math.round(riga.ore * tariffa * 100) / 100;
+    riga.sessioni = (riga.sessioni || []).concat(idsNuove);
+  } else {
+    voci.push({ descrizione: `${progetto.titolo || "Lavoro"} — ore di lavoro`, ore: oreNuove, tariffa, importo: Math.round(oreNuove * tariffa * 100) / 100, sessioni: idsNuove });
+  }
   const totale = Math.round(voci.reduce((a, v) => a + (Number(v.importo) || 0), 0) * 100) / 100;
 
   // Nuovo link Stripe con il totale aggiornato; il vecchio (se trovato) viene disattivato
