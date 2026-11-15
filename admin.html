@@ -225,6 +225,20 @@
   .pr-timer { flex: none; margin: 0 !important; padding: 0 0.6rem !important; height: 30px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.15) !important; background: #fff !important; color: #1E6B3C !important; font-size: 0.75rem !important; letter-spacing: 0 !important; cursor: pointer; font-variant-numeric: tabular-nums; }
   .pr-timer.attivo { background: #B3261E !important; color: #fff !important; border-color: #B3261E !important; }
   #crono-pill { position: fixed; right: 1rem; bottom: 1rem; z-index: 90; margin: 0; width: auto; padding: 0.65rem 1rem; border-radius: 100px; background: #B3261E; color: #fff; border: 0; font-size: 0.75rem; letter-spacing: 0.02em; text-transform: none; box-shadow: 0 8px 24px rgba(0,0,0,0.2); cursor: pointer; font-variant-numeric: tabular-nums; white-space: pre; }
+  .arch-dropbox { margin-bottom: 1rem; }
+  .dbx { border: 1px solid rgba(0,97,255,0.25); background: linear-gradient(180deg, #F3F7FF, #fff); border-radius: 12px; padding: 1rem 1.1rem; }
+  .dbx-testa { display: flex; align-items: center; gap: 0.85rem; }
+  .dbx-testa .btn-small { margin: 0; flex: none; }
+  .dbx-icona { font-size: 1.8rem; line-height: 1; flex: none; }
+  .dbx-nome { font-size: 1.05rem; font-weight: 700; word-break: break-word; }
+  .dbx-sotto { font-size: 0.75rem; color: var(--grey); }
+  .dbx-azioni { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.85rem; }
+  .dbx-btn { display: inline-flex; align-items: center; gap: 0.3rem; margin: 0 !important; padding: 0.45rem 0.75rem !important; border-radius: 7px; border: 1px solid rgba(0,0,0,0.12) !important; background: #fff !important; color: var(--black) !important; font-size: 0.75rem !important; letter-spacing: 0 !important; text-transform: none !important; font-weight: 600; text-decoration: none; cursor: pointer; width: auto; }
+  .dbx-btn:hover { border-color: #0061FF !important; color: #0061FF !important; }
+  .dbx-btn.primario { background: #0061FF !important; color: #fff !important; border-color: #0061FF !important; }
+  .dbx-btn.primario:hover { color: #fff !important; opacity: 0.9; }
+  .dbx-vuota { display: flex; align-items: center; gap: 0.85rem; border: 1px dashed rgba(0,0,0,0.2); border-radius: 12px; padding: 1rem; }
+  .dbx-vuota button { margin: 0 0 0 auto; flex: none; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -748,13 +762,7 @@
       <p class="desc" style="margin-top:0; margin-bottom:1rem; display:none;">Cliente: <strong id="doctab-cliente-display">— nessuno caricato —</strong></p>
 
       <div id="archivio-box">
-        <div class="arch-testa">
-          <div>
-            <div class="arch-titolo">Archivio del cliente</div>
-            <div class="arch-sotto">Tutto ciò che è del cliente o che gestisci per lui: file, sito, dominio, email, account. Il cliente lo vede in "Archivio".</div>
-          </div>
-          <button type="button" onclick="preparaConsegna()">📦 Prepara consegna</button>
-        </div>
+        <div id="arch-dropbox" class="arch-dropbox"></div>
         <div id="arch-form" class="arch-form" style="display:none;">
           <input type="hidden" id="ar-id">
           <div class="arch-form-griglia">
@@ -3650,9 +3658,43 @@
     if (v('c-instagram')) base.push({ tipo: 'social', nome: 'Instagram', url: v('c-instagram'), fornitore: 'Meta', titolare: 'cliente', base: true });
     return base;
   }
+  function renderDropbox() {
+    const box = document.getElementById('arch-dropbox'); if (!box) return;
+    const v = id => ((document.getElementById(id) || {}).value || '').trim();
+    const link = v('c-onedrive'), nome = v('c-cartella-nome') || 'Cartella del cliente', up = v('c-upload');
+    const apriDati = `document.getElementById('cloud-dati').open = true; document.getElementById('cloud-dati').scrollIntoView({behavior:'smooth', block:'start'})`;
+    if (!link) {
+      box.innerHTML = `<div class="dbx-vuota"><div class="dbx-icona">📁</div><div><strong>Nessuna cartella Dropbox collegata</strong><div class="dbx-sotto">Crea la cartella in "VISIBIL Clienti", condividila con link e incollalo qui.</div></div>
+        <button type="button" onclick="${apriDati}">+ Collega cartella</button></div>`;
+      return;
+    }
+    const zip = linkZip(link);
+    box.innerHTML = `<div class="dbx">
+      <div class="dbx-testa">
+        <div class="dbx-icona">📁</div>
+        <div style="min-width:0; flex:1;"><div class="dbx-nome">${vcEsc(nome)}</div><div class="dbx-sotto">Cartella Dropbox del cliente: qui finisce tutto il materiale, il cliente la vede in Archivio.</div></div>
+        <button type="button" class="secondary btn-small" onclick="preparaConsegna()" title="Riepilogo di tutto da consegnare al cliente">📦 Consegna</button>
+      </div>
+      <div class="dbx-azioni">
+        <a class="dbx-btn primario" href="${archEsc(link)}" target="_blank" rel="noopener">Apri cartella ↗</a>
+        ${zip ? `<a class="dbx-btn" href="${archEsc(zip)}" title="Scarica tutta la cartella in uno zip">⬇ Scarica zip</a>` : ''}
+        <button type="button" class="dbx-btn" onclick="copiaLinkArchivio(${archEsc(JSON.stringify(link))}, this)">🔗 Copia link</button>
+        ${up ? `<a class="dbx-btn" href="${archEsc(up)}" target="_blank" rel="noopener" title="Pagina dove il cliente carica file nella cartella">📤 Pagina "Invia qui"</a>
+                <button type="button" class="dbx-btn" onclick="copiaLinkArchivio(${archEsc(JSON.stringify(up))}, this)" title="Da mandare al cliente per farti avere file">🔗 Copia link upload</button>`
+             : `<button type="button" class="dbx-btn" onclick="${apriDati}" title="Crea su Dropbox una richiesta di file e incolla qui il link">📤 Aggiungi "Invia qui"</button>`}
+        <a class="dbx-btn" href="https://www.dropbox.com/home/VISIBIL%20Clienti" target="_blank" rel="noopener" title="Tutte le cartelle clienti">🗂 VISIBIL Clienti</a>
+        <button type="button" class="dbx-btn" onclick="${apriDati}">✎ Cambia</button>
+      </div>
+    </div>`;
+  }
+  function copiaLinkArchivio(url, btn) {
+    const fatto = () => { const t = btn.textContent; btn.textContent = '✓ Copiato'; setTimeout(() => { btn.textContent = t; }, 1400); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(fatto, () => prompt('Copia:', url)); else prompt('Copia:', url);
+  }
   function renderArchivio() {
+    renderDropbox();
     const el = document.getElementById('arch-griglia'); if (!el) return;
-    const tutte = archivioBase().concat(window.risorseCache);
+    const tutte = archivioBase().filter(r => !(r.base && r.tipo === 'file')).concat(window.risorseCache);
     const docs = (window.documentiCache || []).length;
     const oggi = new Date(); const tra30 = new Date(Date.now() + 30 * 86400000);
     el.innerHTML = ARCH_TIPI.map(([tipo, ico, nome]) => {
