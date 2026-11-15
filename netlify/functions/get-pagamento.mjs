@@ -64,6 +64,9 @@ export default async (req) => {
     email: imp.fatt_email || "", telefono: imp.fatt_telefono || ""
   };
   const bonifico = iban ? { iban, banca: imp.fatt_banca || "" } : null;
+  // Dettaglio dei tempi di lavoro fatturati con questo pagamento (allegato alla fattura)
+  const oreRes = await fetch(`${SUPABASE_URL}/rest/v1/ore_lavoro?pagamento_id=eq.${pagamento.id}&escluso=eq.false&select=inizio,fine,minuti&order=inizio.asc`, { headers: h });
+  const sessioni = oreRes.ok ? await oreRes.json() : [];
 
   return new Response(
     JSON.stringify({
@@ -84,7 +87,8 @@ export default async (req) => {
       creato_il: pagamento.created_at || null,
       progetto: progettoTitolo,
       emittente,
-      bonifico
+      bonifico,
+      sessioni
     }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );

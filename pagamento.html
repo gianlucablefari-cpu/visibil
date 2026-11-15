@@ -59,6 +59,17 @@
   .btn-secondario { font-family: var(--sans); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; background: none; color: var(--black); border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; padding: 0.7rem 1.4rem; cursor: pointer; }
   .btn-secondario:hover { border-color: var(--black); }
 
+  /* Allegato: dettaglio tempi, in piccolo */
+  .allegato { font-size: 0.75rem; }
+  .allegato .numero { margin-bottom: 0.4rem; }
+  .al-sotto { color: var(--grey); margin: 0.2rem 0 0.9rem; }
+  .al-tabella { width: 100%; border-collapse: collapse; font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+  .al-tabella th { text-align: left; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); font-weight: 600; padding: 0 0 0.4rem; border-bottom: 1px solid var(--line); }
+  .al-tabella td { padding: 0.35rem 0; border-bottom: 1px solid rgba(0,0,0,0.04); }
+  .al-tabella .num { text-align: right; }
+  .al-tabella tfoot td { font-weight: 700; border-bottom: none; padding-top: 0.6rem; }
+  .al-nota { color: var(--grey); font-size: 0.68rem; margin-top: 0.75rem; }
+
   /* Pagamento */
   .pagare h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem; }
   .pagare .sotto { font-size: 0.82rem; color: var(--grey); margin-bottom: 1.25rem; }
@@ -110,6 +121,7 @@
     .card { border: none; padding: 0; margin-top: 1.5rem; border-radius: 0; }
     #pannello-bonifico { display: block !important; }
     .pagare { break-inside: avoid; border-top: 1px dashed #999 !important; padding-top: 1rem !important; }
+    .allegato { break-before: page; }
   }
 </style>
 </head>
@@ -194,6 +206,19 @@
       <h2 style="font-size:1rem;">Fattura saldata</h2>
       <p style="font-size:0.85rem; color:var(--grey);" id="pagata-testo">Grazie!</p>
     </div>
+
+    <div class="card allegato" id="allegato" style="display:none;">
+      <div class="eyebrow">Allegato · Dettaglio dei tempi di lavoro</div>
+      <div class="numero" id="al-numero"></div>
+      <p class="al-sotto" id="al-sotto"></p>
+      <table class="al-tabella">
+        <thead><tr><th>Data</th><th>Dalle</th><th>Alle</th><th class="num">Durata</th></tr></thead>
+        <tbody id="al-righe"></tbody>
+        <tfoot><tr><td colspan="3">Totale</td><td class="num" id="al-totale"></td></tr></tfoot>
+      </table>
+      <p class="al-nota">Tempi registrati con il cronometro durante il lavoro e conteggiati in questa fattura.</p>
+    </div>
+
   </div>
 </main>
 
@@ -299,6 +324,19 @@
       </tr>`;
     }).join('');
     document.getElementById('f-totale').textContent = chf(d.importo);
+
+    // Pagina secondaria: tempi di lavoro dettagliati
+    const sess = d.sessioni || [];
+    if (sess.length) {
+      const ora = t => new Date(t).toLocaleTimeString('it-CH', { hour: '2-digit', minute: '2-digit' });
+      const giorno = t => new Date(t).toLocaleDateString('it-CH', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+      const totMin = sess.reduce((a, x) => a + (x.minuti || 0), 0);
+      document.getElementById('al-numero').textContent = numeroTxt ? 'Fattura N. ' + numeroTxt + (d.progetto ? ' · ' + d.progetto : '') : (d.progetto || '');
+      document.getElementById('al-sotto').textContent = `${sess.length} session${sess.length === 1 ? 'e' : 'i'} di lavoro, dal ${new Date(sess[0].inizio).toLocaleDateString('it-CH')} al ${new Date(sess[sess.length - 1].inizio).toLocaleDateString('it-CH')}.`;
+      document.getElementById('al-righe').innerHTML = sess.map(x => `<tr><td>${giorno(x.inizio)}</td><td>${ora(x.inizio)}</td><td>${x.fine ? ora(x.fine) : ''}</td><td class="num">${oreTesto((x.minuti || 0) / 60)}</td></tr>`).join('');
+      document.getElementById('al-totale').textContent = oreTesto(totMin / 60);
+      document.getElementById('allegato').style.display = '';
+    }
 
     const contatti = [e.email ? `<a href="mailto:${esc(e.email)}">${esc(e.email)}</a>` : '', e.telefono ? esc(e.telefono) : ''].filter(Boolean).join(' · ');
     document.getElementById('f-piede').innerHTML = `Per domande su questa fattura: ${contatti || 'rispondi alla email che hai ricevuto'}.<br>Grazie per la fiducia!`;
