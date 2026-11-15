@@ -1988,7 +1988,7 @@
         <div class="progetto-item ${statoClasse}">
           <div class="progetto-item-top">
             <div class="progetto-item-titolo">${titolo}</div>
-            <div class="progetto-item-pct">${oreTesto ? `<span class="progetto-ore-testo">${oreTesto}</span>` : ''}${pct}%</div>
+            <div class="progetto-item-pct">${oreTesto ? `<span class="progetto-ore-testo" style="margin-right:0;">${oreTesto}</span>` : ''}</div>
           </div>
           <div class="progetto-bar-track"><div class="progetto-bar-fill" style="width:${Math.min(100, pct)}%;"></div></div>
           ${statoTxt ? `<div class="progetto-item-meta"><span></span><span>${statoTxt}</span></div>` : ''}
