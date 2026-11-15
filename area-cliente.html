@@ -531,6 +531,13 @@
   .risorsa-testo strong { font-size: 0.88rem; font-weight: 600; word-break: break-word; }
   .risorsa-testo small { font-size: 0.72rem; color: var(--grey); }
   .zip-link { margin-top: 0.6rem; font-size: 0.75rem; color: var(--ink); text-decoration: none; font-weight: 600; }
+  .folder-wrap { position: relative; }
+  .folder-wrap .folder-card { height: 100%; }
+  .folder-wrap .folder-card.con-zip { padding-right: 9.5rem !important; }
+  .zip-btn { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.55rem 0.9rem; border-radius: 7px; background: var(--black); color: #fff; font-size: 0.75rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .zip-btn:hover { background: var(--ink); }
+  .scorciatoie-nota { font-size: 0.75rem; color: var(--grey); margin: -0.5rem 0 1rem; }
+  @media (max-width: 480px) { .folder-wrap .folder-card.con-zip { padding-right: 1rem !important; padding-bottom: 3.6rem !important; } .zip-btn { top: auto; bottom: 0.9rem; transform: none; } }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -648,6 +655,31 @@
             Archivio
           </div>
 
+          <div style="margin-bottom: 1.75rem;">
+            <div class="section-label" style="margin-bottom: 0.75rem;">I tuoi file</div>
+            <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+              <div class="folder-wrap">
+                <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
+                <div class="folder-icon">📁</div>
+                <div>
+                  <div class="folder-card-title" id="onedrive-title">Cartella</div>
+                  <div class="folder-card-desc" id="onedrive-desc">Foto, video e progetti grafici</div>
+                </div>
+              </a>
+                <a id="onedrive-zip" class="zip-btn" href="#" style="display:none;" title="Scarica tutta la cartella in un unico file zip">⬇ Scarica tutto</a>
+              </div>
+
+              <a class="folder-card" id="link-upload" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
+                <div class="folder-icon" style="color: var(--ink);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                </div>
+                <div>
+                  <div class="folder-card-title">Invia qui</div>
+                  <div class="folder-card-desc" id="upload-desc">Carica i tuoi file per questo progetto</div>
+                </div>
+              </a>
+            </div>
+          </div>
           <div id="collegamenti-home" style="margin-bottom:1.75rem;">
             <div class="section-label" style="margin-bottom: 0.75rem;">Sito e collegamenti</div>
           <div class="row-card" id="link-sito" style="display:none;">
@@ -669,29 +701,7 @@
           </div>
           <div id="risorse-cliente"></div>
 
-          <div style="margin-bottom: 1.75rem;">
-            <div class="section-label" style="margin-bottom: 0.75rem;">I tuoi file</div>
-            <div class="links-top-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
-              <a class="folder-card" id="onedrive-link" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
-                <div class="folder-icon">📁</div>
-                <div>
-                  <div class="folder-card-title" id="onedrive-title">Cartella</div>
-                  <div class="folder-card-desc" id="onedrive-desc">Foto, video e progetti grafici</div>
-                </div>
-              </a>
-
-              <a class="folder-card" id="link-upload" href="#" target="_blank" style="display:flex; flex-direction: row; align-items: center; gap: 1rem; border: 1px solid rgba(0,0,0,0.08); border-radius: 8px; padding: 1rem; text-align: left;">
-                <div class="folder-icon" style="color: var(--ink);">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                </div>
-                <div>
-                  <div class="folder-card-title">Invia qui</div>
-                  <div class="folder-card-desc" id="upload-desc">Carica i tuoi file per questo progetto</div>
-                </div>
-              </a>
-            </div>
-            <a id="onedrive-zip" class="zip-link" href="#" style="display:none;">⬇ Scarica tutta la cartella (zip)</a>
-          </div>
+          <p class="scorciatoie-nota">↓ Qui sotto alcune scorciatoie: documenti e report si trovano comunque tutti anche nella tua cartella.</p>
           <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
             <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
             <div id="documenti-list"></div>
@@ -2057,7 +2067,7 @@
       if (typeof risolviPercorsiVideo === 'function') risolviPercorsiVideo();
       if (cliente.onedrive_link) {
         onedriveLink.href = cliente.onedrive_link;
-        try { const uz = new URL(cliente.onedrive_link); if (/dropbox\.com$/.test(uz.hostname)) { uz.searchParams.set('dl', '1'); const z = document.getElementById('onedrive-zip'); z.href = uz.toString(); z.style.display = 'inline-block'; } } catch (e) {}
+        try { const uz = new URL(cliente.onedrive_link); if (/dropbox\.com$/.test(uz.hostname)) { uz.searchParams.set('dl', '1'); const z = document.getElementById('onedrive-zip'); z.href = uz.toString(); z.style.display = 'inline-flex'; document.getElementById('onedrive-link').classList.add('con-zip'); } } catch (e) {}
         onedriveLink.classList.remove('folder-card-disabled');
         document.getElementById('onedrive-desc').textContent = 'Foto, video e progetti grafici';
       } else {
