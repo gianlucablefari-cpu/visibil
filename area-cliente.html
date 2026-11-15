@@ -565,6 +565,18 @@
   #home-app { display: none; }
   .progetto-ore-testo { font-weight: 500; color: var(--grey); margin-right: 0.5rem; white-space: nowrap; }
   .progetto-item-pct { white-space: nowrap; }
+  .progetto-item-top { cursor: pointer; }
+  .progetto-item-top .progetto-item-titolo::after { content: '›'; display: inline-block; margin-left: 0.4rem; color: var(--grey); font-weight: 400; transition: transform 0.15s; }
+  .progetto-item.aperto .progetto-item-top .progetto-item-titolo::after { transform: rotate(90deg); }
+  .progetto-dettagli { background: var(--white); border: 1px solid rgba(0,0,0,0.07); border-radius: 10px; padding: 0.75rem 0.9rem; margin: 0.2rem 0 0.6rem; font-size: 0.82rem; }
+  .pd-riga { display: flex; justify-content: space-between; gap: 1rem; padding: 0.3rem 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+  .pd-riga:last-child { border-bottom: 0; }
+  .pd-riga span { color: var(--grey); flex: none; }
+  .pd-riga b { font-weight: 600; text-align: right; min-width: 0; }
+  .pd-riga a { color: var(--ink); text-decoration: none; }
+  .pd-note { padding: 0.5rem 0 0.2rem; line-height: 1.5; white-space: pre-wrap; }
+  .pd-ore { margin-top: 0.6rem; }
+  .pd-ore-titolo { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey); margin-bottom: 0.2rem; }
   .progetto-doc { display: none; flex-direction: column; gap: 0.45rem; margin-top: 0.6rem; }
   .pdoc { display: flex; align-items: center; gap: 0.6rem; background: var(--white); border: 1px solid rgba(0,0,0,0.07); border-radius: 10px; padding: 0.7rem 0.85rem; }
   .pdoc-ico { font-size: 1rem; flex: none; }
@@ -1985,7 +1997,7 @@
         </div>`;
     };
     // Ogni progetto ha in fondo lo spazio per i suoi video (riempito da renderVideoSezione)
-    const cardDi = p => { const h = cardBase(p); const i = h.lastIndexOf('</div>'); return h.slice(0, i) + `<div class="progetto-doc" data-pid="${p.id}"></div><div class="progetto-video" data-pid="${p.id}"></div>` + h.slice(i); };
+    const cardDi = p => { let h = cardBase(p).replace('class="progetto-item ', `data-pid="${p.id}" class="progetto-item `); const i = h.lastIndexOf('</div>'); return h.slice(0, i) + `<div class="progetto-doc" data-pid="${p.id}"></div><div class="progetto-video" data-pid="${p.id}"></div>` + h.slice(i); };
     window.progettiIds = new Set((progetti || []).map(p => p.id));
     const attivi = (progetti || []).filter(p => p.stato !== 'Completato');
     window._progettiConclusiHtml = (progetti || []).filter(p => p.stato === 'Completato').map(cardDi).join('');
@@ -2396,6 +2408,7 @@
 
     const { data: preventivi, error: errPrev } = await client.from('preventivi').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     window.preventiviPendenti = (preventivi || []).filter(p => p.stato === 'In attesa');
+    window.preventiviTutti = preventivi || [];
     // Pannello: tutti i preventivi, anche quelli già approvati
     document.getElementById('archivio-preventivi-sez').style.display = (preventivi || []).length ? '' : 'none';
     document.getElementById('archivio-preventivi').innerHTML = (preventivi || []).map(p => {
@@ -2608,6 +2621,34 @@
   function linkDoc(url, modo) {
     try { const u = new URL(url); if (/dropbox\.com$/.test(u.hostname)) { u.searchParams.delete('dl'); u.searchParams.delete('raw'); u.searchParams.set(modo === 'vedi' ? 'raw' : 'dl', '1'); return u.toString(); } } catch (e) {}
     return url;
+  }
+  // Tocco sulla riga del titolo di un progetto: apre/chiude i dettagli
+  document.addEventListener('click', e => {
+    const top = e.target.closest('.progetto-item-top'); if (!top || e.target.closest('a, button')) return;
+    const card = top.closest('.progetto-item'); if (!card || !card.dataset.pid) return;
+    let box = card.querySelector('.progetto-dettagli');
+    if (!box) { box = document.createElement('div'); box.className = 'progetto-dettagli'; box.dataset.pid = card.dataset.pid; box.hidden = true; top.after(box); }
+    if (box.hidden) { riempiDettagliProgetto(box.dataset.pid, box); box.hidden = false; card.classList.add('aperto'); }
+    else { box.hidden = true; card.classList.remove('aperto'); }
+  });
+  async function riempiDettagliProgetto(pid, box) {
+    const p = (window._progettiTutti || []).find(x => x.id === pid) || {};
+    const data = x => x ? new Date(x).toLocaleDateString('it-CH', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const righe = [];
+    righe.push(`<div class="pd-riga"><span>Inizio</span><b>${data(p.data || p.created_at) || '—'}</b></div>`);
+    righe.push(`<div class="pd-riga"><span>Stato</span><b>${escHtml(p.stato || 'In corso')}</b></div>`);
+    const prev = (window.preventiviTutti || []).filter(q => q.progetto_id === pid);
+    prev.forEach(q => righe.push(`<div class="pd-riga"><span>Preventivo</span><b>${q.link_approvazione ? `<a href="${escHtml(q.link_approvazione).replace(/"/g, '&quot;')}" target="_blank" rel="noopener">${escHtml(q.titolo || 'Preventivo')}</a>` : escHtml(q.titolo || 'Preventivo')}${q.importo ? ' · CHF ' + q.importo + '.–' : ''}</b></div>`));
+    if (p.cartella_link && /^https?:\/\//i.test(p.cartella_link)) righe.push(`<div class="pd-riga"><span>Cartella</span><b><a href="${escHtml(p.cartella_link).replace(/"/g, '&quot;')}" target="_blank" rel="noopener">📁 Apri la cartella del progetto</a></b></div>`);
+    box.innerHTML = righe.join('') + '<div class="pd-ore"><div class="pd-ore-titolo">Ore di lavoro</div><div class="pd-ore-lista">Caricamento…</div></div>';
+    try {
+      const { data: ore } = await client.from('ore_lavoro').select('inizio,minuti,escluso').eq('progetto_id', pid).order('inizio', { ascending: true });
+      const perGiorno = {};
+      (ore || []).filter(o => !o.escluso && o.minuti > 0).forEach(o => { const g = new Date(o.inizio).toLocaleDateString('it-CH', { weekday: 'short', day: 'numeric', month: 'short' }); perGiorno[g] = (perGiorno[g] || 0) + o.minuti; });
+      const fmt = m => { m = Math.ceil(m / 15) * 15; const h = Math.floor(m / 60), r = m % 60; return (h ? h + ' h' : '') + (r ? (h ? ' ' : '') + r + ' min' : ''); };
+      const giorni = Object.entries(perGiorno);
+      box.querySelector('.pd-ore-lista').innerHTML = giorni.length ? giorni.map(([g, m]) => `<div class="pd-riga"><span>${g}</span><b>${fmt(m)}</b></div>`).join('') : '<span style="color:var(--grey);">Ancora nessuna ora registrata.</span>';
+    } catch (e) { box.querySelector('.pd-ore').remove(); }
   }
   function docCompattoHtml(d) {
     const vedi = d.documento_url ? `<a href="${escHtml(linkDoc(d.documento_url, 'vedi')).replace(/"/g, '&quot;')}" target="_blank" rel="noopener" class="pdoc-vedi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>Visualizza</a>` : '';
