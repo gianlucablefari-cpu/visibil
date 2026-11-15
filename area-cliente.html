@@ -2682,7 +2682,7 @@
   }
   // "In programma": appuntamenti e tabella di marcia condivisi da TickTick (tag #cliente / #cliente-fa)
   function renderProgramma() {
-    const cc = window.condivisiCache || [];
+    const cc = (window.condivisiCache || []).map(c => ({ ...c, titolo: String(c.titolo || '').replace(/\s*#(visibil|cliente)\b/gi, '').trim() }));
     const sez = document.getElementById('sez-programma'); if (!sez) return;
     if (!cc.length) { sez.style.display = 'none'; return; }
     const ora = Date.now();
