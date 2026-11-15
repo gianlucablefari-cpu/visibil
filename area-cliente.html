@@ -563,6 +563,12 @@
   .progetto-item-ore { flex-shrink: 0; }
   .progetto-ore-n { white-space: nowrap; }
   #home-app { display: none; }
+  .contatti-btn-riga { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; width: 100%; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(0,0,0,0.08); }
+  .contatti-btn { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.85rem 0.4rem; background: var(--white); border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; color: var(--black); text-decoration: none; font-size: 0.8rem; font-weight: 600; }
+  .contatti-btn:active { background: var(--surface); }
+  .contatti-btn svg { width: 22px; height: 22px; color: var(--ink); }
+  .contatti-btn.wa svg { color: #25D366; }
+  #archivio-preventivi .row-card { background: var(--white); }
   .progetto-ore-testo { font-weight: 500; color: var(--grey); margin-right: 0.5rem; white-space: nowrap; }
   .progetto-item-pct { white-space: nowrap; }
   .progetto-item-top { cursor: pointer; }
@@ -868,13 +874,10 @@
             <div class="account-msg" id="contact-msg" style="margin-top:0.5rem;"></div>
           </form>
 
-          <div style="display:flex; align-items:center; justify-content:flex-start; flex-wrap:wrap; gap:1.25rem; font-size:0.85rem; color:var(--grey); margin-top: 1.75rem; padding-top:1.25rem; border-top:1px solid rgba(0,0,0,0.08); width:100%;">
-            <a href="tel:+41796445683" style="color:var(--grey); text-decoration:none;">📞 +41 79 644 56 83</a>
-            <a href="mailto:gianluca.blefari@outlook.com" style="color:var(--grey); text-decoration:none;">✉️ gianluca.blefari@outlook.com</a>
-            <a href="https://wa.me/41796445683" target="_blank" style="color:var(--grey); text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem;">
-              <svg viewBox="0 0 24 24" fill="currentColor" style="width:12px; height:12px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
-              WhatsApp
-            </a>
+          <div class="contatti-btn-riga">
+            <a class="contatti-btn" href="tel:+41796445683"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"></path></svg><span>Chiama</span></a>
+            <a class="contatti-btn" href="mailto:gianluca.blefari@outlook.com"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="m22 7-10 6L2 7"></path></svg><span>Email</span></a>
+            <a class="contatti-btn wa" href="https://wa.me/41796445683" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor" ><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg><span>WhatsApp</span></a>
           </div>
         </div>
         </section>
