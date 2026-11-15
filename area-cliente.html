@@ -2013,6 +2013,16 @@
 
     const params = new URLSearchParams(window.location.search);
     const previewId = params.get('preview');
+    // Link diretto a un video aperto da Gianluca: porta all'anteprima del cliente a cui appartiene quel video
+    const videoParam = params.get('video');
+    if (user.id === OWNER_ID && videoParam && !previewId) {
+      const { data: vv } = await client.from('video_cliente').select('user_id').eq('chiave', videoParam).limit(1);
+      const proprietario = vv && vv[0] && vv[0].user_id;
+      if (proprietario && proprietario !== user.id) {
+        location.replace('area-cliente.html?preview=' + encodeURIComponent(proprietario) + '&video=' + encodeURIComponent(videoParam));
+        return;
+      }
+    }
     const isPreview = !!(previewId && user.id === OWNER_ID);
     const targetUserId = isPreview ? previewId : user.id;
     window.isPreviewMode = isPreview;
