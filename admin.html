@@ -222,6 +222,9 @@
   .arch-form-griglia { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 0.75rem; }
   .arch-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; margin-top: 0.5rem; text-transform: none; letter-spacing: 0; }
   .arch-check input { width: auto; margin: 0; }
+  .pr-timer { flex: none; margin: 0 !important; padding: 0 0.6rem !important; height: 30px; border-radius: 5px; border: 1px solid rgba(0,0,0,0.15) !important; background: #fff !important; color: #1E6B3C !important; font-size: 0.75rem !important; letter-spacing: 0 !important; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .pr-timer.attivo { background: #B3261E !important; color: #fff !important; border-color: #B3261E !important; }
+  #crono-pill { position: fixed; right: 1rem; bottom: 1rem; z-index: 90; margin: 0; width: auto; padding: 0.65rem 1rem; border-radius: 100px; background: #B3261E; color: #fff; border: 0; font-size: 0.75rem; letter-spacing: 0.02em; text-transform: none; box-shadow: 0 8px 24px rgba(0,0,0,0.2); cursor: pointer; font-variant-numeric: tabular-nums; white-space: pre; }
 </style>
 <link rel="stylesheet" href="partials/prezzi-widget.css">
 </head>
@@ -1226,6 +1229,7 @@
     await caricaTemplateList();
     caricaStatistiche();
     caricaRecenti();
+    cronoCarica();
     // Arrivo dall'anteprima dell'area cliente: apre quel cliente nella scheda indicata
     const qp = new URLSearchParams(location.search), qCliente = qp.get('cliente');
     if (qCliente && clientiCache.some(c => c.user_id === qCliente)) {
@@ -2715,6 +2719,7 @@
             : `${p.ore_fatte || 0}h / ${p.ore_stimate || 0}h${pct !== null ? ` · ${pct}%${extraTag}` : ''}`}</span>
           <span style="display:block; font-size:0.7rem; font-weight:700; text-transform:uppercase; color:${coloreStato(p.stato)}; margin-top:0.15rem;">${p.stato || ''}${p.cartella_link ? ` <a href="${vcEsc(p.cartella_link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="font-weight:400; text-transform:none; color:var(--grey); margin-left:0.4rem;">📁 cartella</a>` : ''}</span>
         </span>
+        <button type="button" class="pr-timer" data-pid="${p.id}" onclick="cronoToggle('${p.id}', '${p.user_id}', this)" title="Avvia o ferma il cronometro su questo progetto">▶</button>
         <button type="button" onclick="caricaProgettoNelForm('${p.id}')" title="Modifica progetto" class="pr-icon-btn">✎</button>
         <span class="pr-freccia" aria-hidden="true">›</span>
         <button type="button" onclick="eliminaProgetto('${p.id}', '${(p.titolo || '').replace(/'/g, "\\'")}')"  title="Elimina" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; margin:0; background:none; border:1px solid rgba(0,0,0,0.15); border-radius:5px; color:#c0392b; cursor:pointer; flex-shrink:0;">
@@ -2725,6 +2730,7 @@
       </div>`;
     }).join('');
     vidRender();
+    cronoAggiornaPulsanti();
   }
 
   function caricaProgettoNelForm(id) {
@@ -3476,11 +3482,60 @@
   window.oreCache = [];
   const fmtOre = min => { const h = Math.floor(min / 60), m = min % 60; return h ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`; };
   const fmtData = d => new Date(d).toLocaleDateString('it-CH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  // ---- Cronometro sul progetto: le ore finiscono in ore_lavoro e, di notte, anche in TickTick ----
+  window.cronoAttivo = null;
+  async function cronoCarica() {
+    const { data } = await client.from('ore_lavoro').select('id, user_id, progetto_id, inizio').is('fine', null).eq('fonte', 'vsbl').order('inizio', { ascending: false }).limit(1);
+    window.cronoAttivo = (data && data[0]) || null;
+    cronoAggiornaPulsanti();
+  }
+  const cronoDurata = d => { const s = Math.max(0, Math.floor((Date.now() - new Date(d)) / 1000)); return `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
+  function cronoAggiornaPulsanti() {
+    const a = window.cronoAttivo;
+    document.querySelectorAll('.pr-timer').forEach(b => {
+      const on = a && a.progetto_id === b.dataset.pid;
+      b.classList.toggle('attivo', !!on);
+      b.textContent = on ? '■ ' + cronoDurata(a.inizio) : '▶';
+    });
+    let pill = document.getElementById('crono-pill');
+    if (!a) { if (pill) pill.remove(); return; }
+    if (!pill) { pill = document.createElement('button'); pill.id = 'crono-pill'; pill.type = 'button'; document.body.appendChild(pill);
+      pill.onclick = () => cronoFerma(); }
+    const prog = (window.progettiMenu || []).concat(window.progettiCache || []).find(p => p.id === a.progetto_id);
+    pill.textContent = `⏱ ${prog ? prog.titolo + ' · ' : ''}${nomeClienteById(a.user_id)}  ${cronoDurata(a.inizio)}  ■ Ferma`;
+  }
+  setInterval(() => { if (window.cronoAttivo) cronoAggiornaPulsanti(); }, 1000);
+  async function cronoToggle(pid, uid, btn) {
+    if (window.cronoAttivo && window.cronoAttivo.progetto_id === pid) return cronoFerma();
+    if (window.cronoAttivo && !confirm('C\'è già un cronometro in corso su un altro progetto. Lo fermo e avvio questo?')) return;
+    if (window.cronoAttivo) await cronoFerma();
+    const ora = new Date(); ora.setMilliseconds(0);
+    const riga = { sessione_id: 'vsbl_' + (crypto.randomUUID ? crypto.randomUUID() : Date.now()), user_id: uid, progetto_id: pid, inizio: ora.toISOString(), fine: null, minuti: 0, fonte: 'vsbl', attivita: 'Cronometro sito' };
+    const { data, error } = await client.from('ore_lavoro').insert(riga).select('id, user_id, progetto_id, inizio').single();
+    if (error) { alert('Errore nell\'avviare il cronometro: ' + error.message); return; }
+    window.cronoAttivo = data; cronoAggiornaPulsanti();
+  }
+  async function cronoFerma() {
+    const a = window.cronoAttivo; if (!a) return;
+    const fine = new Date(); fine.setMilliseconds(0);
+    const minuti = Math.round((fine - new Date(a.inizio)) / 60000);
+    if (minuti < 1) {
+      await client.from('ore_lavoro').delete().eq('id', a.id);
+    } else {
+      const { error } = await client.from('ore_lavoro').update({ fine: fine.toISOString(), minuti }).eq('id', a.id);
+      if (error) { alert('Errore nel fermare il cronometro: ' + error.message); return; }
+      await oreAggiustaProgetto(a.progetto_id, minuti);
+    }
+    window.cronoAttivo = null; cronoAggiornaPulsanti();
+    const uid = (document.getElementById('c-userid') || {}).value;
+    if (uid && uid === a.user_id) { caricaOre(uid); caricaProgettiEsistenti(uid); }
+  }
+
   async function caricaOre(user_id) {
     window.oreCache = [];
     if (user_id) {
       const { data } = await client.from('ore_lavoro').select('*').eq('user_id', user_id).is('pagamento_id', null).order('inizio', { ascending: true });
-      window.oreCache = data || [];
+      window.oreCache = (data || []).filter(o => o.fine); // il cronometro in corso non si conta finché non lo fermi
     }
     renderOre(); pgMostraOre();
   }
