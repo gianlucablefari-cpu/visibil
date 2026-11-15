@@ -147,6 +147,16 @@
   .tt-vuoto { font-size: 0.8rem; color: var(--grey); }
   .tt-agg { font-size: 0.7rem; color: var(--grey); margin-top: 0.3rem; }
   .tt-summary { cursor: pointer; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--grey); padding: 0.4rem 0; }
+  .scheda-cl { border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 1.75rem; background: var(--white); }
+  .scheda-cl-testa { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+  .scheda-cl-nome { font-size: 1.05rem; font-weight: 700; }
+  .scheda-cl-ref { font-size: 0.82rem; color: var(--grey); margin-top: 0.1rem; }
+  .scheda-cl-righe { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.75rem; font-size: 0.86rem; }
+  .scheda-cl-riga { color: var(--black); text-decoration: none; display: flex; justify-content: space-between; gap: 1rem; }
+  a.scheda-cl-riga { justify-content: flex-start; color: var(--ink); }
+  .scheda-cl-et { color: var(--grey); }
+  .abb-box { border: 1px dashed rgba(0,0,0,0.12); border-radius: 10px; padding: 0.6rem 0.85rem; margin-bottom: 1.25rem; }
+  .abb-riga { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.86rem; }
   .titolo-occhio { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; color: var(--black); vertical-align: middle; margin-left: 0.6rem; text-decoration: none; }
   .titolo-occhio:hover { border-color: var(--ink); color: var(--ink); }
   .titolo-occhio svg { width: 17px; height: 17px; }
@@ -485,77 +495,50 @@
 
     <div class="tab-panel" id="panel-da-fare">
     <div class="card">
-      <div style="margin-bottom:1rem;">
-    <div class="acc-item" id="acc-dati-personali">
-      <div class="acc-header" onclick="toggleAcc(this)">
-        <span>Dati personali</span>
-        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </div>
-      <div class="acc-body">
-        <div id="dati-personali-summary" style="font-size:0.85rem; line-height:2; color:var(--black);">
-          <div><span style="color:var(--grey);">Nome e cognome:</span> <span id="dp-s-nome">—</span></div>
-          <div><span style="color:var(--grey);">Telefono:</span> <span id="dp-s-telefono">—</span></div>
-          <div><span style="color:var(--grey);">Email:</span> <span id="dp-s-email">—</span></div>
-          <div><span style="color:var(--grey);">Preferenza di contatto:</span> <span id="dp-s-pref">—</span></div>
-          <div><span style="color:var(--grey);">Orario preferito:</span> <span id="dp-s-orario">—</span></div>
-          <div><span style="color:var(--grey);">Nome fatturazione:</span> <span id="dp-s-nome-fatturazione">—</span></div>
-          <div><span style="color:var(--grey);">Indirizzo:</span> <span id="dp-s-indirizzo">—</span></div>
-          <button class="secondary" onclick="modificaDatiPersonali()" style="margin-top:0.75rem;">Modifica</button>
+      <!-- Scheda del cliente: riepilogo compatto, con modifica -->
+      <div id="dati-personali-summary" class="scheda-cl">
+        <div class="scheda-cl-testa">
+          <div><div class="scheda-cl-nome" id="sc-nome">—</div><div class="scheda-cl-ref" id="sc-referente"></div></div>
+          <button class="secondary btn-small" onclick="modificaDatiPersonali()">✎ Modifica</button>
         </div>
-
-        <div id="dati-personali-fields" style="display:none;">
-          <div class="section-label" style="margin-top:1.25rem;">Dati di contatto</div>
-
-          <label for="c-referente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Nome e cognome</label>
-          <input type="text" id="c-referente">
-
-          <label for="c-telefono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>Telefono</label>
-          <input type="text" id="c-telefono">
-
-          <label for="c-email-contatto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Email</label>
-          <input type="email" id="c-email-contatto" placeholder="nome@email.com">
-
-          <div class="section-label" style="margin-top:1.25rem;">Preferenza di contatto</div>
-          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
-            <input type="checkbox" id="c-pref-email" style="width:auto;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; opacity:0.6;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-            Email
-          </label>
-          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
-            <input type="checkbox" id="c-pref-whatsapp" style="width:auto;">
-            <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px; height:13px; opacity:0.6;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2C6.477 2 2 6.478 2 12.006c0 1.982.577 3.83 1.573 5.386L2.062 22l4.762-1.484A9.965 9.965 0 0012.004 22C17.53 22 22 17.523 22 12.006 22 6.478 17.53 2 12.004 2zm0 18.132a8.13 8.13 0 01-4.15-1.135l-.298-.176-3.02.941.955-2.998-.194-.309a8.106 8.106 0 01-1.256-4.343c0-4.484 3.653-8.13 8.146-8.13 2.176 0 4.221.847 5.759 2.386a8.09 8.09 0 012.386 5.755c0 4.484-3.653 8.009-8.328 8.009z"/></svg>
-            WhatsApp
-          </label>
-          <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
-            <input type="checkbox" id="c-pref-telefono" style="width:auto;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px; opacity:0.6;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-            Telefonata
-          </label>
-
-          <label for="c-orario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>Orario preferito</label>
-          <input type="text" id="c-orario" placeholder="es. 9:00–12:00">
-
-          <div class="section-label" style="margin-top:1.25rem;">Fatturazione</div>
-
-          <label for="c-nome-fatturazione"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Nome e cognome</label>
-          <input type="text" id="c-nome-fatturazione" placeholder="Nome cognome">
-
-          <label for="c-nome"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l7-4 7 4v14"></path><path d="M9 21v-6h6v6"></path></svg>Nome / Ragione sociale</label>
-          <input type="text" id="c-nome" placeholder="es. B3 Architetti sagl">
-
-          <label for="c-indirizzo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Indirizzo</label>
-          <input type="text" id="c-indirizzo" placeholder="Via, numero, CAP, città">
-
-          <button onclick="salvaCliente()">Salva cliente</button>
-          <div class="msg" id="cliente-msg"></div>
+        <div class="scheda-cl-righe">
+          <a id="sc-telefono" class="scheda-cl-riga"></a>
+          <a id="sc-email" class="scheda-cl-riga"></a>
+          <div id="sc-indirizzo" class="scheda-cl-riga"></div>
+          <div id="sc-fatturazione" class="scheda-cl-riga"></div>
         </div>
       </div>
-    </div>
 
-        <div style="font-size:0.82rem; margin-top:0.75rem;">
-          <span style="color:var(--grey);">Mail benvenuto:</span> <span id="pan-s-email-benvenuto">—</span>
-          <a href="javascript:void(0)" onclick="showTab('comunicazioni')" style="margin-left:0.4rem; color:var(--blu);">Vai a Comunicazioni →</a>
+      <div id="dati-personali-fields" style="display:none;">
+        <div class="section-label" style="margin-top:0;">Dati del cliente</div>
+        <label for="c-nome">Nome / Ragione sociale</label>
+        <input type="text" id="c-nome" placeholder="es. B3 Architetti sagl">
+        <label for="c-referente">Referente (nome e cognome)</label>
+        <input type="text" id="c-referente">
+        <label for="c-telefono">Telefono</label>
+        <input type="text" id="c-telefono">
+        <label for="c-email-contatto">Email</label>
+        <input type="email" id="c-email-contatto" placeholder="nome@email.com">
+        <label for="c-indirizzo">Indirizzo</label>
+        <input type="text" id="c-indirizzo" placeholder="Via, numero, CAP, città">
+
+        <label style="display:flex; align-items:center; gap:0.5rem; margin-top:1rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
+          <input type="checkbox" id="c-fatt-uguale" checked onchange="document.getElementById('c-fatt-blocco').style.display = this.checked ? 'none' : 'block'" style="width:auto; margin:0;">
+          I dati di fatturazione sono gli stessi
+        </label>
+        <div id="c-fatt-blocco" style="display:none;">
+          <label for="c-nome-fatturazione">Intestatario fattura</label>
+          <input type="text" id="c-nome-fatturazione" placeholder="Nome o ragione sociale">
+          <label for="c-indirizzo-fatt">Indirizzo di fatturazione</label>
+          <input type="text" id="c-indirizzo-fatt" placeholder="Via, numero, CAP, città">
         </div>
+        <input type="checkbox" id="c-pref-email" hidden><input type="checkbox" id="c-pref-whatsapp" hidden><input type="checkbox" id="c-pref-telefono" hidden><input type="hidden" id="c-orario">
+
+        <div style="display:flex; gap:0.5rem; margin-top:1rem;">
+          <button onclick="salvaCliente()">Salva</button>
+          <button class="secondary" onclick="tornaAlRiepilogoDatiPersonali()">Annulla</button>
+        </div>
+        <div class="msg" id="cliente-msg"></div>
       </div>
 
       <label for="c-messaggio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>Messaggio per il cliente <span style="font-weight:600; color:var(--blu); font-size:0.72rem; margin-left:0.3rem;">👁 visibile al cliente</span></label>
@@ -569,51 +552,24 @@
       <button onclick="salvaDaFare()">Salva</button>
       <div class="msg" id="cliente-msg-3"></div>
 
-      <div style="margin-top:1.5rem;">
-    <div class="acc-item" id="acc-sito-abbonamento">
-      <div class="acc-header" onclick="toggleAcc(this)">
-        <span>Abbonamento</span>
-        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </div>
-      <div class="acc-body">
-      <p class="desc">Cartelle Dropbox, sito e Instagram ora sono nella scheda Cloud.</p>
-
-      <label for="c-rinnovo-piano"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>Piano abbonamento</label>
-      <input type="text" id="c-rinnovo-piano" placeholder="es. Gestione Mensile Completo">
-
-      <label for="c-rinnovo-data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>Data prossimo rinnovo</label>
-      <input type="date" id="c-rinnovo-data">
-
-      <label for="c-rinnovo-importo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>Importo rinnovo (CHF)</label>
-      <input type="number" id="c-rinnovo-importo">
-
-      <button onclick="salvaCliente()">Salva cliente</button>
-      <div class="msg" id="cliente-msg-2b"></div>
-      </div>
-    </div>
-
-    <div class="acc-item" id="acc-accesso-cliente">
-      <div class="acc-header" onclick="toggleAcc(this)">
-        <span>Accesso all'area cliente</span>
-        <svg class="acc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-      </div>
-      <div class="acc-body">
-
-    <div style="padding:0.75rem 1rem; margin-bottom:1rem; font-size:0.78rem; color:var(--grey); display:flex; gap:1.5rem; flex-wrap:wrap;">
-      <span>User ID: <span id="c-userid-display" style="color:var(--black);">—</span></span>
-      <span>Email di accesso: <span id="c-email-accesso-display" style="color:var(--black);">—</span></span>
-    </div>
-    <input type="hidden" id="c-userid">
-
-    <div style="padding:0 1rem 1rem;">
-      <label for="reset-pw-cliente" style="margin-top:0;">Reimposta password cliente</label>
-      <input type="text" id="reset-pw-cliente" placeholder="minimo 6 caratteri">
-      <button class="secondary btn-small" onclick="resetPasswordCliente()" style="margin-top:0.5rem;">Reimposta password</button>
-      <div class="msg" id="reset-pw-msg"></div>
-    </div>
-
-      </div>
-    </div>
+      <!-- Accesso all'area cliente -->
+      <div class="section-label" style="margin-top:2rem;">Accesso all'area cliente</div>
+      <div class="scheda-cl" style="margin-bottom:0;">
+        <div class="scheda-cl-righe">
+          <div class="scheda-cl-riga"><span class="scheda-cl-et">Email di accesso</span><span id="c-email-accesso-display">—</span></div>
+          <div class="scheda-cl-riga"><span class="scheda-cl-et">Ultima visita</span><span id="c-ultima-visita">—</span></div>
+          <div class="scheda-cl-riga"><span class="scheda-cl-et">Mail di benvenuto</span><span><span id="pan-s-email-benvenuto">—</span> <a href="javascript:void(0)" onclick="showTab('comunicazioni')" style="margin-left:0.3rem; color:var(--blu);">Invia →</a></span></div>
+        </div>
+        <button class="secondary btn-small" onclick="mandaLinkPassword()" style="margin-top:0.9rem;">📧 Manda link per nuova password</button>
+        <div class="msg" id="link-pw-msg"></div>
+        <details style="margin-top:0.8rem;">
+          <summary style="font-size:0.75rem; color:var(--grey); cursor:pointer;">Imposta una password a mano</summary>
+          <input type="text" id="reset-pw-cliente" placeholder="minimo 6 caratteri" style="margin-top:0.5rem;">
+          <button class="secondary btn-small" onclick="resetPasswordCliente()" style="margin-top:0.5rem;">Imposta password</button>
+          <div class="msg" id="reset-pw-msg"></div>
+        </details>
+        <div style="font-size:0.66rem; color:var(--grey); margin-top:0.9rem;">User ID: <span id="c-userid-display">—</span></div>
+        <input type="hidden" id="c-userid">
       </div>
     </div>
     </div><!-- /tab-panel -->
@@ -1101,6 +1057,22 @@
       </div>
 
       <div class="sub-doc-panel" id="subpanel-pagamento" style="display:none;">
+        <div id="abbonamento-box" class="abb-box">
+          <div id="abb-riga" class="abb-riga"></div>
+          <div id="abb-campi" style="display:none;">
+            <label for="c-rinnovo-piano" style="margin-top:0;">Piano abbonamento</label>
+            <input type="text" id="c-rinnovo-piano" placeholder="es. Gestione Mensile Completo">
+            <label for="c-rinnovo-data">Data prossimo rinnovo</label>
+            <input type="date" id="c-rinnovo-data">
+            <label for="c-rinnovo-importo">Importo rinnovo (CHF)</label>
+            <input type="number" id="c-rinnovo-importo">
+            <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+              <button class="btn-small" onclick="salvaCliente().then(abbRiga)">Salva</button>
+              <button class="secondary btn-small" onclick="abbRiga()">Annulla</button>
+            </div>
+            <div class="msg" id="cliente-msg-2b"></div>
+          </div>
+        </div>
         <div id="pg-form-titolo" class="section-label" style="margin-top:0;">Nuovo pagamento</div>
         <input type="hidden" id="pg-editing-id">
 
@@ -1843,6 +1815,8 @@
       rinnovo_piano: document.getElementById('c-rinnovo-piano').value,
       rinnovo_data: document.getElementById('c-rinnovo-data').value || null,
       rinnovo_importo: document.getElementById('c-rinnovo-importo').value || null,
+      fatturazione_uguale: document.getElementById('c-fatt-uguale').checked,
+      indirizzo_fatturazione: document.getElementById('c-fatt-uguale').checked ? null : (document.getElementById('c-indirizzo-fatt').value.trim() || null),
       link_lavoro: raccogliLinkLavoro()
     };
 
@@ -1862,7 +1836,7 @@
     showMsg('cliente-msg-cloud', 'Salvato.', true);
     if (typeof renderArchivio === 'function') renderArchivio();
     showMsg('cliente-msg-3', 'Cliente salvato.', true);
-    updateDatiPersonaliSummary(payload);
+    updateDatiPersonaliSummary({ ...(clientiCache.find(x => x.user_id === user_id) || {}), ...payload });
     tornaAlRiepilogoDatiPersonali();
     renderLinkLavoroPanoramica(payload.link_lavoro, payload.onedrive_link, payload.sito_url);
     caricaClienti();
@@ -2172,17 +2146,44 @@
   setupAutosave(DA_FARE_FIELDS.concat(EMAIL_FIELDS));
 
   function updateDatiPersonaliSummary(c) {
-    document.getElementById('dp-s-nome').textContent = c.referente || '—';
-    document.getElementById('dp-s-telefono').textContent = c.telefono || '—';
-    document.getElementById('dp-s-email').textContent = c.email_contatto || '—';
-    const prefs = [];
-    if (c.pref_email) prefs.push('Email');
-    if (c.pref_whatsapp) prefs.push('WhatsApp');
-    if (c.pref_telefono) prefs.push('Telefonata');
-    document.getElementById('dp-s-pref').textContent = prefs.length ? prefs.join(', ') : '—';
-    document.getElementById('dp-s-orario').textContent = c.orario_preferito || '—';
-    document.getElementById('dp-s-nome-fatturazione').textContent = c.nome_fatturazione || '—';
-    document.getElementById('dp-s-indirizzo').textContent = c.indirizzo || '—';
+    const e = t => vcEsc(String(t || ''));
+    document.getElementById('sc-nome').textContent = c.nome || '—';
+    document.getElementById('sc-referente').textContent = c.referente && c.referente !== c.nome ? c.referente : '';
+    const tel = document.getElementById('sc-telefono'), mail = document.getElementById('sc-email');
+    tel.innerHTML = c.telefono ? '📞 ' + e(c.telefono) : ''; tel.href = c.telefono ? 'tel:' + String(c.telefono).replace(/[^\d+]/g, '') : '#'; tel.style.display = c.telefono ? '' : 'none';
+    mail.innerHTML = c.email_contatto ? '✉️ ' + e(c.email_contatto) : ''; mail.href = c.email_contatto ? 'mailto:' + c.email_contatto : '#'; mail.style.display = c.email_contatto ? '' : 'none';
+    const ind = document.getElementById('sc-indirizzo'); ind.innerHTML = c.indirizzo ? '📍 ' + e(c.indirizzo) : ''; ind.style.display = c.indirizzo ? '' : 'none';
+    const fatt = document.getElementById('sc-fatturazione');
+    const diversa = c.fatturazione_uguale === false && (c.nome_fatturazione || c.indirizzo_fatturazione);
+    fatt.innerHTML = diversa ? '🧾 Fattura a: ' + e([c.nome_fatturazione, c.indirizzo_fatturazione].filter(Boolean).join(', ')) : '';
+    fatt.style.display = diversa ? '' : 'none';
+    if (!c.telefono && !c.email_contatto && !c.indirizzo) { ind.style.display = ''; ind.innerHTML = '<span style="color:var(--grey);">Nessun contatto inserito</span>'; }
+    const uv = document.getElementById('c-ultima-visita');
+    if (uv) uv.textContent = c.ultimo_accesso_il ? new Date(c.ultimo_accesso_il).toLocaleString('it-CH', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'mai';
+    const fu = document.getElementById('c-fatt-uguale');
+    if (fu) { fu.checked = c.fatturazione_uguale !== false; document.getElementById('c-fatt-blocco').style.display = fu.checked ? 'none' : 'block'; document.getElementById('c-indirizzo-fatt').value = c.indirizzo_fatturazione || ''; }
+    abbRiga();
+  }
+
+  // Abbonamento (scheda Fatture): una riga, con modifica
+  function abbRiga() {
+    const riga = document.getElementById('abb-riga'), campi = document.getElementById('abb-campi'); if (!riga) return;
+    const piano = document.getElementById('c-rinnovo-piano').value, data = document.getElementById('c-rinnovo-data').value, imp = document.getElementById('c-rinnovo-importo').value;
+    campi.style.display = 'none';
+    riga.style.display = '';
+    riga.innerHTML = piano || data || imp
+      ? `<span>🔁 <b>${vcEsc(piano || 'Abbonamento')}</b>${data ? ' · rinnovo ' + new Date(data).toLocaleDateString('it-CH', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}${imp ? ' · CHF ' + vcEsc(imp) : ''}</span><button class="secondary btn-small" onclick="abbModifica()">✎</button>`
+      : `<a href="#" onclick="abbModifica(); return false;" style="font-size:0.8rem; color:var(--grey); text-decoration:none;">+ abbonamento</a>`;
+  }
+  function abbModifica() { document.getElementById('abb-riga').style.display = 'none'; document.getElementById('abb-campi').style.display = 'block'; }
+
+  // Manda al cliente l'email di Supabase per scegliere una nuova password
+  async function mandaLinkPassword() {
+    const email = (document.getElementById('c-email-accesso-display').textContent || '').trim();
+    if (!email || email === '—') { showMsg('link-pw-msg', 'Questo cliente non ha un\'email di accesso.', false); return; }
+    if (!confirm('Mandare a ' + email + ' l\'email con il link per scegliere una nuova password?')) return;
+    const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: 'https://vsbl.ch/area-cliente.html?reimposta=1' });
+    showMsg('link-pw-msg', error ? 'Errore: ' + error.message : 'Email inviata a ' + email + '.', !error);
   }
 
   function modificaDatiPersonali() {
@@ -2275,7 +2276,7 @@
         const f = document.querySelector('#subpanel-' + sub + ' .acc-nuovo'); if (f) { f.classList.remove('acc-chiuso'); setTimeout(() => f.scrollIntoView({ behavior: 'smooth', block: 'start' }), 80); }
       }
     } else if (sub === 'home-rinnovi-scadenza') {
-      showTab('da-fare'); const a = document.getElementById('acc-sito-abbonamento'); if (a) { a.classList.add('open'); setTimeout(() => a.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80); }
+      showTab('documenti'); showSubDoc('pagamento'); const a = document.getElementById('abbonamento-box'); if (a) { abbModifica(); setTimeout(() => a.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80); }
     } else if (sub === 'home-da-fare-generale') {
       showTab('da-fare'); const t = document.getElementById('c-avanzamento'); if (t) { setTimeout(() => { t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.focus(); }, 80); }
     }
@@ -2334,8 +2335,7 @@
     const tabAttivo = (document.querySelector('.tab-panel.active') || {}).id || '';
     if (!tabAttivo || tabAttivo === 'panel-home') showDocGroup('progetti');
     else showTab(tabAttivo.replace('panel-', ''));
-    document.getElementById('acc-dati-personali').classList.add('open');
-    document.getElementById('acc-link-abbonamento').classList.remove('open');
+    { const al = document.getElementById('acc-link-abbonamento'); if (al) al.classList.remove('open'); }
     updateDatiPersonaliSummary(c);
     tornaAlRiepilogoDatiPersonali();
 
@@ -2400,6 +2400,7 @@
     restoreAutosave(DA_FARE_FIELDS.concat(EMAIL_FIELDS), c.user_id);
 
     document.getElementById('c-email-accesso-display').textContent = c.email_accesso || '—';
+    abbRiga();
 
     document.querySelectorAll('.client-row').forEach(row => {
       const attiva = row.id === `client-row-${c.user_id}`;
