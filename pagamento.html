@@ -213,9 +213,9 @@
       <div class="numero" id="al-numero"></div>
       <p class="al-sotto" id="al-sotto"></p>
       <table class="al-tabella">
-        <thead><tr><th>Data</th><th>Orari</th><th class="num">Durata</th></tr></thead>
+        <thead><tr><th>Giorno</th><th class="num">Durata</th></tr></thead>
         <tbody id="al-righe"></tbody>
-        <tfoot><tr><td colspan="2">Totale</td><td class="num" id="al-totale"></td></tr></tfoot>
+        <tfoot><tr><td>Totale</td><td class="num" id="al-totale"></td></tr></tfoot>
       </table>
       <p class="al-nota">Tempi registrati con il cronometro durante il lavoro e conteggiati in questa fattura.</p>
     </div>
@@ -342,7 +342,7 @@
       const arrotonda = Math.abs(minArr / 60 - oreFattura) < 0.01;
       const durataG = g => arrotonda ? Math.ceil(g.min / 15) * 15 : g.min;
       document.getElementById('al-sotto').textContent = `${giorni.length} giorn${giorni.length === 1 ? 'o' : 'i'} di lavoro, dal ${new Date(sess[0].inizio).toLocaleDateString('it-CH')} al ${new Date(sess[sess.length - 1].inizio).toLocaleDateString('it-CH')}` + (arrotonda ? ", arrotondati al quarto d'ora." : '.');
-      document.getElementById('al-righe').innerHTML = giorni.map(g => `<tr><td>${giorno(g.x.inizio)}</td><td class="al-orari">${g.righe.map(x => ora(x.inizio) + (x.fine ? '–' + ora(x.fine) : '')).join(', ')}</td><td class="num">${oreTesto(durataG(g) / 60)}</td></tr>`).join('');
+      document.getElementById('al-righe').innerHTML = giorni.map(g => `<tr><td>${giorno(g.x.inizio)}</td><td class="num">${oreTesto(durataG(g) / 60)}</td></tr>`).join('');
       document.getElementById('al-totale').textContent = oreTesto(giorni.reduce((a, g) => a + durataG(g), 0) / 60);
       document.getElementById('allegato').style.display = '';
     }
