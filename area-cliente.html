@@ -778,11 +778,16 @@
           </div>
           <div id="risorse-cliente"></div>
 
-          <p class="scorciatoie-nota">↓ Qui sotto alcune scorciatoie: documenti e report si trovano comunque tutti anche nella tua cartella.</p>
+          <p class="scorciatoie-nota">↓ Qui sotto alcune scorciatoie: documenti, preventivi e report si trovano comunque tutti anche nella tua cartella.</p>
           <div style="border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
             <div class="section-label" style="margin-bottom: 0.5rem;">Documenti</div>
             <div id="documenti-list"></div>
             <button class="btn-logout btn-small" id="documenti-toggle" style="display:none; margin-top:0.5rem;" onclick="toggleDocumenti()">Visualizza tutti</button>
+          </div>
+
+          <div id="archivio-preventivi-sez" style="display:none; margin-top: 1.75rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
+            <div class="section-label" style="margin-bottom: 0.5rem;">Preventivi</div>
+            <div id="archivio-preventivi"></div>
           </div>
 
           <div style="margin-top: 1.75rem; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 1rem;">
@@ -2361,6 +2366,19 @@
 
     const { data: preventivi, error: errPrev } = await client.from('preventivi').select('*').eq('user_id', targetUserId).order('data', { ascending: false });
     window.preventiviPendenti = (preventivi || []).filter(p => p.stato === 'In attesa');
+    // Archivio: tutti i preventivi, anche quelli già approvati
+    document.getElementById('archivio-preventivi-sez').style.display = (preventivi || []).length ? '' : 'none';
+    document.getElementById('archivio-preventivi').innerHTML = (preventivi || []).map(p => {
+      const data = p.data ? new Date(p.data).toLocaleDateString('it-CH', {day:'numeric', month:'short', year:'numeric'}) : '';
+      const link = p.link_approvazione ? `<a href="${escHtml(p.link_approvazione).replace(/"/g, '&quot;')}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:0.3rem; color:var(--ink); font-size:0.78rem; text-decoration:none; white-space:nowrap;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px; height:13px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>${p.stato === 'In attesa' ? 'Apri e approva' : 'Apri'}</a>` : '';
+      return `<div class="row-card" style="flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.6rem;">
+          <div style="display:flex; align-items:baseline; gap:0.6rem; flex-wrap:wrap;">
+            <span style="font-size:0.85rem; font-weight:600;">${escHtml(p.titolo || 'Preventivo')}</span>
+            <span style="font-size:0.72rem; color:var(--grey); white-space:nowrap;">${[data, p.importo ? 'CHF ' + p.importo + '.–' : ''].filter(Boolean).join(' · ')}</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.75rem; flex-shrink:0;"><span class="badge ${badgeClass(p.stato)}">${escHtml(p.stato || '')}</span>${link}</div>
+        </div>`;
+    }).join('');
     const list = document.getElementById('preventivi-list');
     list.innerHTML = '';
 
