@@ -1024,6 +1024,9 @@
         <label style="display:flex; align-items:center; gap:0.5rem; margin-top:1rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;">
           <input type="checkbox" id="pg-genera-link" style="width:auto;" checked> Genera automaticamente il link di pagamento Stripe
         </label>
+        <label style="display:flex; align-items:center; gap:0.5rem; margin-top:0.5rem; font-size:0.85rem; text-transform:none; letter-spacing:normal; color:var(--black); cursor:pointer;" title="Se attivo, la fattura ha in allegato le sessioni di lavoro (data, orari, durata)">
+          <input type="checkbox" id="pg-mostra-ore" style="width:auto;" checked> Mostra al cliente il dettaglio dei tempi di lavoro (allegato alla fattura)
+        </label>
 
         <button onclick="salvaPagamento()" id="pg-salva-btn">Aggiungi pagamento</button>
         <div class="msg" id="pagamento-msg"></div>
@@ -3394,6 +3397,7 @@
     document.getElementById('pg-data').value = p.data || '';
     document.getElementById('pg-documento').value = p.documento_url || '';
     document.getElementById('pg-genera-link').checked = false;
+    document.getElementById('pg-mostra-ore').checked = p.mostra_dettaglio_ore !== false;
 
     document.getElementById('pg-voci-lista').innerHTML = '';
     (p.voci || []).forEach(v => aggiungiVocePagamento(v.descrizione, v.importo, v.ore, v.tariffa));
@@ -3419,6 +3423,7 @@
     document.getElementById('pg-stato').value = 'Pagato';
     document.getElementById('pg-data').value = '';
     document.getElementById('pg-genera-link').checked = true;
+    document.getElementById('pg-mostra-ore').checked = true;
     document.getElementById('pg-voci-lista').innerHTML = '';
     aggiungiVocePagamento();
     window.pagamentoAttivoLink = null;
@@ -3802,6 +3807,7 @@
       data: document.getElementById('pg-data').value || new Date().toISOString().slice(0,10),
       documento_url: document.getElementById('pg-documento').value || null,
       progetto_id: document.getElementById('pg-progetto').value || null,
+      mostra_dettaglio_ore: document.getElementById('pg-mostra-ore').checked,
       payment_link: paymentLink
     };
 

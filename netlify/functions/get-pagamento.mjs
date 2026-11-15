@@ -18,7 +18,7 @@ export default async (req) => {
   }
 
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/pagamenti?id=eq.${id}&select=id,descrizione,importo,stato,data,user_id,voci,payment_link,numero,pagato_il,progetto_id,created_at`,
+    `${SUPABASE_URL}/rest/v1/pagamenti?id=eq.${id}&select=id,descrizione,importo,stato,data,user_id,voci,payment_link,numero,pagato_il,progetto_id,created_at,mostra_dettaglio_ore`,
     {
       headers: {
         apikey: SERVICE_KEY,
@@ -65,8 +65,12 @@ export default async (req) => {
   };
   const bonifico = iban ? { iban, banca: imp.fatt_banca || "" } : null;
   // Dettaglio dei tempi di lavoro fatturati con questo pagamento (allegato alla fattura)
-  const oreRes = await fetch(`${SUPABASE_URL}/rest/v1/ore_lavoro?pagamento_id=eq.${pagamento.id}&escluso=eq.false&select=inizio,fine,minuti&order=inizio.asc`, { headers: h });
-  const sessioni = oreRes.ok ? await oreRes.json() : [];
+  // (solo se nel pagamento è attiva la spunta "Mostra al cliente il dettaglio dei tempi")
+  let sessioni = [];
+  if (pagamento.mostra_dettaglio_ore !== false) {
+    const oreRes = await fetch(`${SUPABASE_URL}/rest/v1/ore_lavoro?pagamento_id=eq.${pagamento.id}&escluso=eq.false&select=inizio,fine,minuti&order=inizio.asc`, { headers: h });
+    sessioni = oreRes.ok ? await oreRes.json() : [];
+  }
 
   return new Response(
     JSON.stringify({
