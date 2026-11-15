@@ -2016,9 +2016,28 @@
       : clientiCache;
 
     const lista = document.getElementById('clienti-lista');
-    lista.innerHTML = filtrati.length === 0
+    // Sul telefono, senza ricerca: prima solo gli ultimi 2 aperti, poi i preferiti, poi tutti
+    let mostrati = filtrati, piu = '';
+    if (!filtro && window.matchMedia('(max-width: 900px)').matches && window._clientiLivello !== 2) {
+      let recenti = [];
+      try { recenti = JSON.parse(localStorage.getItem('vsbl_clienti_recenti') || '[]'); } catch (e) {}
+      const perId = id => clientiCache.find(c => c.user_id === id);
+      const ultimi = recenti.map(perId).filter(Boolean).slice(0, 2);
+      if (ultimi.length < 2) clientiCache.forEach(c => { if (ultimi.length < 2 && !ultimi.includes(c)) ultimi.push(c); });
+      const preferiti = clientiCache.filter(c => c.preferito && !ultimi.includes(c));
+      if (window._clientiLivello === 1) {
+        mostrati = ultimi.concat(preferiti);
+        piu = mostrati.length < clientiCache.length ? `<button class="secondary btn-small" onclick="window._clientiLivello = 2; renderClientiLista()" style="width:100%; margin-top:0.6rem;">Mostra tutti (${clientiCache.length})</button>` : '';
+      } else {
+        mostrati = ultimi;
+        piu = preferiti.length
+          ? `<button class="secondary btn-small" onclick="window._clientiLivello = 1; renderClientiLista()" style="width:100%; margin-top:0.6rem; display:flex; align-items:center; justify-content:center; gap:0.4rem;"><span style="color:#e63950;">♥</span> Preferiti (${preferiti.length})</button>`
+          : (clientiCache.length > ultimi.length ? `<button class="secondary btn-small" onclick="window._clientiLivello = 2; renderClientiLista()" style="width:100%; margin-top:0.6rem;">Mostra tutti (${clientiCache.length})</button>` : '');
+      }
+    }
+    lista.innerHTML = (mostrati.length === 0
       ? '<p style="font-size:0.85rem; color:var(--grey);">Nessun cliente trovato.</p>'
-      : filtrati.map(c => rigaClienteHtml(c, false)).join('');
+      : mostrati.map(c => rigaClienteHtml(c, false)).join('')) + piu;
   }
 
   function toggleArchiviati() {
@@ -2239,6 +2258,7 @@
   async function caricaNelForm(user_id) {
     let c = clientiCache.find(x => x.user_id === user_id);
     if (!c) return;
+    try { const r = JSON.parse(localStorage.getItem('vsbl_clienti_recenti') || '[]').filter(x => x !== user_id); r.unshift(user_id); localStorage.setItem('vsbl_clienti_recenti', JSON.stringify(r.slice(0, 10))); } catch (e) {}
 
     // Ricarica sempre i dati freschi da Supabase, per evitare di sovrascrivere
     // modifiche fatte fuori dal browser (es. link Dropbox aggiornati via chat).
