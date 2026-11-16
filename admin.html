@@ -2728,7 +2728,8 @@
       if (versioni.length > 1 && versioni.some(x => !x.qualita)) { showMsg('vid-msg', 'Con più versioni imposta la qualità (LOW/HD/4K) di ciascuna.', false); return; }
       // "Nuova versione": solo se su un video già esistente sono cambiati i link
       const linkCambiati = v.id && v.linkOrig !== undefined && v.linkOrig !== versioni.map(x => x.link).join('\n');
-      const aggiornato_il = linkCambiati ? new Date().toISOString() : (v.aggiornato_il || null);
+      const segnala = linkCambiati && confirm('«' + v.nome + '»: hai cambiato i file.\n\nOK = segnala al cliente «Nuova versione caricata»\nAnnulla = cambia i file senza avvisare (es. ripristino della versione precedente)');
+      const aggiornato_il = segnala ? new Date().toISOString() : (v.aggiornato_il || null);
       righe.push({ cliente_id, user_id, nome: v.nome, aggiornato_il, revisione_finita_il: v.revisione_finita_il || null, visto_cliente_il: v.visto_cliente_il || null, stato: v.stato || 'in_lavorazione', progetto_id: v.progetto_id || null, ordine: righe.length, chiave: v.chiave || vidChiaveDaLink(versioni[0].link), versioni, commenti_attivi: v.commenti_attivi });
     }
     // Prima inserisco le righe nuove, poi tolgo le vecchie: se l'inserimento fallisce i video esistenti restano
