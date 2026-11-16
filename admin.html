@@ -2532,6 +2532,11 @@
   function vidChiaveDaLink(lk) {
     try { const sg = new URL(lk).pathname.split('/').filter(Boolean); const id = (sg[0] === 's' ? sg[1] : sg[2] || '').replace(/[^A-Za-z0-9_-]/g, ''); return id ? 'db_' + id : ''; } catch (e) { return ''; }
   }
+  async function vidTogliNuova(i) {
+    const v = vidDati[i]; if (!v) return;
+    if (v.id) { const { error } = await client.from('video_cliente').update({ aggiornato_il: null }).eq('id', v.id); if (error) { alert('Errore: ' + error.message); return; } }
+    v.aggiornato_il = null; vidRender();
+  }
   function vidRender() {
     const box = document.getElementById('vid-lista');
     if (!box) return;
@@ -2589,6 +2594,7 @@
             <option value="consegnato"${v.stato === 'consegnato' ? ' selected' : ''}>Consegnato</option>
           </select>
           <label style="display:flex; align-items:center; gap:0.3rem; margin:0; font-size:0.8rem; font-weight:400;"><input type="checkbox" style="width:auto;" ${v.commenti_attivi ? 'checked' : ''} onchange="vidToggleCommenti(${i},this.checked)"> Commenti attivi</label>
+          ${v.aggiornato_il ? `<button type="button" class="secondary btn-small" title="Il cliente vede «Nuova versione caricata il ${new Date(v.aggiornato_il).toLocaleDateString('it-CH')}»: tocca per toglierla" onclick="vidTogliNuova(${i})">✕ «Nuova versione»</button>` : ''}
           <span style="flex:1"></span>
           <button type="button" class="secondary btn-small" title="Sposta su" ${pos === 0 ? 'disabled' : ''} onclick="vidSposta(${i},-1)">↑</button>
           <button type="button" class="secondary btn-small" title="Sposta giù" ${pos === stesso.length - 1 ? 'disabled' : ''} onclick="vidSposta(${i},1)">↓</button>
