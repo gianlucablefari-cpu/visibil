@@ -162,6 +162,7 @@
   .titolo-occhio { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: 1px solid rgba(0,0,0,0.15); border-radius: 6px; color: var(--black); vertical-align: middle; margin-left: 0.6rem; text-decoration: none; }
   .titolo-occhio:hover { border-color: var(--ink); color: var(--ink); }
   .titolo-occhio svg { width: 17px; height: 17px; }
+  .titolo-occhio + .titolo-occhio { margin-left: 0.4rem; }
 .mv-btn{width:26px;height:22px;padding:0;margin:0;background:none;border:1px solid rgba(0,0,0,0.15);border-radius:4px;cursor:pointer;font-size:0.65rem;line-height:1;color:var(--ink);}
   .mv-btn:disabled{opacity:0.25;cursor:default;}
   .icon-btn { padding: 0.55rem; display: inline-flex; align-items: center; justify-content: center; }
@@ -2396,6 +2397,7 @@
     titoloEl.style.display = 'block';
     titoloEl.textContent = window.clienteAttivoNome;
     titoloEl.insertAdjacentHTML('beforeend', `<a class="titolo-occhio" href="area-cliente.html?preview=${c.user_id}" target="_blank" title="Anteprima dell'area cliente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg></a>`);
+    if (c.ticktick_task_id) titoloEl.insertAdjacentHTML('beforeend', `<a class="titolo-occhio titolo-tt" href="https://ticktick.com/webapp/#p/6afae79d8f0854367f693798/tasks/${c.ticktick_task_id}" target="_blank" rel="noopener" title="Apri il cliente in TickTick"><img src="https://www.google.com/s2/favicons?domain=ticktick.com&sz=64" alt="TickTick" width="18" height="18" style="border-radius:4px;"></a>`);
 
     restoreAutosave(DA_FARE_FIELDS.concat(EMAIL_FIELDS), c.user_id);
 
