@@ -2110,12 +2110,13 @@
     document.getElementById('video-pagina-slot').appendChild(d);
     showTab('video');
     const k = d.dataset.chiave || d.dataset.vid;
+    { const v = (window.videoCliente || []).find(x => x.chiave === k || x.id === k) || {}; const pr = (window._progettiTutti || []).find(p => p.id === v.progetto_id); window.cronoContesto = v.progetto_id ? { progetto_id: v.progetto_id, titolo: pr ? pr.titolo : '' } : null; }
     const u = new URL(location.href); u.searchParams.set('video', k);
     if (!(history.state && history.state.video === k)) history.pushState({ video: k }, '', u);
   }
   function esciVideoPagina(soloRipristina) {
     const d = window._videoFocus; if (!d) return;
-    window._videoFocus = null;
+    window._videoFocus = null; window.cronoContesto = null;
     d.open = false;
     const sp = window._videoSegnaposto; if (sp && sp.parentNode) { sp.parentNode.insertBefore(d, sp); sp.remove(); }
     if (history.state && history.state.video) history.replaceState(null, '', (() => { const u = new URL(location.href); u.searchParams.delete('video'); return u; })());

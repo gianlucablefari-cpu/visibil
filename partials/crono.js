@@ -32,14 +32,37 @@
   let attivo = null;
   const durata = d => { const s = Math.max(0, Math.floor((Date.now() - new Date(d)) / 1000)); return `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; };
 
+  // Nell'anteprima di un cliente (area-cliente.html?preview=<id>) il cronometro si può anche avviare da qui:
+  // vale per il cliente in anteprima e, se si è dentro un video, per il suo progetto (window.cronoContesto).
+  const anteprimaUid = new URLSearchParams(location.search).get('preview');
+  async function avvia() {
+    if (!anteprimaUid || attivo) return;
+    const ora = new Date(); ora.setMilliseconds(0);
+    const ctx = window.cronoContesto || {};
+    const riga = { sessione_id: 'vsbl_' + (crypto.randomUUID ? crypto.randomUUID() : Date.now()), user_id: anteprimaUid, progetto_id: ctx.progetto_id || null, inizio: ora.toISOString(), fine: null, minuti: 0, fonte: 'vsbl', attivita: 'Cronometro sito' };
+    const r = await api('ore_lavoro', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(riga) });
+    if (!r) { alert('Non riesco ad avviare il cronometro.'); return; }
+    carica();
+  }
+
   function disegna() {
     let el = document.getElementById('crono-pill-globale');
+    if (!attivo && anteprimaUid && sessione()) {
+      if (!el) { el = document.createElement('button'); el.id = 'crono-pill-globale'; el.type = 'button'; document.body.appendChild(el); }
+      const ctx = window.cronoContesto || {};
+      el.style.background = '#0F0F0F';
+      el.title = 'Avvia il cronometro per questo cliente' + (ctx.titolo ? ' (progetto: ' + ctx.titolo + ')' : '');
+      el.textContent = '▶ Cronometro' + (ctx.titolo ? ' · ' + ctx.titolo : '');
+      el.onclick = avvia;
+      return;
+    }
     if (!attivo) { if (el) el.remove(); return; }
     if (!el) {
       el = document.createElement('button'); el.id = 'crono-pill-globale'; el.type = 'button';
       el.title = 'Cronometro in corso: tocca per fermarlo';
-      el.onclick = ferma; document.body.appendChild(el);
+      document.body.appendChild(el);
     }
+    el.style.background = ''; el.title = 'Cronometro in corso: tocca per fermarlo'; el.onclick = ferma;
     el.textContent = `⏱ ${attivo.etichetta}  ${durata(attivo.inizio)}  ■ Ferma`;
   }
 
@@ -75,7 +98,7 @@
   }
 
   carica();
-  setInterval(() => { if (attivo) disegna(); }, 1000);
+  setInterval(disegna, 1000);
   setInterval(carica, 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) carica(); });
 })();
