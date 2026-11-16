@@ -47,6 +47,8 @@
 
   function disegna() {
     let el = document.getElementById('crono-pill-globale');
+    // in "Come lo vede il cliente" il pulsante per avviarlo non si mostra
+    if (!attivo && document.body.classList.contains('vista-cliente')) { if (el) el.remove(); return; }
     if (!attivo && anteprimaUid && sessione()) {
       if (!el) { el = document.createElement('button'); el.id = 'crono-pill-globale'; el.type = 'button'; document.body.appendChild(el); }
       const ctx = window.cronoContesto || {};
