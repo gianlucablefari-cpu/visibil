@@ -24,6 +24,9 @@ export default async (req) => {
   // segna subito, così due aperture ravvicinate non mandano due email
   await fetch(`${SUPABASE_URL}/rest/v1/clienti?user_id=eq.${user.id}`, { method: "PATCH", headers: sh, body: JSON.stringify({ accesso_notificato_il: new Date().toISOString() }) });
 
+  // anche nella sezione "Novità" di TickTick (la sincronizzazione oraria la porta lì)
+  await fetch(`${SUPABASE_URL}/rest/v1/novita`, { method: "POST", headers: sh, body: JSON.stringify({ user_id: user.id, tipo: "accesso", testo: `${c.nome} è entrato nell'area cliente` }) }).catch(() => {});
+
   const RESEND = Netlify.env.get("RESEND_API_KEY");
   if (!RESEND) return ok();
   const chi = c.referente && c.referente !== c.nome ? `${c.nome} (${c.referente})` : c.nome;
