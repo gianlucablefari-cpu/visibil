@@ -35,6 +35,8 @@ export default async (req) => {
   const sessioni = await get(`ore_lavoro?progetto_id=eq.${pid}&pagamento_id=is.null&escluso=eq.false&fine=not.is.null&select=id,inizio,minuti&order=inizio.asc`);
   const tariffa = Number(progetto.tariffa_oraria) || 0;
   if (!sessioni.length || !tariffa) return json({ id: fattura ? fattura.id : null, aggiornata: false });
+  // Dopo aver fermato il cronometro: aggiorna solo una fattura già aperta, non ne crea una nuova
+  if (body.solo_se_aperta && !fattura) return json({ id: null, aggiornata: false });
 
   // Righe nuove: una per giorno (fuso svizzero)
   const perGiorno = {};

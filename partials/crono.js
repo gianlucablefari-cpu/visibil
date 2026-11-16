@@ -94,6 +94,7 @@
         const pr = await api('progetti?id=eq.' + a.progetto_id + '&select=ore_da_saldare');
         const ore = Math.max(0, Math.round(((Number(pr && pr[0] && pr[0].ore_da_saldare) || 0) + minuti / 60) * 100) / 100);
         await api('progetti?id=eq.' + a.progetto_id, { method: 'PATCH', body: JSON.stringify({ ore_da_saldare: ore }) });
+        try { await fetch('/api/aggiorna-saldo', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + sessione().access_token }, body: JSON.stringify({ progetto_id: a.progetto_id, solo_se_aperta: true }) }); } catch (e) {}
       }
     }
     attivo = null; disegna();

@@ -3697,6 +3697,13 @@
     if (error) { alert('Errore nell\'avviare il cronometro: ' + error.message); return; }
     window.cronoAttivo = data; cronoAggiornaPulsanti();
   }
+  // Se il progetto ha una fattura aperta, ci aggiunge subito le ore appena registrate
+  async function aggiornaFatturaAperta(pid) {
+    try {
+      const { data: sd } = await client.auth.getSession();
+      await fetch('/api/aggiorna-saldo', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + sd.session.access_token }, body: JSON.stringify({ progetto_id: pid, solo_se_aperta: true }) });
+    } catch (e) {}
+  }
   async function cronoFerma() {
     const a = window.cronoAttivo; if (!a) return;
     const fine = new Date(); fine.setMilliseconds(0);
@@ -3707,6 +3714,7 @@
       const { error } = await client.from('ore_lavoro').update({ fine: fine.toISOString(), minuti }).eq('id', a.id);
       if (error) { alert('Errore nel fermare il cronometro: ' + error.message); return; }
       await oreAggiustaProgetto(a.progetto_id, minuti);
+      if (a.progetto_id) await aggiornaFatturaAperta(a.progetto_id);
     }
     window.cronoAttivo = null; cronoAggiornaPulsanti();
     const uid = (document.getElementById('c-userid') || {}).value;
