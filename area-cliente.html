@@ -2334,7 +2334,10 @@
     }
 
     // Registra l'ultimo accesso del cliente (non quando Gianluca guarda in anteprima)
-    if (!isPreview) client.rpc('registra_accesso').then(() => {}, () => {});
+    if (!isPreview) {
+      client.rpc('registra_accesso').then(() => {}, () => {});
+      client.auth.getSession().then(({ data }) => { if (data.session) fetch('/api/notifica-accesso', { method: 'POST', headers: { Authorization: 'Bearer ' + data.session.access_token } }).catch(() => {}); });
+    }
     const { data: clienti, error: errClienti } = await client.from('clienti').select('*').eq('user_id', targetUserId);
     if (errClienti) console.error('Errore clienti:', errClienti);
     const cliente = clienti && clienti[0];
